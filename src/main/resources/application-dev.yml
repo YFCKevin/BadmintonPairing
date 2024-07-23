@@ -1,0 +1,60 @@
+server:
+  port: 8099
+  servlet:
+    contextPath: /badminton
+  error:
+    whitelabel:
+      enabled: false
+spring:
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 100MB
+      max-request-size: 100MB
+  resources:
+    static-locations: file:/Users/chenyifan/Documents/workspace-fan/badmintonPairing/src/main/resources/static/
+  thymeleaf:
+    mode: HTML
+    encoding: UTF-8
+    cache: true
+    prefix: file:/Users/chenyifan/Documents/workspace-fan/badmintonPairing/src/main/resources/templates/
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: example@gmail.com
+    password: lxdb hkku hlxa yjwa
+    properties:
+      mail:
+        transport:
+          protocol: smtp
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+  security:
+    user:
+      name: user
+      password: password
+  crawler:
+    email: example@gmail.com
+    password: password
+
+logging:
+  level:
+    org:
+      springframework:
+        data:
+          mongodb:
+            core:
+              MongoTemplate: DEBUG
+config:
+  jsonPath: /Users/chenyifan/Documents/workspace-fan/badmintonPairing/badminton_files/
+  picture_path: /Users/chenyifan/Documents/workspace-fan/picture/badminton_images/
+  globalDomain: http://localhost:8099/badminton/
+  crawlerDomain: http://localhost:5000/badminton/
+  picSavePath: /Users/chenyifan/Documents/workspace-fan/badmintonPairing/badminton_images/
+  picShowPath: http://localhost:8099/badminton/badminton_images/
+  fileSavePath: /Users/chenyifan/Documents/workspace-fan/badmintonPairing/badminton_files/
+  fileShowPath: http://localhost:8099/badminton/badminton_files/
+  gptBackupSavePath: /Users/chenyifan/Documents/workspace-fan/badmintonPairing/badminton_files/backup/
+  apiKey: your_openai_secret_key
