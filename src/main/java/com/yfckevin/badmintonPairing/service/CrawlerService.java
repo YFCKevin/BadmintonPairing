@@ -56,6 +56,7 @@ public class CrawlerService {
         RequestCrawlerDTO dto = new RequestCrawlerDTO();
         dto.setEmail(configProperties.getCrawlerEmail());
         dto.setPassword(configProperties.getCrawlerPassword());
+        dto.setUrl("https://www.facebook.com/groups/392553431115145/?sorting_setting=CHRONOLOGICAL");
 
         HttpEntity<RequestCrawlerDTO> entity = new HttpEntity<>(dto, headers);
         ResponseEntity<ResultStatus<List<RequestPostDTO>>> response = restTemplate.exchange(
