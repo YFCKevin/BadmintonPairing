@@ -5,25 +5,24 @@ import com.yfckevin.badmintonPairing.ConfigProperties;
 import com.yfckevin.badmintonPairing.dto.RequestPostDTO;
 import com.yfckevin.badmintonPairing.entity.Leader;
 import com.yfckevin.badmintonPairing.repository.LeaderRepository;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Service
 public class LeaderServiceImpl implements LeaderService {
-    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    private final SimpleDateFormat sdf;
     private final ConfigProperties configProperties;
     private final LeaderRepository leaderRepository;
     private final PostService postService;
     private final ObjectMapper objectMapper;
 
-    public LeaderServiceImpl(ConfigProperties configProperties, LeaderRepository leaderRepository, PostService postService, ObjectMapper objectMapper) {
+    public LeaderServiceImpl(@Qualifier("sdf") SimpleDateFormat sdf, ConfigProperties configProperties, LeaderRepository leaderRepository, PostService postService, ObjectMapper objectMapper) {
+        this.sdf = sdf;
         this.configProperties = configProperties;
         this.leaderRepository = leaderRepository;
         this.postService = postService;

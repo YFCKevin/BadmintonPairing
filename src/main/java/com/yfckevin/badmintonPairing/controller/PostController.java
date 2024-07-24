@@ -4,7 +4,6 @@ import com.yfckevin.badmintonPairing.dto.PostDTO;
 import com.yfckevin.badmintonPairing.dto.SearchDTO;
 import com.yfckevin.badmintonPairing.entity.Leader;
 import com.yfckevin.badmintonPairing.entity.Post;
-import com.yfckevin.badmintonPairing.repository.PostRepository;
 import com.yfckevin.badmintonPairing.service.LeaderService;
 import com.yfckevin.badmintonPairing.service.PostService;
 import org.slf4j.Logger;
@@ -30,15 +29,13 @@ public class PostController {
 
     private final PostService postService;
     private final LeaderService leaderService;
-    static DateTimeFormatter ddf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private final DateTimeFormatter ddf;
     Logger logger = LoggerFactory.getLogger(PostController.class);
-    private final PostRepository postRepository;
 
-    public PostController(PostService postService, LeaderService leaderService,
-                          PostRepository postRepository) {
+    public PostController(PostService postService, LeaderService leaderService, DateTimeFormatter ddf) {
         this.postService = postService;
         this.leaderService = leaderService;
-        this.postRepository = postRepository;
+        this.ddf = ddf;
     }
 
 
@@ -113,7 +110,7 @@ public class PostController {
     }
 
 
-    private static PostDTO constructPostDTO(Map<String, Leader> leaderMap, Post post) throws ParseException {
+    private PostDTO constructPostDTO(Map<String, Leader> leaderMap, Post post) throws ParseException {
         PostDTO postDTO = new PostDTO();
         postDTO.setId(post.getId());
         postDTO.setCreationDate(post.getCreationDate());

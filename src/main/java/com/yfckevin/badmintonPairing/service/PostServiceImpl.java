@@ -13,6 +13,7 @@ import com.yfckevin.badmintonPairing.utils.ConfigurationUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.*;
@@ -35,13 +36,15 @@ import java.util.regex.Pattern;
 @Service
 public class PostServiceImpl implements PostService {
     Logger logger = LoggerFactory.getLogger(PostServiceImpl.class);
-    static SimpleDateFormat svf = new SimpleDateFormat("yyyyMMdd");
-    SimpleDateFormat ssf = new SimpleDateFormat("yyyy-MM-dd");
+    private final SimpleDateFormat svf;
+    private final SimpleDateFormat ssf;
     private final ObjectMapper objectMapper;
     private final MongoTemplate mongoTemplate;
     private final ConfigProperties configProperties;
 
-    public PostServiceImpl(ObjectMapper objectMapper, MongoTemplate mongoTemplate, ConfigProperties configProperties) {
+    public PostServiceImpl(@Qualifier("svf") SimpleDateFormat svf, @Qualifier("ssf") SimpleDateFormat ssf, ObjectMapper objectMapper, MongoTemplate mongoTemplate, ConfigProperties configProperties) {
+        this.svf = svf;
+        this.ssf = ssf;
         this.objectMapper = objectMapper;
         this.mongoTemplate = mongoTemplate;
         this.configProperties = configProperties;

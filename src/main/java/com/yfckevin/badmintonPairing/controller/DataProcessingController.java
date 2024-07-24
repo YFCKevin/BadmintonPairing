@@ -30,15 +30,11 @@ import java.util.stream.Collectors;
 public class DataProcessingController {
     private final LeaderService leaderService;
     private final PostService postService;
-    private final ObjectMapper objectMapper;
-    private final ConfigProperties configProperties;
     private final CrawlerService crawlerService;
     Logger logger = LoggerFactory.getLogger(DataProcessingController.class);
-    public DataProcessingController(LeaderService leaderService, PostService postService, ObjectMapper objectMapper, ConfigProperties configProperties, CrawlerService crawlerService) {
+    public DataProcessingController(LeaderService leaderService, PostService postService, CrawlerService crawlerService) {
         this.leaderService = leaderService;
         this.postService = postService;
-        this.objectMapper = objectMapper;
-        this.configProperties = configProperties;
         this.crawlerService = crawlerService;
     }
 

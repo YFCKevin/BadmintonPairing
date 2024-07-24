@@ -11,6 +11,7 @@ import com.yfckevin.badmintonPairing.repository.PostRepository;
 import com.yfckevin.badmintonPairing.utils.ConfigurationUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -25,14 +26,16 @@ import java.util.*;
 @Service
 public class OpenAiServiceImpl implements OpenAiService {
     Logger logger = LoggerFactory.getLogger(OpenAiServiceImpl.class);
-    SimpleDateFormat svf = new SimpleDateFormat("yyyyMMdd");
-    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    private final SimpleDateFormat sdf;
+    private final SimpleDateFormat svf;
     private final ConfigProperties configProperties;
     private final PostRepository postRepository;
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
 
-    public OpenAiServiceImpl(ConfigProperties configProperties, PostRepository postRepository, RestTemplate restTemplate, ObjectMapper objectMapper) {
+    public OpenAiServiceImpl(@Qualifier("sdf") SimpleDateFormat sdf, @Qualifier("svf") SimpleDateFormat svf, ConfigProperties configProperties, PostRepository postRepository, RestTemplate restTemplate, ObjectMapper objectMapper) {
+        this.sdf = sdf;
+        this.svf = svf;
         this.configProperties = configProperties;
         this.postRepository = postRepository;
         this.restTemplate = restTemplate;

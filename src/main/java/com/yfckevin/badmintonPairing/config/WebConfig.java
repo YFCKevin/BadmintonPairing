@@ -1,6 +1,7 @@
 package com.yfckevin.badmintonPairing.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.yfckevin.badmintonPairing.ConfigProperties;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,17 +13,16 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
-
-    @Value("${config.picSavePath}")
-    public String picSavePath;
-    @Value("${config.fileSavePath}")
-    public String fileSavePath;
+    private final ConfigProperties configProperties;
+    public WebConfig(ConfigProperties configProperties) {
+        this.configProperties = configProperties;
+    }
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
 
-        registry.addResourceHandler("/badminton_images/**").addResourceLocations("file:"+ picSavePath);
-        registry.addResourceHandler("/badminton_files/**").addResourceLocations("file:"+ fileSavePath);
+        registry.addResourceHandler("/badminton_images/**").addResourceLocations("file:"+ configProperties.getFileSavePath());
+        registry.addResourceHandler("/badminton_files/**").addResourceLocations("file:"+ configProperties.getPicSavePath());
 //        super.addResourceHandlers(registry);
     }
 
@@ -32,16 +32,6 @@ public class WebConfig implements WebMvcConfigurer {
         matcher.setCaseSensitive(false);
         configurer.setPathMatcher(matcher);
         configurer.setUseTrailingSlashMatch(true);
-    }
-
-    @Bean
-    public RestTemplate restTemplate() {
-        return new RestTemplate();
-    }
-
-    @Bean
-    public ObjectMapper objectMapper(){
-        return new ObjectMapper();
     }
 
 }

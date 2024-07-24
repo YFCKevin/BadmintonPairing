@@ -19,6 +19,8 @@ public class ConfigProperties {
     private String jsonPath;
     @Value("${config.fileSavePath}")
     private String fileSavePath;
+    @Value("${config.picSavePath}")
+    private String picSavePath;
     @Value("${config.gptBackupSavePath}")
     private String gptBackupSavePath;
     @Value("${config.crawlerDomain}")
@@ -58,6 +60,10 @@ public class ConfigProperties {
 
     public String getCrawlerPassword() {
         return crawlerPassword;
+    }
+
+    public String getPicSavePath() {
+        return picSavePath;
     }
 //    @Value("${OPENAI_SECRET_KEY}")
 //    private String apiKey;
