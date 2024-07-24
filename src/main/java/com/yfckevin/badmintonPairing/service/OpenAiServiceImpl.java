@@ -106,16 +106,16 @@ public class OpenAiServiceImpl implements OpenAiService {
             System.out.println("GPT回傳資料 ======> " + content);
 
             //備份GPT回傳的資料
-            String baseFileName = svf.format(new Date()) + "-GPT_callback_content.txt";
+            String baseFileName = svf.format(new Date()) + "-GPT_callback_response.json";
             File file = new File(configProperties.getGptBackupSavePath() + baseFileName);
             int counter = 1;
             // 如果存在則創建新file name
             while (file.exists()) {
-                String newFileName = svf.format(new Date()) + "-GPT_callback_content(" + counter + ").txt";
+                String newFileName = svf.format(new Date()) + "-GPT_callback_response(" + counter + ").json";
                 file = new File(configProperties.getGptBackupSavePath() + newFileName);
                 counter++;
             }
-            objectMapper.writeValue(file, content);
+            objectMapper.writeValue(file, response);
 
             List<Post> postList = constructToEntity(content);
             postRepository.saveAll(postList);
