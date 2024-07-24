@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yfckevin.badmintonPairing.ConfigProperties;
 import com.yfckevin.badmintonPairing.dto.BadmintonPostDTO;
+import com.yfckevin.badmintonPairing.dto.ChatCompletionResponse;
 import com.yfckevin.badmintonPairing.entity.Post;
 import com.yfckevin.badmintonPairing.repository.PostRepository;
 import com.yfckevin.badmintonPairing.utils.ConfigurationUtil;
@@ -77,7 +78,7 @@ public class OpenAiServiceImpl implements OpenAiService {
                     "airConditioner：冷氣資訊，以字串表示，present:有，absent:無，no_mention:未標示\n" +
                     "\n" +
                     "3.每則貼文內容可能包含多個打球資訊，必須分開成獨立的JSON物件。\n" +
-                    "4.確保只匯出json檔";
+                    "4.確保只匯出json格式";
 
             callOpenAI(pre_prompt + "\n" + prompt);
 
@@ -100,11 +101,11 @@ public class OpenAiServiceImpl implements OpenAiService {
 
         HttpEntity<String> entity = new HttpEntity<>(data, headers);
 
-        ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.POST, entity, String.class);
+        ResponseEntity<ChatCompletionResponse> response = restTemplate.exchange(url, HttpMethod.POST, entity, ChatCompletionResponse.class);
 
         if (response.getStatusCode().is2xxSuccessful()) {
             logger.info("GPT回傳的status code: {}", response);
-            String responseBody = response.getBody();
+            ChatCompletionResponse responseBody = response.getBody();
             String content = extractContent(responseBody);
             System.out.println("GPT回傳資料 ======> " + content);
 
@@ -156,30 +157,21 @@ public class OpenAiServiceImpl implements OpenAiService {
     }
 
 
-    private String extractContent(String responseBody) {
+    private String extractContent(ChatCompletionResponse responseBody) {
+        if (responseBody != null && !responseBody.getChoices().isEmpty()) {
+            ChatCompletionResponse.Choice choice = responseBody.getChoices().get(0);
+            if (choice != null && choice.getMessage() != null) {
+                String content = choice.getMessage().getContent().trim();
 
-        try {
-            JsonNode root = objectMapper.readTree(responseBody);
-            String content = Optional.ofNullable(root)
-                    .map(node -> node.path("choices"))
-                    .filter(JsonNode::isArray)
-                    .map(choices -> choices.get(0))
-                    .map(choice -> choice.path("message"))
-                    .map(message -> message.path("content"))
-                    .map(JsonNode::asText)
-                    .map(String::trim)
-                    .orElse(null);
+                // 去掉反引號
+                if (content != null) {
+                    content = content.replace("```json", "").replace("```", "").trim();
+                }
 
-            // 去掉反引號
-            if (content != null) {
-                content = content.replace("```json", "").replace("```", "").trim();
+                return content;
             }
-
-            return content;
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
         }
+        return null;
     }
 
     private String createPayload(String prompt) {
