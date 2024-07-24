@@ -74,19 +74,6 @@ public class DataProcessingController {
         // 蒐集links
         final List<String> linkList = leaderService.findAllByUserIdIn(userIds).stream().map(Leader::getLink).toList();
 
-        // links寫入file，後續供爬蟲用
-        File file = new File(configProperties.getFileSavePath() + "preCrawler_link.json");
-            // 讀取既有資料
-        Set<String> existingLinks = new HashSet<>();
-        if (file.exists()) {
-            TypeReference<Set<String>> typeRef = new TypeReference<>() {};
-            existingLinks = objectMapper.readValue(file, typeRef);
-        }
-            //添加新的link (不會有重複link)
-        existingLinks.addAll(linkList);
-            //重新寫入file
-        objectMapper.writeValue(file, existingLinks);
-
         // 寄信通知每日需更新的link筆數
         MailUtils.sendMail("pigmonkey0921@gmail.com", "每日項目", "共" + postList.size() + "筆");
         // call爬蟲API取得新貼文
