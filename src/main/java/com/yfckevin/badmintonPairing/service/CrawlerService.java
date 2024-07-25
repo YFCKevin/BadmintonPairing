@@ -25,7 +25,7 @@ public class CrawlerService {
         this.postService = postService;
     }
 
-    public void callCrawlerAPIGetNewPosts(List<String> linkList) throws IOException, InterruptedException {
+    public int callCrawlerAPIGetNewPosts(List<String> linkList) throws IOException, InterruptedException {
         String url = configProperties.getCrawlerDomain() + "crawlerNewPosts";
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -45,7 +45,9 @@ public class CrawlerService {
             final List<RequestPostDTO> dailyPosts = response.getBody().getData();
             //總檔(generalFile.json)比對爬蟲來的dailyPosts.json，最後獲取新貼文的資訊
             final String filePath = postService.getDifferencePostsAndSaveInGeneralFileAndReturnFilePath(dailyPosts);
-            postService.dataCleaning(filePath);
+            return postService.dataCleaning(filePath);
+        } else {
+            return 0;
         }
     }
 
