@@ -1,10 +1,13 @@
 package com.yfckevin.badmintonPairing.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jayway.jsonpath.JsonPath;
+import com.jayway.jsonpath.TypeRef;
 import com.yfckevin.badmintonPairing.ConfigProperties;
 import com.yfckevin.badmintonPairing.dto.RequestPostDTO;
 import com.yfckevin.badmintonPairing.entity.Leader;
 import com.yfckevin.badmintonPairing.repository.LeaderRepository;
+import com.yfckevin.badmintonPairing.utils.ConfigurationUtil;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
@@ -43,6 +46,7 @@ public class LeaderServiceImpl implements LeaderService {
 
         final List<RequestPostDTO> filteredRequestPostDTOList = postDTOList.stream()
                 .filter(requestPostDTO -> filteredUserIdList.contains(requestPostDTO.getUserId()))
+                .peek(requestPostDTO -> requestPostDTO.setCreationDate(sdf.format(new Date())))
                 .toList();
 
         List<Leader> leaderList = new ArrayList<>();
@@ -57,7 +61,7 @@ public class LeaderServiceImpl implements LeaderService {
             leader.setUserId(userId);
             leader.setLink(link);
             leader.setGroupId(groupId);
-            leader.setCreationDate(sdf.format(new Date()));
+            leader.setCreationDate(requestPostDTO.getCreationDate());
             leaderList.add(leader);
         });
 
@@ -65,6 +69,14 @@ public class LeaderServiceImpl implements LeaderService {
 
         File file = new File(configProperties.getFileSavePath() + "searchNewLeader.json");
         objectMapper.writeValue(file, filteredRequestPostDTOList);
+
+        // 讀取既有的 generalFile.json 資料
+        ConfigurationUtil.Configuration();
+        File generalFile = new File(configProperties.getJsonPath() + "generalFile.json");
+        TypeRef<List<RequestPostDTO>> typeRef = new TypeRef<>() {};
+        List<RequestPostDTO> generalPostList = JsonPath.parse(generalFile).read("$", typeRef);
+        generalPostList.addAll(filteredRequestPostDTOList);
+        objectMapper.writeValue(generalFile, generalPostList);
 
         return postService.dataCleaning(configProperties.getFileSavePath() + "searchNewLeader.json");
     }
