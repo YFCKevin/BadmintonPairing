@@ -10,6 +10,8 @@ public class LeaderDTO {
     private String userId;
     private String groupId;
     private String creationDate;
+    private String modificationDate;
+    private String deletionDate;
 
     public String getCreationDate() {
         return creationDate;
@@ -59,14 +61,33 @@ public class LeaderDTO {
         this.groupId = groupId;
     }
 
+    public String getModificationDate() {
+        return modificationDate;
+    }
+
+    public void setModificationDate(String modificationDate) {
+        this.modificationDate = modificationDate;
+    }
+
+    public String getDeletionDate() {
+        return deletionDate;
+    }
+
+    public void setDeletionDate(String deletionDate) {
+        this.deletionDate = deletionDate;
+    }
+
     @Override
     public String toString() {
-        return "Leader{" +
+        return "LeaderDTO{" +
                 "id='" + id + '\'' +
                 ", name='" + name + '\'' +
                 ", link='" + link + '\'' +
                 ", userId='" + userId + '\'' +
                 ", groupId='" + groupId + '\'' +
+                ", creationDate='" + creationDate + '\'' +
+                ", modificationDate='" + modificationDate + '\'' +
+                ", deletionDate='" + deletionDate + '\'' +
                 '}';
     }
 }

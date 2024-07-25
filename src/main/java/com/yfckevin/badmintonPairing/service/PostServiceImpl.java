@@ -9,6 +9,7 @@ import com.yfckevin.badmintonPairing.ConfigProperties;
 import com.yfckevin.badmintonPairing.dto.DataCleaningDTO;
 import com.yfckevin.badmintonPairing.dto.RequestPostDTO;
 import com.yfckevin.badmintonPairing.entity.Post;
+import com.yfckevin.badmintonPairing.repository.PostRepository;
 import com.yfckevin.badmintonPairing.utils.ConfigurationUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -26,10 +27,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -41,13 +39,16 @@ public class PostServiceImpl implements PostService {
     private final ObjectMapper objectMapper;
     private final MongoTemplate mongoTemplate;
     private final ConfigProperties configProperties;
+    private final PostRepository postRepository;
 
-    public PostServiceImpl(@Qualifier("svf") SimpleDateFormat svf, @Qualifier("ssf") SimpleDateFormat ssf, ObjectMapper objectMapper, MongoTemplate mongoTemplate, ConfigProperties configProperties) {
+    public PostServiceImpl(@Qualifier("svf") SimpleDateFormat svf, @Qualifier("ssf") SimpleDateFormat ssf, ObjectMapper objectMapper, MongoTemplate mongoTemplate, ConfigProperties configProperties,
+                           PostRepository postRepository) {
         this.svf = svf;
         this.ssf = ssf;
         this.objectMapper = objectMapper;
         this.mongoTemplate = mongoTemplate;
         this.configProperties = configProperties;
+        this.postRepository = postRepository;
     }
 
     /**
@@ -163,11 +164,9 @@ public class PostServiceImpl implements PostService {
 
         // 讀取json檔的資料並轉換成List<RequestPostDTO>形式
         ConfigurationUtil.Configuration();
-//        File file = new File(configProperties.getJsonPath() + "dailyPosts.json");
         File generalFile = new File(configProperties.getJsonPath() + "generalFile.json");
         TypeRef<List<RequestPostDTO>> typeRef = new TypeRef<>() {
         };
-//        List<RequestPostDTO> dailyPosts = JsonPath.parse(file).read("$", typeRef);
         List<RequestPostDTO> generalDatas = JsonPath.parse(generalFile).read("$", typeRef);
 
         //取出新貼文的邏輯，並放入differencePosts
@@ -190,28 +189,12 @@ public class PostServiceImpl implements PostService {
     }
 
 
-    private void findNotYetLinkOfPostsAndSaveInFile(List<RequestPostDTO> dailyPosts) throws IOException {
-        File preCrawlerFile = new File(configProperties.getJsonPath() + "preCrawler_link.json");
-        TypeRef<List<String>> typeRef_link = new TypeRef<>() {
-        };
-        List<String> preCrawlerLinks = JsonPath.parse(preCrawlerFile).read("$", typeRef_link);
-
-        List<String> dailyPostLinks = dailyPosts.stream()
-                .map(RequestPostDTO::getLink)
-                .toList();
-
-        // 更新preCrawlerLinks，只保留不同的link
-        List<String> updatedPreCrawlerLinks = preCrawlerLinks.stream()
-                .filter(link -> !dailyPostLinks.contains(link))
-                .toList();
-
-        objectMapper.writeValue(preCrawlerFile, updatedPreCrawlerLinks);
-    }
-
     @Override
     public List<Post> findPostByConditions(String keyword, String startDate, String endDate) throws ParseException {
         List<Criteria> andCriterias = new ArrayList<>();
         List<Criteria> orCriterias = new ArrayList<>();
+
+        Criteria criteria = Criteria.where("deletionDate").exists(false);
 
         if (StringUtils.isNotBlank(keyword)) {
             Criteria criteria_name = Criteria.where("name").regex(keyword, "i");
@@ -231,7 +214,6 @@ public class PostServiceImpl implements PostService {
             andCriterias.add(criteria_end);
         }
 
-        Criteria criteria = new Criteria();
         if(!orCriterias.isEmpty()) {
             criteria = criteria.orOperator(orCriterias.toArray(new Criteria[0]));
         }
@@ -282,6 +264,16 @@ public class PostServiceImpl implements PostService {
         AggregationResults<Post> results = mongoTemplate.aggregate(aggregation, "post", Post.class);
 
         return results.getMappedResults();
+    }
+
+    @Override
+    public void save(Post post) {
+        postRepository.save(post);
+    }
+
+    @Override
+    public Optional<Post> findById(String id) {
+        return postRepository.findById(id);
     }
 
     private String saveJsonFileForDataCleaning(List<RequestPostDTO> differencePosts) throws IOException {

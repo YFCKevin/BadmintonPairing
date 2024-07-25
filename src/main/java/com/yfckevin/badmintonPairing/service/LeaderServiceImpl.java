@@ -6,9 +6,15 @@ import com.jayway.jsonpath.TypeRef;
 import com.yfckevin.badmintonPairing.ConfigProperties;
 import com.yfckevin.badmintonPairing.dto.RequestPostDTO;
 import com.yfckevin.badmintonPairing.entity.Leader;
+import com.yfckevin.badmintonPairing.entity.Post;
 import com.yfckevin.badmintonPairing.repository.LeaderRepository;
 import com.yfckevin.badmintonPairing.utils.ConfigurationUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -23,13 +29,15 @@ public class LeaderServiceImpl implements LeaderService {
     private final LeaderRepository leaderRepository;
     private final PostService postService;
     private final ObjectMapper objectMapper;
+    private final MongoTemplate mongoTemplate;
 
-    public LeaderServiceImpl(@Qualifier("sdf") SimpleDateFormat sdf, ConfigProperties configProperties, LeaderRepository leaderRepository, PostService postService, ObjectMapper objectMapper) {
+    public LeaderServiceImpl(@Qualifier("sdf") SimpleDateFormat sdf, ConfigProperties configProperties, LeaderRepository leaderRepository, PostService postService, ObjectMapper objectMapper, MongoTemplate mongoTemplate) {
         this.sdf = sdf;
         this.configProperties = configProperties;
         this.leaderRepository = leaderRepository;
         this.postService = postService;
         this.objectMapper = objectMapper;
+        this.mongoTemplate = mongoTemplate;
     }
 
     @Override
@@ -84,6 +92,46 @@ public class LeaderServiceImpl implements LeaderService {
     @Override
     public List<Leader> findAllByUserIdIn(Set<String> userIdList) {
         return leaderRepository.findAllByUserIdIn(userIdList);
+    }
+
+    @Override
+    public List<Leader> findAllAndOrderByCreationDate() {
+        return leaderRepository.findAllAndOrderByCreationDate();
+    }
+
+    @Override
+    public void save(Leader leader) {
+        leaderRepository.save(leader);
+    }
+
+    @Override
+    public Optional<Leader> findById(String id) {
+        return leaderRepository.findById(id);
+    }
+
+    @Override
+    public List<Leader> findLeaderByConditions(String keyword) {
+        List<Criteria> orCriterias = new ArrayList<>();
+
+        Criteria criteria = Criteria.where("deletionDate").exists(false);
+
+        if (StringUtils.isNotBlank(keyword)) {
+            Criteria criteria_name = Criteria.where("name").regex(keyword, "i");
+            Criteria criteria_link = Criteria.where("link").regex(keyword, "i");
+            Criteria criteria_userId = Criteria.where("userId").regex(keyword, "i");
+            orCriterias.add(criteria_name);
+            orCriterias.add(criteria_link);
+            orCriterias.add(criteria_userId);
+        }
+
+        if(!orCriterias.isEmpty()) {
+            criteria = criteria.orOperator(orCriterias.toArray(new Criteria[0]));
+        }
+
+        Query query = new Query(criteria);
+        query.with(Sort.by(Sort.Order.desc("creationDate")));
+
+        return mongoTemplate.find(query, Leader.class);
     }
 
     private static String extractUserId(String link) {

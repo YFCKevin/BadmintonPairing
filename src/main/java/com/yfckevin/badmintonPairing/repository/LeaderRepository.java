@@ -8,4 +8,6 @@ import java.util.Set;
 
 public interface LeaderRepository extends MongoRepository<Leader, String> {
     List<Leader> findAllByUserIdIn(Set<String> userIdList);
+
+    List<Leader> findAllAndOrderByCreationDate();
 }

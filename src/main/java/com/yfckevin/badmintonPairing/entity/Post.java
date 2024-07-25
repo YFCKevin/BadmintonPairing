@@ -15,7 +15,6 @@ public class Post {
     @Id
     private String id;
     private String userId;
-    private String unitNumber;
     private String name;
     private String place;
     private String startTime;
@@ -28,8 +27,10 @@ public class Post {
     private String parkInfo;
     private String type;
     private AirConditionerType airConditioner;
-    private String creationDate;
     private String dayOfWeek;
+    private String creationDate;
+    private String modificationDate;
+    private String deletionDate;
 
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
@@ -37,9 +38,9 @@ public class Post {
         return dayOfWeek;
     }
 
-    public void setDayOfWeek() {
-        if (StringUtils.isNotBlank(this.startTime)) {
-            LocalDateTime dateTime = LocalDateTime.parse(this.startTime, formatter);
+    public void setDayOfWeek(String startTime) {
+        if (StringUtils.isNotBlank(startTime)) {
+            LocalDateTime dateTime = LocalDateTime.parse(startTime, formatter);
             this.dayOfWeek = dateTime.getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.ENGLISH);
         }
     }
@@ -50,14 +51,6 @@ public class Post {
 
     public void setId(String id) {
         this.id = id;
-    }
-
-    public String getUnitNumber() {
-        return unitNumber;
-    }
-
-    public void setUnitNumber(String unitNumber) {
-        this.unitNumber = unitNumber;
     }
 
     public String getName() {
@@ -170,5 +163,21 @@ public class Post {
 
     public void setUserId(String userId) {
         this.userId = userId;
+    }
+
+    public String getModificationDate() {
+        return modificationDate;
+    }
+
+    public void setModificationDate(String modificationDate) {
+        this.modificationDate = modificationDate;
+    }
+
+    public String getDeletionDate() {
+        return deletionDate;
+    }
+
+    public void setDeletionDate(String deletionDate) {
+        this.deletionDate = deletionDate;
     }
 }

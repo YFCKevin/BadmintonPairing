@@ -3,7 +3,6 @@ package com.yfckevin.badmintonPairing.dto;
 public class PostDTO {
     private String id;
     private String userId;
-    private String unitNumber;
     private String name;
     private String place;
     private String time;
@@ -17,8 +16,11 @@ public class PostDTO {
     private String parkInfo;
     private String type;
     private String airConditioner;
-    private String creationDate;
     private String link;
+    private String creationDate;
+    private String modificationDate;
+    private String deletionDate;
+    private String dayOfWeek;
 
     public String getId() {
         return id;
@@ -34,14 +36,6 @@ public class PostDTO {
 
     public void setUserId(String userId) {
         this.userId = userId;
-    }
-
-    public String getUnitNumber() {
-        return unitNumber;
-    }
-
-    public void setUnitNumber(String unitNumber) {
-        this.unitNumber = unitNumber;
     }
 
     public String getName() {
@@ -162,5 +156,29 @@ public class PostDTO {
 
     public void setTime(String time) {
         this.time = time;
+    }
+
+    public String getModificationDate() {
+        return modificationDate;
+    }
+
+    public void setModificationDate(String modificationDate) {
+        this.modificationDate = modificationDate;
+    }
+
+    public String getDeletionDate() {
+        return deletionDate;
+    }
+
+    public void setDeletionDate(String deletionDate) {
+        this.deletionDate = deletionDate;
+    }
+
+    public String getDayOfWeek() {
+        return dayOfWeek;
+    }
+
+    public void setDayOfWeek(String dayOfWeek) {
+        this.dayOfWeek = dayOfWeek;
     }
 }

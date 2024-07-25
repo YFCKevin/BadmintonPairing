@@ -5,6 +5,7 @@ import com.yfckevin.badmintonPairing.entity.Leader;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 public interface LeaderService {
@@ -12,4 +13,11 @@ public interface LeaderService {
 
     List<Leader> findAllByUserIdIn(Set<String> userIdList);
 
+    List<Leader> findAllAndOrderByCreationDate();
+
+    void save(Leader leader);
+
+    Optional<Leader> findById(String id);
+
+    List<Leader> findLeaderByConditions(String keyword);
 }

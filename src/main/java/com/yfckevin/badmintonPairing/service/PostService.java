@@ -6,6 +6,7 @@ import com.yfckevin.badmintonPairing.entity.Post;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.List;
+import java.util.Optional;
 
 public interface PostService {
 
@@ -13,4 +14,8 @@ public interface PostService {
     String getDifferencePostsAndSaveInGeneralFileAndReturnFilePath(List<RequestPostDTO> dailyPosts) throws IOException, InterruptedException;
     List<Post> findPostByConditions(String keyword, String startDate, String endDate) throws ParseException;
     List<Post> getPassPostsByLeadersAndTodayBefore();
+
+    void save(Post post);
+
+    Optional<Post> findById(String id);
 }

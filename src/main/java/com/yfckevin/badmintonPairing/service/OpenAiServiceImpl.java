@@ -140,7 +140,7 @@ public class OpenAiServiceImpl implements OpenAiService {
             post.setUserId(postDTO.getUserId());
             post.setPlace(postDTO.getPlace());
             post.setStartTime(postDTO.getStartTime());
-            post.setDayOfWeek();
+            post.setDayOfWeek(postDTO.getStartTime());
             post.setEndTime(postDTO.getEndTime());
             post.setLevel(postDTO.getLevel());
             post.setFee(postDTO.getFee());
