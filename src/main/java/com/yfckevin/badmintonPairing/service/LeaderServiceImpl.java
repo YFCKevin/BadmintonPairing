@@ -61,6 +61,8 @@ public class LeaderServiceImpl implements LeaderService {
             leaderList.add(leader);
         });
 
+        leaderRepository.saveAll(leaderList);
+
         File file = new File(configProperties.getFileSavePath() + "searchNewLeader.json");
         objectMapper.writeValue(file, filteredRequestPostDTOList);
 
