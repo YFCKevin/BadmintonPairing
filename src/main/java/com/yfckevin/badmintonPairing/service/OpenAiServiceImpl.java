@@ -45,7 +45,7 @@ public class OpenAiServiceImpl implements OpenAiService {
 
 
     @Override
-    public void generatePosts() {
+    public int generatePosts() {
 
         ConfigurationUtil.Configuration();
         //先處理零打資訊
@@ -80,7 +80,7 @@ public class OpenAiServiceImpl implements OpenAiService {
                     "3.每則貼文內容可能包含多個打球資訊，必須分開成獨立的JSON物件。\n" +
                     "4.確保只匯出json格式";
 
-            callOpenAI(pre_prompt + "\n" + prompt);
+            return callOpenAI(pre_prompt + "\n" + prompt);
 
 
         } catch (Exception e) {
@@ -88,9 +88,10 @@ public class OpenAiServiceImpl implements OpenAiService {
         }
 
 
+        return 0;
     }
 
-    private void callOpenAI(String prompt) throws Exception {
+    private int callOpenAI(String prompt) throws Exception {
         String url = "https://api.openai.com/v1/chat/completions";
 
         HttpHeaders headers = new HttpHeaders();
@@ -123,6 +124,7 @@ public class OpenAiServiceImpl implements OpenAiService {
 
             List<Post> postList = constructToEntity(content);
             postRepository.saveAll(postList);
+            return postList.size();
         } else {
             throw new Exception("GPT回傳的錯誤碼: " + response.getStatusCodeValue());
         }

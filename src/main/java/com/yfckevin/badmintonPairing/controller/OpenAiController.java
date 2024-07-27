@@ -1,5 +1,6 @@
 package com.yfckevin.badmintonPairing.controller;
 
+import com.yfckevin.badmintonPairing.exception.ResultStatus;
 import com.yfckevin.badmintonPairing.service.OpenAiService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,7 +28,11 @@ public class OpenAiController {
     @PostMapping("/completion")
     public ResponseEntity<?> completion (){
         logger.info("[completion]");
-        openAiService.generatePosts();
-        return ResponseEntity.ok("成功");
+        ResultStatus resultStatus = new ResultStatus();
+        final int savedSize = openAiService.generatePosts();
+        resultStatus.setCode("C000");
+        resultStatus.setMessage("成功");
+        resultStatus.setData(savedSize);
+        return ResponseEntity.ok(resultStatus);
     }
 }
