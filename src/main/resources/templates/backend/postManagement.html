@@ -1,0 +1,437 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml" xmlns:x-on="http://www.w3.org/1999/xhtml"
+      xmlns="http://www.w3.org/1999/html">
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="icon" type="image/png" th:href="@{images/favicon.ico}" />
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" th:href="@{css/bootstrap.min.css}" />
+    <link rel="stylesheet" th:href="@{css/style_postManage.css}">
+    <title>貼文管理</title>
+</head>
+<body x-data="loadData(postDTOList)" x-init="init()">
+<div class="header">
+    <div class="header-title">貼文管理</div>
+    <div class="header-links">
+        <a th:href="@{forwardLeaderManagement}">團主管理</a>
+        <a th:href="@{forwardFileManagement}">檔案管理</a>
+        <a th:href="@{backendLogout}">登出</a>
+    </div>
+</div>
+<div class="limiter">
+    <div class="container-table100">
+        <div class="wrap-table100">
+            <div class="table100">
+                <!-- Search Bar -->
+                <div class="mb-3">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="form-group d-flex align-items-center">
+                                <label class="input-group-text mr-2" for="startDate">開始日期</label>
+                                <input
+                                        type="date"
+                                        class="form-control"
+                                        id="startDate"
+                                        x-model="startDate"
+                                />
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group d-flex align-items-center">
+                                <label class="input-group-text mr-2" for="endDate">結束日期</label>
+                                <input
+                                        type="date"
+                                        class="form-control"
+                                        id="endDate"
+                                        x-model="endDate"
+                                />
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group d-flex align-items-center">
+                                <label class="input-group-text mr-2" for="keyword">關鍵字</label>
+                                <input
+                                        type="text"
+                                        class="form-control"
+                                        id="keyword"
+                                        placeholder="可搜尋團主名、地點、用球..."
+                                />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mt-3" style="margin-top: 10px">
+                        <div class="col d-flex justify-content-end">
+                            <button
+                                    class="btn btn-primary"
+                                    type="button"
+                                    x-on:click="search()"
+                            >
+                                搜尋
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mt-3" style="margin-top: 10px; margin-bottom: 10px;">
+                    <div class="col d-flex">
+                        <button type="button" class="btn btn-primary" onclick="openSaveModal();" disabled>新增貼文</button>
+                    </div>
+                    <div class="col d-flex justify-content-end">
+                        <select
+                                class="form-select"
+                                style="width: 200px;"
+                                x-on:change="handleSelection($event.target.value)"
+                        >
+                            <option value="">請選擇</option>
+                            <option value="todayNewPosts">今日新貼文</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="table-responsive custom-table-responsive" style="overflow-x: auto;">
+                    <table>
+                        <thead>
+                        <tr class="table100-head">
+                            <th class="col">編號</th>
+                            <th class="col">團主名</th>
+                            <th class="col">團主編號</th>
+                            <th class="col">地點</th>
+                            <th class="col">時間</th>
+                            <th class="col">費用</th>
+                            <th class="col">程度</th>
+                            <th class="col">用球</th>
+                            <th class="col">冷氣</th>
+                            <th class="col">停車資訊</th>
+                            <th class="col">聯絡方式</th>
+                            <th class="col">創立時間</th>
+                            <th scope="col">動作</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <template x-for="(item,index) in getData()" :key="index">
+                            <tr>
+                                <td class="th-num" x-text="getItemNumber(index)"></td>
+                                <td class="th-name" x-text="item.name"></td>
+                                <td class="th-userId" x-text="item.userId"></td>
+                                <td class="th-place" x-text="item.place"></td>
+                                <td class="th-time" x-text="item.time"></td>
+                                <td class="th-fee" x-text="item.fee"></td>
+                                <td class="th-level" x-text="item.level"></td>
+                                <td
+                                        class="th-brand"
+                                        x-text="item.brand === '' ? '-' : item.brand"
+                                ></td>
+                                <td
+                                        class="th-airConditioner"
+                                        x-text="item.airConditioner == '未標示' ? '-' : (item.airConditioner == '有冷氣' ? 'Y' : 'N')"
+                                ></td>
+                                <td
+                                        class="th-parkInfo"
+                                        x-text="item.parkInfo === '' ? '-' : item.parkInfo"
+                                ></td>
+                                <td class="th-contact" x-text="item.contact"></td>
+                                <td class="th-creationDate" x-text="item.creationDate"></td>
+                                <td class="th-action">
+                                    <button style="padding: 5px; margin: 5px" class="btn btn-primary" x-on:click="edit(item.id)">編輯</button>
+                                    <button style="padding: 5px; margin: 5px" class="btn btn-primary" x-on:click="deletePost(item.id)">刪除</button>
+                                </td>
+                            </tr>
+                        </template>
+                        </tbody>
+                    </table>
+                    <nav class="mt-5 mb-4" x-show="pageCount() > 1">
+                        <ul class="pagination justify-content-center card-page">
+                            <li class="page-item" :class="{ 'disabled' : pageNumber==0 }">
+                                <a
+                                        class="page-link page-prev"
+                                        type="button"
+                                        x-on:click="prevPage();"
+                                        :disabled="pageNumber==0"
+                                >
+                                    <i class="fa fas fa-chevron-left"></i>
+                                </a>
+                            </li>
+                            <li
+                                    class="page-item disabled"
+                                    :class="{ 'd-none' : pageCount() <= 4 || pageNumber == 0 || ( pageCount() > 4 && pageNumber == pageCount() ) }"
+                            >
+                                <a class="page-link">···</a>
+                            </li>
+                            <template x-for="(page,index) in pages()" :key="index">
+                                <li
+                                        class="page-item"
+                                        :class="{ 'active' : index === pageNumber , 'd-none' : pageCount() > 4 && ( (index < pageNumber && pageNumber < pageCount() -4) || (index < pageCount() -4 && pageNumber >= pageCount() -4) || index >= pageNumber+4 ) }"
+                                >
+                                    <a
+                                            class="page-link"
+                                            type="button"
+                                            x-on:click="viewPage(index);"
+                                            x-text="index+1"
+                                    ></a>
+                                </li>
+                            </template>
+                            <li
+                                    class="page-item disabled"
+                                    :class="{ 'd-none' : pageCount() <= 4 || pageNumber >= pageCount() -4}"
+                            >
+                                <a class="page-link">···</a>
+                            </li>
+                            <li
+                                    class="page-item"
+                                    :class="{ 'disabled' : pageNumber >= pageCount() -1 }"
+                            >
+                                <a
+                                        class="page-link page-next"
+                                        type="button"
+                                        x-on:click="nextPage();"
+                                        :disabled="pageNumber >= pageCount() -1"
+                                >
+                                    <i class="fa fas fa-chevron-right"></i>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- editModal -->
+<div class="modal fade" id="editModal" tabindex="-1" data-bs-backdrop="static" aria-labelledby="editModal" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalLabel"></h5>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="editName">團主名</label>
+                    <input type="text" class="form-control" id="editName">
+                </div>
+                <div class="form-group">
+                    <label for="editUserId">圖主編號</label>
+                    <input type="text" class="form-control" id="editUserId" >
+                </div>
+                <div class="form-group">
+                    <label for="editPlace">地點</label>
+                    <input type="text" class="form-control" id="editPlace">
+                </div>
+                <div class="form-group">
+                    <label for="editTime">時間</label>
+                    <input type="text" class="form-control" id="editTime" >
+                </div>
+                <div class="form-group">
+                    <label for="editFee">費用</label>
+                    <input type="text" class="form-control" id="editFee">
+                </div>
+                <div class="form-group">
+                    <label for="editLevel">程度</label>
+                    <input type="text" class="form-control" id="editLevel" >
+                </div>
+                <div class="form-group">
+                    <label for="editBrand">用球</label>
+                    <input type="text" class="form-control" id="editBrand" >
+                </div>
+                <div class="form-group">
+                    <label for="editAirConditioner">冷氣</label>
+                    <select class="form-control" id="editAirConditioner">
+                        <option value="no_mention">未標示</option>
+                        <option value="present">有</option>
+                        <option value="absent">無</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="editParkInfo">停車資訊</label>
+                    <input type="text" class="form-control" id="editParkInfo">
+                </div>
+                <div class="form-group">
+                    <label for="editContact">聯絡方式</label>
+                    <input type="text" class="form-control" id="editContact" >
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" x-on:click="closeModal()">關閉</button>
+                <button type="button" class="btn btn-primary" x-on:click="save()">儲存</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script th:src="@{js/alpine.2.8.2.min.js}"></script>
+<script th:src="@{js/jquery.min.js}"></script>
+<script th:src="@{js/bootstrap.min.js}"></script>
+<script th:inline="javascript">
+      const postDTOList = /*[[${postDTOList}]]*/
+      let passId;   // for edit
+
+        function loadData(eleData) {
+          return {
+            pageNumber: 0,
+            size: 20,
+            total: "",
+            startDate: "",
+            endDate: "",
+            myForData: eleData,
+
+            init() {
+              const today = new Date();
+
+              this.startDate = today.toISOString().split("T")[0];
+              this.endDate = today.toISOString().split("T")[0];
+            },
+            getData() {
+              const start = this.pageNumber * this.size,
+                end = start + this.size;
+              let filterData = this.myForData;
+              this.total = filterData.length;
+              return filterData.slice(start, end);
+            },
+            pages() {
+              return Array.from({
+                length: Math.ceil(this.total / this.size),
+              });
+            },
+            nextPage() {
+              this.pageNumber++;
+            },
+            prevPage() {
+              this.pageNumber--;
+            },
+            pageCount() {
+              return Math.ceil(this.total / this.size);
+            },
+            viewPage(index) {
+              this.pageNumber = index;
+            },
+            getItemNumber(index) {
+              // 返回基於當前頁碼和每頁項目數的編號
+              return this.pageNumber * this.size + index + 1;
+            },
+            search() {
+              let _this = this;
+              let data = {};
+              let startDate = $("#startDate").val() + " 00:00:00";
+              let endDate = $("#endDate").val() + " 23:59:59";
+              let keyword = $("#keyword").val();
+              data.startDate = startDate;
+              data.endDate = endDate;
+              data.keyword = keyword;
+              $.ajax({
+                url: "postSearch",
+                type: "post",
+                dataType: "json",
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                success: function (response) {
+                console.log(response.data)
+                  _this.myForData = response.data;
+                },
+              });
+            },
+            edit(id){
+              passId = id;
+              $.ajax({
+                url: "findPostById/" + id,
+                type: "get",
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                success: function (response) {
+                  const post = response.data;
+                  console.log(post)
+                  $("#editName").val(post.name);
+                  $("#editUserId").val(post.userId);
+                  $("#editTime").val(post.startTime + " ～ " + post.endTime);
+                  $("#editPlace").val(post.place);
+                  $("#editFee").val(post.fee);
+                  $("#editLevel").val(post.level);
+                  $("#editBrand").val(post.brand);
+                  $("#editParkInfo").val(post.parkInfo);
+                  $("#editContact").val(post.contact);
+                  $("#editAirConditioner").val(post.airConditioner);
+                  $("#modalLabel").text('編輯貼文');
+                  document.getElementById('editName').readOnly = true;
+                  document.getElementById('editTime').readOnly = true;
+                  document.getElementById('editUserId').readOnly = true;
+                  $("#editModal").modal('show');
+                },
+              });
+            },
+            deletePost(id){
+              $.ajax({
+                url: "deletePost/" + id,
+                type: "get",
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                success: function (response) {
+                  alert('刪除成功')
+                  location.reload();
+                },
+              });
+            },
+            save(){
+              let data = {};
+              data.id = passId;
+              data.name = $("#editName").val();
+              data.userId = $("#editUserId").val();
+              data.place = $("#editPlace").val();
+              let times = $("#editTime").val().split(" ～ ");
+              data.startTime = times[0];
+              data.endTime = times[1];
+              data.fee = $("#editFee").val();
+              data.level = $("#editLevel").val();
+              data.brand = $("#editBrand").val();
+              data.airConditioner = $("#editAirConditioner").val();
+              data.parkInfo = $("#editParkInfo").val();
+              data.contact = $("#editContact").val();
+              $.ajax({
+                url: "savePost",
+                type: "post",
+                dataType: "json",
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                success: function (response) {
+                  alert('儲存成功')
+                  location.reload();
+                },
+              });
+            },
+            closeModal(){
+              $("#editModal").modal('hide')
+              passId = '';
+              $("#editName").val('');
+              $("#editUserId").val('');
+              $("#editTime").val('');
+              $("#editPlace").val('');
+              $("#editFee").val('');
+              $("#editLevel").val('');
+              $("#editBrand").val('');
+              $("#editParkInfo").val('');
+              $("#editContact").val('');
+              $("#editAirConditioner").val('');
+              $("#modalLabel").text('');
+              document.getElementById('editName').readOnly = false;
+              document.getElementById('editTime').readOnly = false;
+              document.getElementById('editUserId').readOnly = false;
+            },
+          };
+        };
+
+        function openSaveModal(){
+            $("#modalLabel").text('新增貼文');
+            $("#editModal").modal('show');
+        }
+
+
+        function handleSelection(value) {
+            switch (value) {
+                case 'todayNewLeaders':
+                    todayNewLeaders();
+                    break;
+            }
+        }
+    </script>
+</body>
+</html>

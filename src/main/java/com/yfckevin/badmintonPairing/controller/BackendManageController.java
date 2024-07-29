@@ -292,7 +292,13 @@ public class BackendManageController {
             return "redirect:/backendLogin";
         }
 
-        final List<PostDTO> postDTOList = postService.findPostByConditions("", null, null)
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime startOfToday = now.toLocalDate().atStartOfDay();
+        LocalDateTime endOfThreeDaysLater = now.withHour(23).withMinute(59).withSecond(59).withNano(0);
+        String startOfTodayFormatted = startOfToday.format(ddf);
+        String endOfTodayFormatted = endOfThreeDaysLater.format(ddf);
+
+        final List<PostDTO> postDTOList = postService.findTodayNewPosts(startOfTodayFormatted, endOfTodayFormatted)
                 .stream()
                 .map(post -> {
                     try {
@@ -417,6 +423,40 @@ public class BackendManageController {
         return ResponseEntity.ok(resultStatus);
     }
 
+
+    /**
+     * 查詢單一貼文
+     * @param id
+     * @param session
+     * @return
+     */
+    @GetMapping("/findPostById/{id}")
+    public ResponseEntity<?> findPostById(@PathVariable String id, HttpSession session){
+
+        final String member = (String) session.getAttribute("admin");
+        if (member != null) {
+            logger.info("[findPostById]");
+        }
+
+        ResultStatus resultStatus = new ResultStatus();
+
+        postService.findById(id)
+                .map(post -> {
+                    resultStatus.setCode("C000");
+                    resultStatus.setMessage("成功");
+                    resultStatus.setData(post);
+                    return resultStatus;
+                })
+                .orElseGet(() -> {
+                    resultStatus.setCode("C003");
+                    resultStatus.setMessage("查無貼文");
+                    return resultStatus;
+                });
+
+        return ResponseEntity.ok(resultStatus);
+    }
+
+
     /**
      * 導檔案管理頁面
      *
@@ -486,11 +526,18 @@ public class BackendManageController {
 
         if (post.getStartTime() != null && post.getEndTime() != null) {
             LocalDateTime startDateTime = LocalDateTime.parse(post.getStartTime(), ddf);
+            LocalDateTime endDateTime = LocalDateTime.parse(post.getEndTime(), ddf);
+
             // 取得星期
             DayOfWeek dayOfWeek = startDateTime.getDayOfWeek();
             // 格式化星期
             String dayOfWeekFormatted = dayOfWeek.getDisplayName(TextStyle.NARROW, Locale.TAIWAN);
-            postDTO.setDayOfWeek(dayOfWeekFormatted);
+
+            final String formattedStartDate = startDateTime.format(DateTimeFormatter.ofPattern("MM/dd"));
+            final String formattedStartTime = startDateTime.format(DateTimeFormatter.ofPattern("HH:mm"));
+            final String formattedEndTime = endDateTime.format(DateTimeFormatter.ofPattern("HH:mm"));
+
+            postDTO.setTime(formattedStartDate + "(" + dayOfWeekFormatted + ") " + formattedStartTime + " - " + formattedEndTime + " (" + post.getDuration() / 60 + "h)");
         }
 
         return postDTO;
@@ -521,9 +568,7 @@ public class BackendManageController {
         post.setEndTime(postDTO.getEndTime());
 
         if (StringUtils.isNotBlank(postDTO.getStartTime())) {
-            LocalDateTime startDateTime = LocalDateTime.parse(postDTO.getStartTime(), ddf);
-            DayOfWeek dayOfWeek = startDateTime.getDayOfWeek();
-            post.setDayOfWeek(dayOfWeek.getDisplayName(TextStyle.NARROW, Locale.TAIWAN));
+            post.setDayOfWeek(postDTO.getStartTime());
         }
 
         if (StringUtils.isNotBlank(postDTO.getEndTime()) && StringUtils.isNotBlank(postDTO.getStartTime())) {

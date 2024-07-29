@@ -275,6 +275,29 @@ public class PostServiceImpl implements PostService {
         return postRepository.findById(id);
     }
 
+    @Override
+    public List<Post> findTodayNewPosts(String startOfToday, String endOfToday) {
+        List<Criteria> andCriterias = new ArrayList<>();
+
+        Criteria criteria = Criteria.where("deletionDate").exists(false);
+
+        if (StringUtils.isNotBlank(startOfToday) && StringUtils.isNotBlank(endOfToday)) {
+            Criteria criteria_start = Criteria.where("creationDate").gte(startOfToday);
+            Criteria criteria_end = Criteria.where("creationDate").lte(endOfToday);
+            andCriterias.add(criteria_start);
+            andCriterias.add(criteria_end);
+        }
+
+        if(!andCriterias.isEmpty()) {
+            criteria = criteria.andOperator(andCriterias.toArray(new Criteria[0]));
+        }
+
+        Query query = new Query(criteria);
+        query.with(Sort.by(Sort.Order.desc("startTime")));
+
+        return mongoTemplate.find(query, Post.class);
+    }
+
     private String saveJsonFileForDataCleaning(List<RequestPostDTO> differencePosts) throws IOException {
         File outputFile = new File(configProperties.getFileSavePath() + "dailyPosts.json");
         objectMapper.writeValue(outputFile, differencePosts);
