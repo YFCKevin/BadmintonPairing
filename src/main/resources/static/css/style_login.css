@@ -1,0 +1,43 @@
+body {
+  background-color: #121212;
+  color: #ffffff;
+}
+
+.login-container {
+  margin-top: 100px;
+}
+
+.login-form {
+  padding: 30px;
+  border: 1px solid #333;
+  border-radius: 10px;
+  background: #1e1e1e;
+}
+
+.login-form h3 {
+  color: #ffffff;
+}
+
+.login-form .form-group label {
+  color: #ffffff;
+}
+
+.login-form .form-control {
+  background-color: #333;
+  color: #ffffff;
+  border: 1px solid #444;
+}
+
+.login-form .form-control::placeholder {
+  color: #888;
+}
+
+.btn-primary {
+  background-color: #6200ea;
+  border-color: #6200ea;
+}
+
+.btn-primary:hover {
+  background-color: #3700b3;
+  border-color: #3700b3;
+}
