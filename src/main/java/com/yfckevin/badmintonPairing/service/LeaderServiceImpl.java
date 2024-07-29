@@ -52,26 +52,28 @@ public class LeaderServiceImpl implements LeaderService {
             }
         });
 
-        final List<RequestPostDTO> filteredRequestPostDTOList = postDTOList.stream()
+        List<RequestPostDTO> filteredRequestPostDTOList = postDTOList.stream()
                 .filter(requestPostDTO -> filteredUserIdList.contains(requestPostDTO.getUserId()))
                 .peek(requestPostDTO -> requestPostDTO.setCreationDate(sdf.format(new Date())))
                 .toList();
 
         List<Leader> leaderList = new ArrayList<>();
-        filteredRequestPostDTOList.forEach(requestPostDTO -> {
-            String name = requestPostDTO.getName();
-            String link = requestPostDTO.getLink();
-            String userId = extractUserId(link);
-            String groupId = extractGroupId(link);
+        filteredRequestPostDTOList = filteredRequestPostDTOList
+                .stream().filter(p -> StringUtils.isNotBlank(p.getUserId()))
+                .peek(requestPostDTO -> {
+                    String name = requestPostDTO.getName();
+                    String link = requestPostDTO.getLink();
+                    String userId = extractUserId(link);
+                    String groupId = extractGroupId(link);
 
-            Leader leader = new Leader();
-            leader.setName(name);
-            leader.setUserId(userId);
-            leader.setLink(link);
-            leader.setGroupId(groupId);
-            leader.setCreationDate(requestPostDTO.getCreationDate());
-            leaderList.add(leader);
-        });
+                    Leader leader = new Leader();
+                    leader.setName(name);
+                    leader.setUserId(userId);
+                    leader.setLink(link);
+                    leader.setGroupId(groupId);
+                    leader.setCreationDate(requestPostDTO.getCreationDate());
+                    leaderList.add(leader);
+                }).toList();
 
         leaderRepository.saveAll(leaderList);
 
@@ -80,8 +82,9 @@ public class LeaderServiceImpl implements LeaderService {
 
         // 讀取既有的 generalFile.json 資料
         ConfigurationUtil.Configuration();
-        File generalFile = new File(configProperties.getJsonPath() + "generalFile.json");
-        TypeRef<List<RequestPostDTO>> typeRef = new TypeRef<>() {};
+        File generalFile = new File(configProperties.getFileSavePath() + "generalFile.json");
+        TypeRef<List<RequestPostDTO>> typeRef = new TypeRef<>() {
+        };
         List<RequestPostDTO> generalPostList = JsonPath.parse(generalFile).read("$", typeRef);
         generalPostList.addAll(filteredRequestPostDTOList);
         objectMapper.writeValue(generalFile, generalPostList);
@@ -96,7 +99,7 @@ public class LeaderServiceImpl implements LeaderService {
 
     @Override
     public List<Leader> findAllAndOrderByCreationDate() {
-        return leaderRepository.findAllAndOrderByCreationDate();
+        return leaderRepository.findAll(Sort.by(Sort.Order.desc("creationDate")));
     }
 
     @Override
@@ -124,7 +127,7 @@ public class LeaderServiceImpl implements LeaderService {
             orCriterias.add(criteria_userId);
         }
 
-        if(!orCriterias.isEmpty()) {
+        if (!orCriterias.isEmpty()) {
             criteria = criteria.orOperator(orCriterias.toArray(new Criteria[0]));
         }
 
