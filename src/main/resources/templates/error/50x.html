@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" th:href="@{images/favicon.ico}" />
+    <title>Server Error</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+        .main-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .error-container {
+            display: flex;
+            align-items: center;
+            max-width: 1200px;
+            overflow: hidden;
+        }
+        .error-container img {
+            flex-shrink: 0;
+            width: 100%;
+            max-width: 600px;
+            height: auto;
+        }
+        .error-content {
+            padding: 20px;
+        }
+        .error-content h3 {
+            font-size: 20px;
+            color: #333;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        .btn-major {
+            display: inline-block;
+            padding: 10px 20px;
+            font-size: 16px;
+            color: #fff;
+            background-color: #007bff;
+            border: none;
+            border-radius: 5px;
+            text-decoration: none;
+            text-align: center;
+        }
+        .btn-major:hover {
+            background-color: #0056b3;
+        }
+        @media (max-width: 768px) {
+            .error-container {
+                flex-direction: column;
+                text-align: center;
+            }
+            .error-container img {
+                margin-bottom: 20px;
+            }
+            .error-content {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="main-container">
+    <div class="error-content">
+        <img src="images/404.jpg" alt="Error Image">
+        <div class="error-content">
+            <h3>請求無效或伺服器錯誤</h3>
+            <a href="posts" class="btn-major">返回首頁</a>
+        </div>
+    </div>
+</div>
+</body>
+</html>
