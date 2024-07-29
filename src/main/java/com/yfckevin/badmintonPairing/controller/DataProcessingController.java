@@ -13,6 +13,7 @@ import com.yfckevin.badmintonPairing.service.PostService;
 import com.yfckevin.badmintonPairing.utils.MailUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -75,20 +76,5 @@ public class DataProcessingController {
         // call爬蟲API取得新貼文
         crawlerService.callCrawlerAPIGetNewPosts(linkList);
     }
-
-
-//    /**
-//     *
-//     * @return 回傳完成資料清洗的筆數，後續要喂GPT產生統一格式
-//     * @throws IOException
-//     * @throws InterruptedException
-//     */
-//    @GetMapping("/newPosts")
-//    public ResponseEntity<?> newPosts() throws IOException, InterruptedException {
-//        logger.info("[newPosts]");
-//        //總檔(generalFile.json)比對爬蟲來的dailyPosts.json，最後獲取新貼文的資訊
-//        final String filePath = postService.getDifferencePostsAndSaveInGeneralFileAndReturnFilePath();
-//        return ResponseEntity.ok(postService.dataCleaning(filePath));
-//    }
 
 }

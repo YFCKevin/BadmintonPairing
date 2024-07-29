@@ -87,7 +87,7 @@ public class PostController {
     @PostMapping("/searchPosts")
     public ResponseEntity<?> searchPosts(@RequestBody SearchDTO dto) throws ParseException {
         logger.info("[searchPosts]");
-        List<Post> postList = postService.findPostByConditions(dto.getKeyword(), dto.getStartDate(), dto.getEndDate());
+        List<Post> postList = postService.findPostByConditions(dto.getKeyword().trim(), dto.getStartDate(), dto.getEndDate());
 
         final Set<String> userIdList = postList.stream().map(Post::getUserId).collect(Collectors.toSet());
 
