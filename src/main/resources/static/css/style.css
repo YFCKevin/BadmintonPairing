@@ -108,7 +108,8 @@ iframe {
 }
 
 .wrap-table100 {
-  width: 1170px;
+  /*width: 1170px;*/
+  width: 1400px;
 }
 
 table {
@@ -199,7 +200,7 @@ tbody tr:hover {
 }
 
 .th-level {
-  width: 110px;
+  width: 250px;
 }
 
 .th-airConditioner {
