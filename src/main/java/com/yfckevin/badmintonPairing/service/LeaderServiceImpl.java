@@ -113,22 +113,33 @@ public class LeaderServiceImpl implements LeaderService {
     }
 
     @Override
-    public List<Leader> findLeaderByConditions(String keyword) {
+    public List<Leader> findLeaderByConditions(String keyword, String startDate, String endDate) {
         List<Criteria> orCriterias = new ArrayList<>();
+        List<Criteria> andCriterias = new ArrayList<>();
 
         Criteria criteria = Criteria.where("deletionDate").exists(false);
 
         if (StringUtils.isNotBlank(keyword)) {
             Criteria criteria_name = Criteria.where("name").regex(keyword, "i");
-            Criteria criteria_link = Criteria.where("link").regex(keyword, "i");
+            Criteria criteria_groupId = Criteria.where("groupId").regex(keyword, "i");
             Criteria criteria_userId = Criteria.where("userId").regex(keyword, "i");
             orCriterias.add(criteria_name);
-            orCriterias.add(criteria_link);
+            orCriterias.add(criteria_groupId);
             orCriterias.add(criteria_userId);
+        }
+
+        if (StringUtils.isNotBlank(startDate) && StringUtils.isNotBlank(endDate)) {
+            Criteria criteria_start = Criteria.where("creationDate").gte(startDate);
+            Criteria criteria_end = Criteria.where("creationDate").lte(endDate);
+            andCriterias.add(criteria_start);
+            andCriterias.add(criteria_end);
         }
 
         if (!orCriterias.isEmpty()) {
             criteria = criteria.orOperator(orCriterias.toArray(new Criteria[0]));
+        }
+        if(!andCriterias.isEmpty()) {
+            criteria = criteria.andOperator(andCriterias.toArray(new Criteria[0]));
         }
 
         Query query = new Query(criteria);

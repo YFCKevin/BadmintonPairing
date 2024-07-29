@@ -37,7 +37,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Controller
-@RequestMapping("/api")
 public class BackendManageController {
     Logger logger = LoggerFactory.getLogger(BackendManageController.class);
     private final ConfigProperties configProperties;
@@ -96,7 +95,7 @@ public class BackendManageController {
      * @param session
      * @return
      */
-    @PostMapping("/backendLogout")
+    @GetMapping("/backendLogout")
     public String backendLogout(HttpSession session) {
         logger.info("[backendLogout]");
         session.removeAttribute("admin");
@@ -114,12 +113,16 @@ public class BackendManageController {
     public String forwardLeaderPage(HttpSession session, Model model) {
         final String member = (String) session.getAttribute("admin");
         if (member != null) {
-            return "redirect:/backendLogin";
-        } else {
             logger.info("[forwardLeaderManagement]");
+        } else {
+            return "redirect:/backendLogin";
         }
-        List<Leader> leaderList = leaderService.findAllAndOrderByCreationDate();
-        model.addAttribute("leaderList", leaderList);
+        final List<LeaderDTO> leaderDTOList = leaderService.findAllAndOrderByCreationDate()
+                .stream()
+                .filter(l -> StringUtils.isBlank(l.getDeletionDate()))
+                .map(BackendManageController::constructLeaderDTO).toList();
+
+        model.addAttribute("leaderList", leaderDTOList);
         return "backend/leaderManagement";
     }
 
@@ -137,7 +140,7 @@ public class BackendManageController {
         }
         ResultStatus resultStatus = new ResultStatus();
 
-        String regex = "groups/(\\d+)/user/(\\d+)/";
+        String regex = "groups/(\\d+)/user/(\\d+)";
         Pattern pattern = Pattern.compile(regex);
         Matcher matcher = pattern.matcher(dto.getLink());
 
@@ -163,6 +166,7 @@ public class BackendManageController {
                             leader.setUserId(matcher.group(2));
                         }
                         leader.setModificationDate(sdf.format(new Date()));
+                        leaderService.save(leader);
                         resultStatus.setCode("C000");
                         resultStatus.setMessage("成功");
                         return resultStatus;
@@ -217,8 +221,8 @@ public class BackendManageController {
      * @param session
      * @return
      */
-    @PostMapping("/searchLeaders")
-    public ResponseEntity<?> searchLeaders(@RequestBody SearchDTO searchDTO, HttpSession session) {
+    @PostMapping("/leaderSearch")
+    public ResponseEntity<?> leaderSearch(@RequestBody SearchDTO searchDTO, HttpSession session) {
 
         final String member = (String) session.getAttribute("admin");
         if (member != null) {
@@ -227,7 +231,7 @@ public class BackendManageController {
 
         ResultStatus resultStatus = new ResultStatus();
 
-        List<LeaderDTO> leaderDTOList = leaderService.findLeaderByConditions(searchDTO.getKeyword())
+        List<LeaderDTO> leaderDTOList = leaderService.findLeaderByConditions(searchDTO.getKeyword().trim(), searchDTO.getStartDate(), searchDTO.getEndDate())
                 .stream()
                 .map(BackendManageController::constructLeaderDTO)
                 .toList();
@@ -235,6 +239,37 @@ public class BackendManageController {
         resultStatus.setCode("C000");
         resultStatus.setMessage("成功");
         resultStatus.setData(leaderDTOList);
+
+        return ResponseEntity.ok(resultStatus);
+    }
+
+
+    /**
+     * 查詢單一團主資訊
+     * @param id
+     * @param session
+     * @return
+     */
+    @GetMapping("/findLeaderById/{id}")
+    public ResponseEntity<?> findLeaderById(@PathVariable String id, HttpSession session){
+
+        final String member = (String) session.getAttribute("admin");
+        if (member != null) {
+            logger.info("[findLeaderById]");
+        }
+
+        ResultStatus resultStatus = new ResultStatus();
+
+        final Optional<Leader> leaderOpt = leaderService.findById(id);
+        if (!leaderOpt.isPresent()) {
+            resultStatus.setCode("C002");
+            resultStatus.setMessage("查無團主");
+        } else {
+            final Leader leader = leaderOpt.get();
+            resultStatus.setCode("C000");
+            resultStatus.setMessage("成功");
+            resultStatus.setData(leader);
+        }
 
         return ResponseEntity.ok(resultStatus);
     }
@@ -252,9 +287,9 @@ public class BackendManageController {
 
         final String member = (String) session.getAttribute("admin");
         if (member != null) {
-            return "redirect:/backendLogin";
-        } else {
             logger.info("[forwardPostManagement]");
+        } else {
+            return "redirect:/backendLogin";
         }
 
         final List<PostDTO> postDTOList = postService.findPostByConditions("", null, null)
@@ -355,8 +390,8 @@ public class BackendManageController {
      * @param session
      * @return
      */
-    @PostMapping("/searchPosts")
-    public ResponseEntity<?> searchPosts(@RequestBody SearchDTO searchDTO, HttpSession session) throws ParseException {
+    @PostMapping("/postSearch")
+    public ResponseEntity<?> postSearch(@RequestBody SearchDTO searchDTO, HttpSession session) throws ParseException {
 
         final String member = (String) session.getAttribute("admin");
         if (member != null) {
@@ -415,11 +450,19 @@ public class BackendManageController {
         dto.setId(leader.getId());
         dto.setName(leader.getName());
         dto.setUserId(leader.getUserId());
-        dto.setGroupId(leader.getGroupId());
+        final String groupId = leader.getGroupId();
+        dto.setGroupId(groupId);
         dto.setLink(leader.getLink());
         dto.setCreationDate(leader.getCreationDate());
         dto.setModificationDate(leader.getModificationDate());
         dto.setDeletionDate(leader.getDeletionDate());
+        if ("392553431115145".equals(groupId)) {
+            dto.setGroupName("大台北羽球同好交流版");
+        } else if ("1882953728686436".equals(groupId)) {
+            dto.setGroupName("新北市羽球臨打揪團");
+        } else if ("480573685305042".equals(groupId)) {
+            dto.setGroupName("台北基隆北北基羽球同好交流區");
+        }
         return dto;
     }
 

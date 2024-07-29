@@ -19,5 +19,5 @@ public interface LeaderService {
 
     Optional<Leader> findById(String id);
 
-    List<Leader> findLeaderByConditions(String keyword);
+    List<Leader> findLeaderByConditions(String keyword, String startDate, String endDate);
 }

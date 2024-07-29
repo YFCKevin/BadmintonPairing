@@ -9,6 +9,7 @@ public class LeaderDTO {
     private String link;
     private String userId;
     private String groupId;
+    private String groupName;
     private String creationDate;
     private String modificationDate;
     private String deletionDate;
@@ -75,6 +76,14 @@ public class LeaderDTO {
 
     public void setDeletionDate(String deletionDate) {
         this.deletionDate = deletionDate;
+    }
+
+    public String getGroupName() {
+        return groupName;
+    }
+
+    public void setGroupName(String groupName) {
+        this.groupName = groupName;
     }
 
     @Override
