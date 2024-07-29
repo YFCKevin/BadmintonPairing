@@ -278,7 +278,7 @@ th-creationDate {
     content: "名稱";
   }
   table tbody tr td:nth-child(3):before {
-    content: "";
+    content: "會員編號";
   }
   table tbody tr td:nth-child(4):before {
     content: "地點";
@@ -321,7 +321,7 @@ th-creationDate {
   .th-level,
   .th-leader,
   .th-place,
-  .th-contact
+  .th-contact,
   .th-action,
   .th-creationDate,
   .th-time {

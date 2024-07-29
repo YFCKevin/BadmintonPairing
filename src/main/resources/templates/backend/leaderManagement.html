@@ -19,159 +19,162 @@
         <a th:href="@{backendLogout}">登出</a>
     </div>
 </div>
-<div class="content">
-    <div class="container">
-
-        <!-- Search Bar -->
-        <div class="mb-3">
-            <div class="row">
-                <div class="col-md-3">
-                    <div class="form-group d-flex align-items-center">
-                        <label class="input-group-text mr-2" for="startDate">開始日期</label>
-                        <input
-                                type="date"
-                                class="form-control"
-                                id="startDate"
-                                x-model="startDate"
-                        />
+<div class="limiter">
+    <div class="container-table100">
+        <div class="wrap-table100">
+            <div class="table100">
+                <!-- Search Bar -->
+                <div class="mb-3">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="form-group d-flex align-items-center">
+                                <label class="input-group-text mr-2" for="startDate">開始日期</label>
+                                <input
+                                        type="date"
+                                        class="form-control"
+                                        id="startDate"
+                                        x-model="startDate"
+                                />
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group d-flex align-items-center">
+                                <label class="input-group-text mr-2" for="endDate">結束日期</label>
+                                <input
+                                        type="date"
+                                        class="form-control"
+                                        id="endDate"
+                                        x-model="endDate"
+                                />
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group d-flex align-items-center">
+                                <label class="input-group-text mr-2" for="keyword">關鍵字</label>
+                                <input
+                                        type="text"
+                                        class="form-control"
+                                        id="keyword"
+                                        placeholder="可搜尋名稱、編號..."
+                                />
+                            </div>
+                        </div>
                     </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="form-group d-flex align-items-center">
-                        <label class="input-group-text mr-2" for="endDate">結束日期</label>
-                        <input
-                                type="date"
-                                class="form-control"
-                                id="endDate"
-                                x-model="endDate"
-                        />
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="form-group d-flex align-items-center">
-                        <label class="input-group-text mr-2" for="keyword">關鍵字</label>
-                        <input
-                                type="text"
-                                class="form-control"
-                                id="keyword"
-                                placeholder="可搜尋名稱、編號..."
-                        />
-                    </div>
-                </div>
-            </div>
-            <div class="row mt-3" style="margin-top: 10px">
-                <div class="col d-flex justify-content-end">
-                    <button
-                            class="btn btn-primary"
-                            type="button"
-                            x-on:click="search()"
-                    >
-                        搜尋
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <div class="row mt-3" style="margin-top: 10px; margin-bottom: 10px;">
-            <div class="col d-flex">
-                <button type="button" class="btn btn-primary" onclick="openSaveModal();">新增團主</button>
-            </div>
-            <div class="col d-flex justify-content-end">
-                <select
-                        class="form-select"
-                        style="width: 200px;"
-                        x-on:change="handleSelection($event.target.value)"
-                >
-                    <option value="">請選擇</option>
-                    <option value="todayNewLeaders">今日新團主</option>
-                    <option value="issueList">問題名單</option>
-                    <option value="mostActive">最常發言</option>
-                </select>
-            </div>
-        </div>
-
-        <div class="table-responsive custom-table-responsive">
-            <table class="table custom-table">
-                <thead>
-                <tr>
-                    <th scope="col">姓名</th>
-                    <th scope="col">會員編號</th>
-                    <th scope="col">社團名稱</th>
-                    <th scope="col">社團編號</th>
-                    <th scope="col">個人連結</th>
-                    <th scope="col">創立時間</th>
-                    <th scope="col">動作</th>
-                </tr>
-                </thead>
-                <tbody>
-                <template x-for="(item,index) in getData()" :key="index">
-                    <tr>
-                        <td class="th-name" x-text="item.name"></td>
-                        <td class="th-userId" x-text="item.userId"></td>
-                        <td class="th-groupName" x-text="item.groupName"></td>
-                        <td class="th-groupId" x-text="item.groupId"></td>
-                        <td class="th-link" x-text="item.link"></td>
-                        <td class="th-creationDate" x-text="item.creationDate"></td>
-                        <td class="th-action">
-                            <button x-on:click="edit(item.id)">編輯</button>
-                            <button x-on:click="deleteLeader(item.id)">刪除</button>
-                        </td>
-                    </tr>
-                </template>
-                </tbody>
-            </table>
-            <nav class="mt-5 mb-4" x-show="pageCount() > 1">
-                <ul class="pagination justify-content-center card-page">
-                    <li class="page-item" :class="{ 'disabled' : pageNumber==0 }">
-                        <a
-                                class="page-link page-prev"
-                                type="button"
-                                x-on:click="prevPage();"
-                                :disabled="pageNumber==0"
-                        >
-                            <i class="fa fas fa-chevron-left"></i>
-                        </a>
-                    </li>
-                    <li
-                            class="page-item disabled"
-                            :class="{ 'd-none' : pageCount() <= 4 || pageNumber == 0 || ( pageCount() > 4 && pageNumber == pageCount() ) }"
-                    >
-                        <a class="page-link">···</a>
-                    </li>
-                    <template x-for="(page,index) in pages()" :key="index">
-                        <li
-                                class="page-item"
-                                :class="{ 'active' : index === pageNumber , 'd-none' : pageCount() > 4 && ( (index < pageNumber && pageNumber < pageCount() -4) || (index < pageCount() -4 && pageNumber >= pageCount() -4) || index >= pageNumber+4 ) }"
-                        >
-                            <a
-                                    class="page-link"
+                    <div class="row mt-3" style="margin-top: 10px">
+                        <div class="col d-flex justify-content-end">
+                            <button
+                                    class="btn btn-primary"
                                     type="button"
-                                    x-on:click="viewPage(index);"
-                                    x-text="index+1"
-                            ></a>
-                        </li>
-                    </template>
-                    <li
-                            class="page-item disabled"
-                            :class="{ 'd-none' : pageCount() <= 4 || pageNumber >= pageCount() -4}"
-                    >
-                        <a class="page-link">···</a>
-                    </li>
-                    <li
-                            class="page-item"
-                            :class="{ 'disabled' : pageNumber >= pageCount() -1 }"
-                    >
-                        <a
-                                class="page-link page-next"
-                                type="button"
-                                x-on:click="nextPage();"
-                                :disabled="pageNumber >= pageCount() -1"
+                                    x-on:click="search()"
+                            >
+                                搜尋
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mt-3" style="margin-top: 10px; margin-bottom: 10px;">
+                    <div class="col d-flex">
+                        <button type="button" class="btn btn-primary" onclick="openSaveModal();">新增團主</button>
+                    </div>
+                    <div class="col d-flex justify-content-end">
+                        <select
+                                class="form-select"
+                                style="width: 200px;"
+                                x-on:change="handleSelection($event.target.value)"
                         >
-                            <i class="fa fas fa-chevron-right"></i>
-                        </a>
-                    </li>
-                </ul>
-            </nav>
+                            <option value="">請選擇</option>
+                            <option value="todayNewLeaders">今日新團主</option>
+                            <option value="issueList">問題名單</option>
+                            <option value="mostActive">最常發言</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <table>
+                        <thead>
+                        <tr class="table100-head">
+                            <th class="col">姓名</th>
+                            <th class="col">會員編號</th>
+                            <th class="col">社團名稱</th>
+                            <th class="col">社團編號</th>
+                            <th class="col">個人連結</th>
+                            <th class="col">創立時間</th>
+                            <th class="col">動作</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <template x-for="(item,index) in getData()" :key="index">
+                            <tr>
+                                <td class="th-name" x-text="item.name"></td>
+                                <td class="th-userId" x-text="item.userId"></td>
+                                <td class="th-groupName" x-text="item.groupName"></td>
+                                <td class="th-groupId" x-text="item.groupId"></td>
+                                <td class="th-link" x-text="item.link"></td>
+                                <td class="th-creationDate" x-text="item.creationDate"></td>
+                                <td class="th-action">
+                                    <button style="padding: 5px; margin: 5px" class="btn btn-primary" x-on:click="edit(item.id)">編輯</button>
+                                    <button style="padding: 5px; margin: 5px" class="btn btn-primary" x-on:click="deleteLeader(item.id)">刪除</button>
+                                </td>
+                            </tr>
+                        </template>
+                        </tbody>
+                    </table>
+                    <nav class="mt-5 mb-4" x-show="pageCount() > 1">
+                        <ul class="pagination justify-content-center card-page">
+                            <li class="page-item" :class="{ 'disabled' : pageNumber==0 }">
+                                <a
+                                        class="page-link page-prev"
+                                        type="button"
+                                        x-on:click="prevPage();"
+                                        :disabled="pageNumber==0"
+                                >
+                                    <i class="fa fas fa-chevron-left"></i>
+                                </a>
+                            </li>
+                            <li
+                                    class="page-item disabled"
+                                    :class="{ 'd-none' : pageCount() <= 4 || pageNumber == 0 || ( pageCount() > 4 && pageNumber == pageCount() ) }"
+                            >
+                                <a class="page-link">···</a>
+                            </li>
+                            <template x-for="(page,index) in pages()" :key="index">
+                                <li
+                                        class="page-item"
+                                        :class="{ 'active' : index === pageNumber , 'd-none' : pageCount() > 4 && ( (index < pageNumber && pageNumber < pageCount() -4) || (index < pageCount() -4 && pageNumber >= pageCount() -4) || index >= pageNumber+4 ) }"
+                                >
+                                    <a
+                                            class="page-link"
+                                            type="button"
+                                            x-on:click="viewPage(index);"
+                                            x-text="index+1"
+                                    ></a>
+                                </li>
+                            </template>
+                            <li
+                                    class="page-item disabled"
+                                    :class="{ 'd-none' : pageCount() <= 4 || pageNumber >= pageCount() -4}"
+                            >
+                                <a class="page-link">···</a>
+                            </li>
+                            <li
+                                    class="page-item"
+                                    :class="{ 'disabled' : pageNumber >= pageCount() -1 }"
+                            >
+                                <a
+                                        class="page-link page-next"
+                                        type="button"
+                                        x-on:click="nextPage();"
+                                        :disabled="pageNumber >= pageCount() -1"
+                                >
+                                    <i class="fa fas fa-chevron-right"></i>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
         </div>
     </div>
 </div>
