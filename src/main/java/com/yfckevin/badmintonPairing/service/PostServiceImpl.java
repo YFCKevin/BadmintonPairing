@@ -60,7 +60,7 @@ public class PostServiceImpl implements PostService {
     @Override
     public int dataCleaning(String filePath) throws IOException {
         Pattern pattern = Pattern.compile("\\s+");
-        Pattern courtPattern = Pattern.compile("場地出租|場地釋出|釋出|場地分享|場地轉讓|轉讓");
+        Pattern courtPattern = Pattern.compile("場地出租|場地釋出|釋出|場地分享|場地轉讓|轉讓|場地轉租");
 
         List<RequestPostDTO> posts = convertJsonToDto(filePath);
 
@@ -68,6 +68,8 @@ public class PostServiceImpl implements PostService {
         List<DataCleaningDTO> releaseDataList = new ArrayList<>();
         posts.stream()
                 .filter(post -> !post.getPostContent().contains("查看更多"))  // 去掉有「查看更多」的資料
+                .filter(post -> StringUtils.isNotBlank(post.getUserId()))   // 去掉userId是空值的貼文
+                .filter(post -> StringUtils.isNotBlank(post.getPostContent()))  // 去掉貼文內容是空值的
                 .forEach(post -> {
                     // 去掉多空格
                     Matcher matcher = pattern.matcher(post.getPostContent());
@@ -111,23 +113,23 @@ public class PostServiceImpl implements PostService {
         File file = new File(outputTextFilePath);
 
         try {
-            // 將json資料轉換成List<Map<String, String>>
+            // 將 JSON 資料轉換成 List<Map<String, String>>
             List<Map<String, String>> postList = objectMapper.readValue(new File(filePath), new TypeReference<>() {});
 
-            // 使用 StringBuilder 來讀取file內的資料
+            // 使用 StringBuilder 來構建文件的內容
             StringBuilder builder = new StringBuilder();
 
-            // 如果file存在，讀取現有內容存入StringBuilder
+            // 如果文件存在，讀取現有內容並存入 StringBuilder
             if (file.exists()) {
-                BufferedReader reader = new BufferedReader(new FileReader(file));
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    builder.append(line);
+                try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        builder.append(line);
+                    }
                 }
-                reader.close();
             }
 
-            // 將新貼文資料append到builder
+            // 將新貼文資料 append 到 builder
             for (Map<String, String> post : postList) {
                 String name = post.get("name");
                 String postContent = post.get("postContent");
@@ -140,17 +142,17 @@ public class PostServiceImpl implements PostService {
                 builder.setLength(builder.length() - 4);
             }
 
-            // 利用 FileWriter 把builder資料寫入，並設定為追加模式
-            FileWriter fileWriter = new FileWriter(outputTextFilePath, true);
-            fileWriter.write(builder.toString());
-
-            fileWriter.close();
+            //  清空舊資料，再利用 FileWriter 把 builder 資料寫入
+            try (FileWriter fileWriter = new FileWriter(outputTextFilePath, false)) {
+                fileWriter.write(builder.toString());
+            }
 
             logger.info("轉換完成，結果已寫入 {}", outputTextFilePath);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
+
 
 
     /**
@@ -164,7 +166,7 @@ public class PostServiceImpl implements PostService {
 
         // 讀取json檔的資料並轉換成List<RequestPostDTO>形式
         ConfigurationUtil.Configuration();
-        File generalFile = new File(configProperties.getJsonPath() + "generalFile.json");
+        File generalFile = new File(configProperties.getFileSavePath() + "generalFile.json");
         TypeRef<List<RequestPostDTO>> typeRef = new TypeRef<>() {
         };
         List<RequestPostDTO> generalDatas = JsonPath.parse(generalFile).read("$", typeRef);
@@ -180,9 +182,6 @@ public class PostServiceImpl implements PostService {
 
         // 將新貼文匯入到generalFile歸檔
         saveInGeneralFile(generalFile, differencePosts);
-
-        // 新貼文與每日項目的link(preCrawler_link.json)比對，將存在differencePosts的link從preCrawler_link.json移除 => 代表此userId已有新貼文，無須爬蟲
-//        findNotYetLinkOfPostsAndSaveInFile(differencePosts);
 
         // 將新貼文寫入dailyPosts.json，並回傳檔案路徑，後續做data clean
         return saveJsonFileForDataCleaning(differencePosts);
