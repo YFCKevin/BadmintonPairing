@@ -1,12 +1,10 @@
 package com.yfckevin.badmintonPairing.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.TypeRef;
 import com.yfckevin.badmintonPairing.ConfigProperties;
-import com.yfckevin.badmintonPairing.dto.LeaderDTO;
-import com.yfckevin.badmintonPairing.dto.LoginDTO;
-import com.yfckevin.badmintonPairing.dto.PostDTO;
-import com.yfckevin.badmintonPairing.dto.SearchDTO;
+import com.yfckevin.badmintonPairing.dto.*;
 import com.yfckevin.badmintonPairing.entity.Leader;
 import com.yfckevin.badmintonPairing.entity.Post;
 import com.yfckevin.badmintonPairing.enums.AirConditionerType;
@@ -26,6 +24,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
@@ -35,6 +36,8 @@ import java.time.format.TextStyle;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Controller
 public class BackendManageController {
@@ -44,13 +47,19 @@ public class BackendManageController {
     private final PostService postService;
     private final SimpleDateFormat sdf;
     private final DateTimeFormatter ddf;
+    private final SimpleDateFormat svf;
+    private final SimpleDateFormat ssf;
+    private final ObjectMapper objectMapper;
 
-    public BackendManageController(ConfigProperties configProperties, LeaderService leaderService, PostService postService, @Qualifier("sdf") SimpleDateFormat sdf, DateTimeFormatter ddf) {
+    public BackendManageController(ConfigProperties configProperties, LeaderService leaderService, PostService postService, @Qualifier("sdf") SimpleDateFormat sdf, DateTimeFormatter ddf, @Qualifier("svf") SimpleDateFormat svf, @Qualifier("ssf") SimpleDateFormat ssf, ObjectMapper objectMapper) {
         this.configProperties = configProperties;
         this.leaderService = leaderService;
         this.postService = postService;
         this.sdf = sdf;
         this.ddf = ddf;
+        this.svf = svf;
+        this.ssf = ssf;
+        this.objectMapper = objectMapper;
     }
 
     /**
@@ -245,12 +254,13 @@ public class BackendManageController {
 
     /**
      * 查詢單一團主資訊
+     *
      * @param id
      * @param session
      * @return
      */
     @GetMapping("/findLeaderById/{id}")
-    public ResponseEntity<?> findLeaderById(@PathVariable String id, HttpSession session){
+    public ResponseEntity<?> findLeaderById(@PathVariable String id, HttpSession session) {
 
         final String member = (String) session.getAttribute("admin");
         if (member != null) {
@@ -400,7 +410,7 @@ public class BackendManageController {
 
         final String member = (String) session.getAttribute("admin");
         if (member != null) {
-            logger.info("[searchPosts]");
+            logger.info("[postSearch]");
         }
 
         ResultStatus resultStatus = new ResultStatus();
@@ -425,12 +435,13 @@ public class BackendManageController {
 
     /**
      * 查詢單一貼文
+     *
      * @param id
      * @param session
      * @return
      */
     @GetMapping("/findPostById/{id}")
-    public ResponseEntity<?> findPostById(@PathVariable String id, HttpSession session){
+    public ResponseEntity<?> findPostById(@PathVariable String id, HttpSession session) {
 
         final String member = (String) session.getAttribute("admin");
         if (member != null) {
@@ -458,11 +469,12 @@ public class BackendManageController {
 
     /**
      * 查找相同userId和startTime的Post
+     *
      * @param session
      * @return
      */
     @GetMapping("/searchSamePosts")
-    public ResponseEntity<?> searchSamePosts (HttpSession session){
+    public ResponseEntity<?> searchSamePosts(HttpSession session) {
 
         final String member = (String) session.getAttribute("admin");
         if (member != null) {
@@ -498,8 +510,44 @@ public class BackendManageController {
      * @return
      */
     @GetMapping("/forwardFileManagement")
-    public String forwardFileManagement(HttpSession session, Model model) {
-        //TODO
+    public String forwardFileManagement(HttpSession session, Model model) throws IOException {
+
+        final String member = (String) session.getAttribute("admin");
+        if (member != null) {
+            logger.info("[forwardFileManagement]");
+        } else {
+            return "redirect:/backendLogin";
+        }
+
+        final List<RequestPostDTO> postDTOList = constructPostDTOFromDailyPostsFile(svf.format(new Date()));
+        model.addAttribute("postDTOList", postDTOList);
+
+        try {
+            Pattern pattern = Pattern.compile("(\\d+)-data_disposable\\.json");
+            List<String> sortedDateList = Files.walk(Paths.get(configProperties.getFileSavePath()))
+                    .filter(Files::isRegularFile)
+                    .map(path -> pattern.matcher(path.getFileName().toString()))
+                    .filter(Matcher::matches)
+                    .map(matcher -> matcher.group(1))
+                    .sorted((s1, s2) -> Integer.compare(Integer.parseInt(s2), Integer.parseInt(s1))) // 按數字大小降冪排序
+                    .distinct() // 去除重複項
+                    .map(d -> {
+                        try {
+                            return ssf.format(svf.parse(d));
+                        } catch (ParseException e) {
+                            throw new RuntimeException(e);
+                        }
+                    })
+                    .collect(Collectors.toList());
+
+            model.addAttribute("sortedDateList", sortedDateList);
+
+            model.addAttribute("today", ssf.format(new Date()));
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         return "backend/fileManagement";
     }
 
@@ -510,11 +558,216 @@ public class BackendManageController {
      * @param session
      * @return
      */
-    @PostMapping("/searchFiles")
-    public ResponseEntity<?> searchFiles(@RequestBody SearchDTO dto, HttpSession session) {
+    @PostMapping("/searchFiles/{date}")
+    public ResponseEntity<?> searchFiles(@RequestBody SearchDTO dto, @PathVariable String date, HttpSession session) throws IOException, ParseException {
+
+        final String member = (String) session.getAttribute("admin");
+        if (member != null) {
+            logger.info("[searchFiles]");
+        }
+
         ResultStatus resultStatus = new ResultStatus();
-        //TODO
+
+        date = svf.format(ssf.parse(date)); // 日期更換回yyyyMMdd
+
+        List<RequestPostDTO> postDTOList = constructPostDTOFromDailyPostsFile(date);
+
+        postDTOList = postDTOList.stream()
+                .filter(p -> p.getName().contains(dto.getKeyword()) ||
+                        p.getPostContent().contains(dto.getKeyword()))
+                .toList();
+
+        resultStatus.setCode("C000");
+        resultStatus.setMessage("成功");
+        resultStatus.setData(postDTOList);
+
         return ResponseEntity.ok(resultStatus);
+    }
+
+
+    /**
+     * 修改檔案內的貼文內容
+     *
+     * @param dto
+     * @param session
+     * @return
+     * @throws IOException
+     */
+    @PostMapping("/editFile/{date}")
+    public ResponseEntity<?> editFile(@RequestBody RequestPostDTO dto, @PathVariable String date, HttpSession session) throws IOException, ParseException {
+
+        final String member = (String) session.getAttribute("admin");
+        if (member != null) {
+            logger.info("[editFile]");
+        }
+
+        ResultStatus resultStatus = new ResultStatus();
+
+        date = svf.format(ssf.parse(date)); // 日期更換回yyyyMMdd
+
+        List<RequestPostDTO> postDTOList = constructPostDTOFromDailyPostsFile(date);
+        postDTOList = postDTOList.stream()
+                .map(p -> {
+                    if (p.getUserId().equals(dto.getUserId())) {
+                        p.setPostContent(dto.getPostContent());
+                    }
+                    return p;
+                })
+                .toList();
+
+        File file = new File(configProperties.getFileSavePath() + date + "-data_disposable.json");
+        objectMapper.writeValue(file, postDTOList);
+
+        resultStatus.setCode("C000");
+        resultStatus.setMessage("成功");
+
+        return ResponseEntity.ok(resultStatus);
+    }
+
+
+    /**
+     * 刪除檔案
+     *
+     * @param userId
+     * @param session
+     * @return
+     * @throws IOException
+     */
+    @GetMapping("/deleteFile/{userId}/{date}")
+    public ResponseEntity<?> deleteFile(@PathVariable String userId, @PathVariable String date, HttpSession session) throws IOException, ParseException {
+
+        final String member = (String) session.getAttribute("admin");
+        if (member != null) {
+            logger.info("[deleteFile]");
+        }
+
+        ResultStatus resultStatus = new ResultStatus();
+
+        date = svf.format(ssf.parse(date)); // 日期更換回yyyyMMdd
+
+        List<RequestPostDTO> postDTOList = constructPostDTOFromDailyPostsFile(date);
+        postDTOList = postDTOList.stream()
+                .filter(p -> !p.getUserId().equals(userId))
+                .toList();
+
+        File file = new File(configProperties.getFileSavePath() + date + "-data_disposable.json");
+        objectMapper.writeValue(file, postDTOList);
+
+        resultStatus.setCode("C000");
+        resultStatus.setMessage("成功");
+
+        return ResponseEntity.ok(resultStatus);
+    }
+
+
+    /**
+     * 取得單筆零打資訊的檔案內文
+     *
+     * @param date
+     * @param session
+     * @return
+     * @throws IOException
+     * @throws ParseException
+     */
+    @GetMapping("/showDisposableData/{date}")
+    public ResponseEntity<?> showDisposableData(@PathVariable String date, HttpSession session) throws IOException, ParseException {
+
+        final String member = (String) session.getAttribute("admin");
+        if (member != null) {
+            logger.info("[showDisposableData]");
+        }
+
+        ResultStatus resultStatus = new ResultStatus();
+
+        date = svf.format(ssf.parse(date)); // 日期更換回yyyyMMdd
+
+        List<RequestPostDTO> postDTOList = constructPostDTOFromDailyPostsFile(date);
+
+        resultStatus.setCode("C000");
+        resultStatus.setMessage("成功");
+        resultStatus.setData(postDTOList);
+
+        return ResponseEntity.ok(resultStatus);
+    }
+
+
+    /**
+     * 透過唯一值userId取得file
+     * @param userId
+     * @param date
+     * @param session
+     * @return
+     * @throws IOException
+     * @throws ParseException
+     */
+    @GetMapping("/findFileByUserId/{userId}/{date}")
+    public ResponseEntity<?> findFileByUserId(@PathVariable String userId, @PathVariable String date, HttpSession session) throws IOException, ParseException {
+
+        final String member = (String) session.getAttribute("admin");
+        if (member != null) {
+            logger.info("[findFileByUserId]");
+        }
+
+        ResultStatus resultStatus = new ResultStatus();
+
+        date = svf.format(ssf.parse(date)); // 日期更換回yyyyMMdd
+
+        List<RequestPostDTO> postDTOList = constructPostDTOFromDailyPostsFile(date);
+
+        Optional<RequestPostDTO> optionalPost = postDTOList.stream()
+                .filter(p -> p.getUserId().equals(userId))
+                .findFirst();
+
+        if (optionalPost.isPresent()) {
+            resultStatus.setCode("C000");
+            resultStatus.setMessage("成功");
+            resultStatus.setData(optionalPost.get());
+        } else {
+            resultStatus.setCode("C004");
+            resultStatus.setMessage("查無檔案內貼文");
+        }
+        return ResponseEntity.ok(resultStatus);
+    }
+
+
+    /**
+     * 篩選出問題文章
+     * @param session
+     * @return
+     */
+    @GetMapping("/searchIssues/{date}")
+    public ResponseEntity<?> searchIssues (@PathVariable String date, HttpSession session) throws IOException, ParseException {
+
+        final String member = (String) session.getAttribute("admin");
+        if (member != null) {
+            logger.info("[searchIssues]");
+        }
+
+        ResultStatus resultStatus = new ResultStatus();
+
+        date = svf.format(ssf.parse(date)); // 日期更換回yyyyMMdd
+
+        Pattern issuePattern = Pattern.compile("教練|場地出租|場地釋出|釋出|場地分享|場地轉讓|轉讓|場地轉租");
+
+        List<RequestPostDTO> postDTOList = constructPostDTOFromDailyPostsFile(date);
+        postDTOList = postDTOList.stream()
+                .filter(p -> issuePattern.matcher(p.getPostContent()).find())
+                .toList();
+
+        resultStatus.setCode("C000");
+        resultStatus.setMessage("成功");
+        resultStatus.setData(postDTOList);
+
+        return ResponseEntity.ok(resultStatus);
+    }
+
+
+    private List<RequestPostDTO> constructPostDTOFromDailyPostsFile(String date) throws IOException {
+        ConfigurationUtil.Configuration();
+        File file = new File(configProperties.getFileSavePath() + date + "-data_disposable.json");
+        TypeRef<List<RequestPostDTO>> typeRef = new TypeRef<>() {
+        };
+        return JsonPath.parse(file).read("$", typeRef);
     }
 
 
@@ -578,7 +831,6 @@ public class BackendManageController {
 
 
     private Post constructPostEntity(Post post, PostDTO postDTO) {
-        post.setCreationDate(postDTO.getCreationDate());
         post.setBrand(postDTO.getBrand());
         post.setDuration(postDTO.getDuration());
         post.setName(postDTO.getName());

@@ -302,3 +302,16 @@ th-creationDate {
     color: black;
     font-weight: bold;
 }
+
+.clear-btn {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: #999;
+}
+
+.form-group {
+  position: relative;
+}

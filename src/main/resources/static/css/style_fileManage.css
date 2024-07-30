@@ -178,64 +178,24 @@ tbody tr:hover {
   cursor: pointer;
 }
 
-.th-leader {
-  width: 180px;
-  padding-left: 40px;
+.th-num {
+  width: 50px;
 }
 
 .th-userId {
   width: 50px;
 }
 
-.th-place {
-  width: 200px;
-}
-
-.th-time {
-  width: 350px;
-}
-
-.th-fee {
-  width: 150px;
-}
-
-.th-brand {
-  width: 170px;
-}
-
-.th-level {
-  width: 250px;
-}
-
-.th-airConditioner {
-  width: 110px;
-}
-
-.th-parkInfo {
-  width: 200px;
-  text-align: left;
-}
-
-.th-contact {
-  width: 200px;
+.th-name {
+  width: 120px;
 }
 
 .th-action {
-  width: 100px;
+  width: 70px;
 }
 
-th-creationDate {
-  width: 200px;
-}
-
-.column9 {
-  width: 110px;
-  text-align: right;
-}
-
-.th-leader0 {
-  width: 110px;
-  text-align: right;
+.th-select {
+  width: 50px;
 }
 
 
