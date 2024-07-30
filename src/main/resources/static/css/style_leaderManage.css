@@ -268,8 +268,7 @@ th-creationDate {
   .th-groupId,
   .th-link,
   .th-action,
-  .th-creationDate,
-  .th-time {
+  .th-creationDate {
     width: 100%;
   }
 
