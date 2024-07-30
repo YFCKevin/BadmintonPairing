@@ -15,6 +15,12 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" type="text/css" th:href="@{css/style.css}" />
+
+    <meta property="og:title" content="羽球配對找零打" />
+    <meta property="og:description" content="搜尋最適合您的零打團！" />
+      <meta property="og:image" th:content="@{images/badminton.jpg}" />
+    <meta property="og:url" content="http://54.238.141.0/badminton/posts" />
+    <meta property="og:type" content="website" />
   </head>
   <body>
     <div class="limiter">
@@ -25,7 +31,7 @@
               <!-- Search Bar -->
               <div class="mb-3">
                   <div class="row">
-                      <div class="col-md-3">
+                      <div style="margin-top: 10px" class="col-md-3">
                           <div class="form-group d-flex align-items-center">
                               <label class="input-group-text mr-2" for="startDate">開始日期</label>
                               <input
@@ -36,7 +42,7 @@
                               />
                           </div>
                       </div>
-                      <div class="col-md-3">
+                      <div style="margin-top: 10px" class="col-md-3">
                           <div class="form-group d-flex align-items-center">
                               <label class="input-group-text mr-2" for="endDate">結束日期</label>
                               <input
@@ -47,7 +53,7 @@
                               />
                           </div>
                       </div>
-                      <div class="col-md-6">
+                      <div style="margin-top: 10px" class="col-md-6">
                           <div class="form-group d-flex align-items-center">
                               <label class="input-group-text mr-2" for="keyword">關鍵字</label>
                               <input
@@ -56,6 +62,7 @@
                                       id="keyword"
                                       placeholder="可搜尋團主名、地點、用球..."
                               />
+                              <i class="fa fas fa-times clear-btn" onclick="clearKeyword()"></i>
                           </div>
                       </div>
                   </div>
@@ -240,8 +247,22 @@
                 },
               });
             },
+<!--            showNewestPosts() {-->
+<!--              let _this = this;-->
+<!--              _this.myForData.sort((a, b) => {-->
+<!--                let dateA = new Date(a.creationDate);-->
+<!--                let dateB = new Date(b.creationDate);-->
+<!--                return dateB - dateA;-->
+<!--              });-->
+
+<!--              console.log(_this.myForData);-->
+<!--            },-->
           };
         };
+
+        function clearKeyword() {
+            $('#keyword').val('');
+        }
     </script>
   </body>
 </html>
