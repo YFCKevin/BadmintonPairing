@@ -199,8 +199,7 @@ public class BackendManageController {
 
         leaderService.findById(id)
                 .map(leader -> {
-                    leader.setDeletionDate(sdf.format(new Date()));
-                    leaderService.save(leader);
+                    leaderService.deleteById(id);
                     resultStatus.setCode("C000");
                     resultStatus.setMessage("成功");
                     return resultStatus;
@@ -340,6 +339,7 @@ public class BackendManageController {
             postService.findById(dto.getId())
                     .map(p -> {
                         final Post post = constructPostEntity(p, dto);
+                        p.setId(dto.getId());
                         p.setModificationDate(sdf.format(new Date()));
                         postService.save(post);
                         resultStatus.setCode("C000");
@@ -374,8 +374,7 @@ public class BackendManageController {
 
         postService.findById(id)
                 .map(post -> {
-                    post.setDeletionDate(sdf.format(new Date()));
-                    postService.save(post);
+                    postService.deleteById(id);
                     resultStatus.setCode("C000");
                     resultStatus.setMessage("成功");
                     return resultStatus;
@@ -406,7 +405,7 @@ public class BackendManageController {
 
         ResultStatus resultStatus = new ResultStatus();
 
-        List<PostDTO> postDTOList = postService.findPostByConditions(searchDTO.getKeyword(), searchDTO.getStartDate() + " 00:00:00", searchDTO.getEndDate() + " 23:59:59")
+        List<PostDTO> postDTOList = postService.findPostByConditions(searchDTO.getKeyword().trim(), searchDTO.getStartDate() + " 00:00:00", searchDTO.getEndDate() + " 23:59:59")
                 .stream()
                 .map(post -> {
                     try {
@@ -452,6 +451,40 @@ public class BackendManageController {
                     resultStatus.setMessage("查無貼文");
                     return resultStatus;
                 });
+
+        return ResponseEntity.ok(resultStatus);
+    }
+
+
+    /**
+     * 查找相同userId和startTime的Post
+     * @param session
+     * @return
+     */
+    @GetMapping("/searchSamePosts")
+    public ResponseEntity<?> searchSamePosts (HttpSession session){
+
+        final String member = (String) session.getAttribute("admin");
+        if (member != null) {
+            logger.info("[searchSamePosts]");
+        }
+
+        ResultStatus resultStatus = new ResultStatus();
+
+        final List<PostDTO> postDTOList = postService.findSamePosts().stream()
+                .map(p -> {
+                    PostDTO postDTO;
+                    try {
+                        postDTO = constructPostDTO(p);
+                    } catch (ParseException e) {
+                        throw new RuntimeException(e);
+                    }
+                    return postDTO;
+                }).toList();
+
+        resultStatus.setCode("C000");
+        resultStatus.setMessage("成功");
+        resultStatus.setData(postDTOList);
 
         return ResponseEntity.ok(resultStatus);
     }
@@ -545,7 +578,6 @@ public class BackendManageController {
 
 
     private Post constructPostEntity(Post post, PostDTO postDTO) {
-        post.setId(postDTO.getId());
         post.setCreationDate(postDTO.getCreationDate());
         post.setBrand(postDTO.getBrand());
         post.setDuration(postDTO.getDuration());

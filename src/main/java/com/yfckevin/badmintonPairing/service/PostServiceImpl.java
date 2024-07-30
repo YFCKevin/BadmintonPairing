@@ -12,6 +12,8 @@ import com.yfckevin.badmintonPairing.entity.Post;
 import com.yfckevin.badmintonPairing.repository.PostRepository;
 import com.yfckevin.badmintonPairing.utils.ConfigurationUtil;
 import org.apache.commons.lang3.StringUtils;
+import org.bson.Document;
+import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -296,6 +298,49 @@ public class PostServiceImpl implements PostService {
         query.with(Sort.by(Sort.Order.desc("startTime")));
 
         return mongoTemplate.find(query, Post.class);
+    }
+
+    @Override
+    public List<Post> findSamePosts() {
+        Aggregation aggregation = Aggregation.newAggregation(
+                // 1: 先選擇保留的字段
+                Aggregation.project("name", "startTime"),
+
+                // 2: 進行分組，保留文檔的 id 列表
+                Aggregation.group("name", "startTime")
+                        .count().as("duplicateCount")
+                        .push("$_id").as("ids"),
+
+                // 3: 過濾結果，只保留重複的分組
+                Aggregation.match(Criteria.where("duplicateCount").gt(1)),
+
+                // 4: 展開 ids 列表，這樣每個 id 都會成為單獨的文檔
+                Aggregation.unwind("ids"),
+
+                // 5: 選擇輸出的字段，只保留 ids 列表中的 id
+                Aggregation.project("ids").and("ids").as("id")
+        );
+
+        AggregationResults<Document> results = mongoTemplate.aggregate(
+                aggregation,
+                "post",
+                Document.class
+        );
+
+        List<Document> mappedResults = results.getMappedResults();
+        List<String> idList = new ArrayList<>();
+        for (Document doc : mappedResults) {
+            ObjectId id = doc.getObjectId("id");
+            idList.add(id.toHexString());
+        }
+
+        return postRepository.findAllById(idList).stream()
+                .sorted(Comparator.comparing(Post::getUserId)).toList();
+    }
+
+    @Override
+    public void deleteById(String id) {
+        postRepository.deleteById(id);
     }
 
     private String saveJsonFileForDataCleaning(List<RequestPostDTO> differencePosts) throws IOException {

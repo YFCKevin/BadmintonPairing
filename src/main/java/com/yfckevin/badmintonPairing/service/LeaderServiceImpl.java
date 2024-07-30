@@ -8,6 +8,7 @@ import com.yfckevin.badmintonPairing.dto.RequestPostDTO;
 import com.yfckevin.badmintonPairing.entity.Leader;
 import com.yfckevin.badmintonPairing.entity.Post;
 import com.yfckevin.badmintonPairing.repository.LeaderRepository;
+import com.yfckevin.badmintonPairing.repository.PostRepository;
 import com.yfckevin.badmintonPairing.utils.ConfigurationUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -30,14 +31,17 @@ public class LeaderServiceImpl implements LeaderService {
     private final PostService postService;
     private final ObjectMapper objectMapper;
     private final MongoTemplate mongoTemplate;
+    private final PostRepository postRepository;
 
-    public LeaderServiceImpl(@Qualifier("sdf") SimpleDateFormat sdf, ConfigProperties configProperties, LeaderRepository leaderRepository, PostService postService, ObjectMapper objectMapper, MongoTemplate mongoTemplate) {
+    public LeaderServiceImpl(@Qualifier("sdf") SimpleDateFormat sdf, ConfigProperties configProperties, LeaderRepository leaderRepository, PostService postService, ObjectMapper objectMapper, MongoTemplate mongoTemplate,
+                             PostRepository postRepository) {
         this.sdf = sdf;
         this.configProperties = configProperties;
         this.leaderRepository = leaderRepository;
         this.postService = postService;
         this.objectMapper = objectMapper;
         this.mongoTemplate = mongoTemplate;
+        this.postRepository = postRepository;
     }
 
     @Override
@@ -146,6 +150,11 @@ public class LeaderServiceImpl implements LeaderService {
         query.with(Sort.by(Sort.Order.desc("creationDate")));
 
         return mongoTemplate.find(query, Leader.class);
+    }
+
+    @Override
+    public void deleteById(String id) {
+        postRepository.deleteById(id);
     }
 
     private static String extractUserId(String link) {

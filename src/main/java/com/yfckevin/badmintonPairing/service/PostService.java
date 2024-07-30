@@ -21,4 +21,8 @@ public interface PostService {
     Optional<Post> findById(String id);
 
     List<Post> findTodayNewPosts(String startOfToday, String endOfToday);
+
+    List<Post> findSamePosts();
+
+    void deleteById(String id);
 }

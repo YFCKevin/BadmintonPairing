@@ -306,3 +306,16 @@ tbody tr:hover {
     padding-right: 15px;
   }
 }
+
+.clear-btn {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: #999;
+}
+
+.form-group {
+  position: relative;
+}

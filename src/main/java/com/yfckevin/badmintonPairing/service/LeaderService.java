@@ -20,4 +20,6 @@ public interface LeaderService {
     Optional<Leader> findById(String id);
 
     List<Leader> findLeaderByConditions(String keyword, String startDate, String endDate);
+
+    void deleteById(String id);
 }
