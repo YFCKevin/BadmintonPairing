@@ -216,15 +216,18 @@
             },
             nextPage() {
               this.pageNumber++;
+              window.scrollTo(0, 0); // 滾動到頁面頂部
             },
             prevPage() {
               this.pageNumber--;
+              window.scrollTo(0, 0); // 滾動到頁面頂部
             },
             pageCount() {
               return Math.ceil(this.total / this.size);
             },
             viewPage(index) {
               this.pageNumber = index;
+              window.scrollTo(0, 0); // 滾動到頁面頂部
             },
             search() {
               let _this = this;
