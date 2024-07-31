@@ -28,6 +28,8 @@ import java.io.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -341,6 +343,17 @@ public class PostServiceImpl implements PostService {
     @Override
     public void deleteById(String id) {
         postRepository.deleteById(id);
+    }
+
+    @Override
+    public List<Post> getPostsForToday() {
+        LocalDateTime startOfDay = LocalDateTime.now().toLocalDate().atStartOfDay();
+        LocalDateTime endOfDay = startOfDay.plusDays(1);
+
+        Date startDate = Date.from(startOfDay.atZone(ZoneId.systemDefault()).toInstant());
+        Date endDate = Date.from(endOfDay.atZone(ZoneId.systemDefault()).toInstant());
+
+        return postRepository.findByCreationDateBetween(startDate, endDate);
     }
 
     private String saveJsonFileForDataCleaning(List<RequestPostDTO> differencePosts) throws IOException {

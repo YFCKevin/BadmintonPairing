@@ -73,6 +73,7 @@
                     <div class="col-12 text-left">
                         <button type="button" class="btn btn-danger btn-sm btn-rounded" x-on:click="searchIssues();">疑慮文章</button>
                         <button type="button" class="btn btn-success btn-sm btn-rounded" x-on:click="textCompletion();">openAI</button>
+                        <button type="button" class="btn btn-warning btn-sm btn-rounded" x-on:click="getUnfinishedFiles();">取得未完成資料</button>
                     </div>
                 </div>
 
@@ -213,6 +214,7 @@
             startDate: "",
             endDate: "",
             myForData: eleData,
+            postData: [],
 
 
             init() {
@@ -306,7 +308,6 @@
             },
             edit(userId){
               passId = userId;
-
               $.ajax({
                 url: "findFileByUserId/" + userId + "/" + fileDateData,
                 type: "get",
@@ -390,7 +391,37 @@
               });
             },
             textCompletion (){
-
+              let _this = this;
+              $.ajax({
+                url: "convertToPosts/" + fileDateData,
+                type: "post",
+                dataType: "json",
+                data: JSON.stringify(selectedFiles),
+                contentType: "application/json; charset=utf-8",
+                success: function (response) {
+                  if (response.code == "C000"){
+                    _this.postData = response.data;
+                  } else {
+                    alert("例外發生")
+                  }
+                },
+              });
+            },
+            getUnfinishedFiles (){
+              let _this = this;
+              $.ajax({
+                url: "getUnfinishedFiles/" + fileDateData,
+                type: "get",
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                success: function (response) {
+                  if (response.code == "C005"){
+                    _this.myForData = response.data;
+                  } else if (response.code == "C000"){
+                    alert("今日資料匯入完成！")
+                  }
+                },
+              });
             },
             showDisposableData (date){
               let _this = this;

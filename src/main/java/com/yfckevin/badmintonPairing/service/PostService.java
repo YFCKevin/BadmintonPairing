@@ -25,4 +25,6 @@ public interface PostService {
     List<Post> findSamePosts();
 
     void deleteById(String id);
+
+    List<Post> getPostsForToday();
 }

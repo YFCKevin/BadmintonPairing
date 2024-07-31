@@ -10,6 +10,7 @@ import com.yfckevin.badmintonPairing.entity.Post;
 import com.yfckevin.badmintonPairing.enums.AirConditionerType;
 import com.yfckevin.badmintonPairing.exception.ResultStatus;
 import com.yfckevin.badmintonPairing.service.LeaderService;
+import com.yfckevin.badmintonPairing.service.OpenAiService;
 import com.yfckevin.badmintonPairing.service.PostService;
 import com.yfckevin.badmintonPairing.utils.ConfigurationUtil;
 import jakarta.servlet.http.HttpSession;
@@ -22,10 +23,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -37,7 +36,6 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Controller
 public class BackendManageController {
@@ -45,16 +43,18 @@ public class BackendManageController {
     private final ConfigProperties configProperties;
     private final LeaderService leaderService;
     private final PostService postService;
+    private final OpenAiService openAiService;
     private final SimpleDateFormat sdf;
     private final DateTimeFormatter ddf;
     private final SimpleDateFormat svf;
     private final SimpleDateFormat ssf;
     private final ObjectMapper objectMapper;
 
-    public BackendManageController(ConfigProperties configProperties, LeaderService leaderService, PostService postService, @Qualifier("sdf") SimpleDateFormat sdf, DateTimeFormatter ddf, @Qualifier("svf") SimpleDateFormat svf, @Qualifier("ssf") SimpleDateFormat ssf, ObjectMapper objectMapper) {
+    public BackendManageController(ConfigProperties configProperties, LeaderService leaderService, PostService postService, OpenAiService openAiService, @Qualifier("sdf") SimpleDateFormat sdf, DateTimeFormatter ddf, @Qualifier("svf") SimpleDateFormat svf, @Qualifier("ssf") SimpleDateFormat ssf, ObjectMapper objectMapper) {
         this.configProperties = configProperties;
         this.leaderService = leaderService;
         this.postService = postService;
+        this.openAiService = openAiService;
         this.sdf = sdf;
         this.ddf = ddf;
         this.svf = svf;
@@ -762,11 +762,140 @@ public class BackendManageController {
     }
 
 
+    @PostMapping("/convertToPosts/{date}")
+    public ResponseEntity<?> convertToPosts (@PathVariable String date, @RequestBody List<String> userIdList, HttpSession session) throws ParseException, IOException {
+
+        final String member = (String) session.getAttribute("admin");
+        if (member != null) {
+            logger.info("[convertToPosts]");
+        }
+
+        ResultStatus resultStatus = new ResultStatus();
+
+        try {
+
+            date = svf.format(ssf.parse(date)); // 日期更換回yyyyMMdd
+
+            List<RequestPostDTO> requestPostDTOList = constructPostDTOFromDailyPostsFile(date);
+            requestPostDTOList = requestPostDTOList.stream()
+                    .filter(p -> userIdList.contains(p.getUserId()))
+                    .toList();
+
+            if (requestPostDTOList.size() > 0) {
+                constructPrompt(requestPostDTOList);
+            }
+
+            // call openAi text completion
+            final List<Post> postList = openAiService.generatePosts();
+            final List<PostDTO> postDTOList = postList.stream().map(p -> {
+                try {
+                    return constructPostDTO(p);
+                } catch (ParseException e) {
+                    throw new RuntimeException(e);
+                }
+            }).toList();
+
+            // 結果呈現回前端
+            resultStatus.setCode("C000");
+            resultStatus.setMessage("成功");
+            resultStatus.setData(postDTOList);
+
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+            resultStatus.setCode("C999");
+            resultStatus.setMessage("例外發生");
+        }
+
+        return ResponseEntity.ok(resultStatus);
+    }
+
+
+
+    @GetMapping("/getUnfinishedFiles/{date}")
+    public ResponseEntity<?> getUnfinishedFiles (@PathVariable String date, HttpSession session) throws ParseException, IOException {
+
+        final String member = (String) session.getAttribute("admin");
+        if (member != null) {
+            logger.info("[findMissingFiles]");
+        }
+
+        ResultStatus resultStatus = new ResultStatus();
+
+        date = svf.format(ssf.parse(date)); // 日期更換回yyyyMMdd
+
+        List<RequestPostDTO> requestPostDTOList = constructPostDTOFromDailyPostsFile(date);
+
+        final List<String> savedUserIdList = postService.getPostsForToday().stream().map(Post::getUserId).toList();
+
+        requestPostDTOList = requestPostDTOList.stream()
+                .filter(p -> !savedUserIdList.contains(p.getUserId()))
+                .toList();
+
+        if (requestPostDTOList.size() > 0) {
+            resultStatus.setCode("C005");
+            resultStatus.setMessage("尚有檔案未匯入資料庫");
+        } else {
+            resultStatus.setCode("C000");
+            resultStatus.setMessage("成功");
+        }
+
+        return ResponseEntity.ok(resultStatus);
+    }
+
+
+    private void constructPrompt(List<RequestPostDTO> postDTOList) {
+        String date = svf.format(new Date());
+        String outputTextFilePath = configProperties.getFileSavePath() + date + "-" + "prompt_disposable.txt";
+        File file = new File(outputTextFilePath);
+
+        try {
+            // 使用 StringBuilder 來構建文件的內容
+            StringBuilder builder = new StringBuilder();
+
+            // 如果文件存在，讀取現有內容並存入 StringBuilder
+            if (file.exists()) {
+                try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        builder.append(line);
+                    }
+                }
+            }
+
+            // 將新貼文資料 append 到 builder
+            for (RequestPostDTO post : postDTOList) {
+                String name = post.getName();
+                String postContent = post.getPostContent();
+                String userId = post.getUserId();
+                builder.append(name).append(" | ").append(userId).append("::: ").append(postContent).append(" /// ");
+            }
+
+            // 去掉最後的 " /// "
+            if (builder.length() > 0) {
+                builder.setLength(builder.length() - 4);
+            }
+
+            //  清空舊資料，再利用 FileWriter 把 builder 資料寫入
+            try (FileWriter fileWriter = new FileWriter(outputTextFilePath, false)) {
+                fileWriter.write(builder.toString());
+            }
+
+            logger.info("轉換完成，結果已寫入 {}", outputTextFilePath);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+
     private List<RequestPostDTO> constructPostDTOFromDailyPostsFile(String date) throws IOException {
         ConfigurationUtil.Configuration();
         File file = new File(configProperties.getFileSavePath() + date + "-data_disposable.json");
-        TypeRef<List<RequestPostDTO>> typeRef = new TypeRef<>() {
-        };
+
+        if (!file.exists()) {
+            return Collections.emptyList();
+        }
+        TypeRef<List<RequestPostDTO>> typeRef = new TypeRef<>() {};
         return JsonPath.parse(file).read("$", typeRef);
     }
 

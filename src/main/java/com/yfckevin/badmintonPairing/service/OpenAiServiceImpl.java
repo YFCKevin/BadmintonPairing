@@ -2,7 +2,6 @@ package com.yfckevin.badmintonPairing.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yfckevin.badmintonPairing.ConfigProperties;
 import com.yfckevin.badmintonPairing.dto.BadmintonPostDTO;
@@ -20,7 +19,6 @@ import org.springframework.web.client.RestTemplate;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -45,7 +43,7 @@ public class OpenAiServiceImpl implements OpenAiService {
 
 
     @Override
-    public int generatePosts() {
+    public List<Post> generatePosts() {
 
         ConfigurationUtil.Configuration();
         //先處理零打資訊
@@ -86,12 +84,10 @@ public class OpenAiServiceImpl implements OpenAiService {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-
-        return 0;
+        return null;
     }
 
-    private int callOpenAI(String prompt) throws Exception {
+    private List<Post> callOpenAI(String prompt) throws Exception {
         String url = "https://api.openai.com/v1/chat/completions";
 
         HttpHeaders headers = new HttpHeaders();
@@ -123,8 +119,7 @@ public class OpenAiServiceImpl implements OpenAiService {
             objectMapper.writeValue(file, response);
 
             List<Post> postList = constructToEntity(content);
-            postRepository.saveAll(postList);
-            return postList.size();
+            return postRepository.saveAll(postList);
         } else {
             throw new Exception("GPT回傳的錯誤碼: " + response.getStatusCodeValue());
         }
