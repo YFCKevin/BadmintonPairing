@@ -40,15 +40,17 @@ public class PostServiceImpl implements PostService {
     Logger logger = LoggerFactory.getLogger(PostServiceImpl.class);
     private final SimpleDateFormat svf;
     private final SimpleDateFormat ssf;
+    private final SimpleDateFormat sdf;
     private final ObjectMapper objectMapper;
     private final MongoTemplate mongoTemplate;
     private final ConfigProperties configProperties;
     private final PostRepository postRepository;
 
-    public PostServiceImpl(@Qualifier("svf") SimpleDateFormat svf, @Qualifier("ssf") SimpleDateFormat ssf, ObjectMapper objectMapper, MongoTemplate mongoTemplate, ConfigProperties configProperties,
+    public PostServiceImpl(@Qualifier("svf") SimpleDateFormat svf, @Qualifier("ssf") SimpleDateFormat ssf, @Qualifier("sdf") SimpleDateFormat sdf, ObjectMapper objectMapper, MongoTemplate mongoTemplate, ConfigProperties configProperties,
                            PostRepository postRepository) {
         this.svf = svf;
         this.ssf = ssf;
+        this.sdf = sdf;
         this.objectMapper = objectMapper;
         this.mongoTemplate = mongoTemplate;
         this.configProperties = configProperties;
@@ -56,7 +58,7 @@ public class PostServiceImpl implements PostService {
     }
 
     /**
-     * 清多空格 -> 去掉查看更多 -> 分類零打與轉讓 -> 寫入json file -> 組建call GPT的prompt的資料型態的文字檔
+     * 清多空格 -> 去掉查看更多 -> 分類零打與轉讓 -> 寫入json file
      *
      * @return 資料清洗成功的筆數
      * @throws IOException
@@ -95,66 +97,11 @@ public class PostServiceImpl implements PostService {
         objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
 
         // 寫入 JSON 到 data_disposable.json，不覆蓋既有文件
-        String disposableFilePath = saveJsonToFile(disposableDataList, "data_disposable");
+        saveJsonToFile(disposableDataList, "data_disposable");
         // 寫入 JSON 到 data_release.json，不覆蓋既有文件
-        String releaseFilePath = saveJsonToFile(releaseDataList, "data_release");
-
-        //組建喂GPT的prompt的資料型態的文字檔，不覆蓋既有文件
-        if (new File(disposableFilePath).exists()) {
-            constructPrompt(disposableFilePath, "prompt_disposable");
-        }
-        if (new File(releaseFilePath).exists()) {
-            constructPrompt(releaseFilePath, "prompt_release");
-        }
+        saveJsonToFile(releaseDataList, "data_release");
 
         return releaseDataList.size() + disposableDataList.size();
-    }
-
-
-    private void constructPrompt(String filePath, String fileName) {
-        String date = svf.format(new Date());
-        String outputTextFilePath = configProperties.getFileSavePath() + date + "-" + fileName + ".txt";
-        File file = new File(outputTextFilePath);
-
-        try {
-            // 將 JSON 資料轉換成 List<Map<String, String>>
-            List<Map<String, String>> postList = objectMapper.readValue(new File(filePath), new TypeReference<>() {});
-
-            // 使用 StringBuilder 來構建文件的內容
-            StringBuilder builder = new StringBuilder();
-
-            // 如果文件存在，讀取現有內容並存入 StringBuilder
-            if (file.exists()) {
-                try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        builder.append(line);
-                    }
-                }
-            }
-
-            // 將新貼文資料 append 到 builder
-            for (Map<String, String> post : postList) {
-                String name = post.get("name");
-                String postContent = post.get("postContent");
-                String userId = post.get("userId");
-                builder.append(name).append(" | ").append(userId).append("::: ").append(postContent).append(" /// ");
-            }
-
-            // 去掉最後的 " /// "
-            if (builder.length() > 0) {
-                builder.setLength(builder.length() - 4);
-            }
-
-            //  清空舊資料，再利用 FileWriter 把 builder 資料寫入
-            try (FileWriter fileWriter = new FileWriter(outputTextFilePath, false)) {
-                fileWriter.write(builder.toString());
-            }
-
-            logger.info("轉換完成，結果已寫入 {}", outputTextFilePath);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
 
@@ -350,10 +297,15 @@ public class PostServiceImpl implements PostService {
         LocalDateTime startOfDay = LocalDateTime.now().toLocalDate().atStartOfDay();
         LocalDateTime endOfDay = startOfDay.plusDays(1);
 
-        Date startDate = Date.from(startOfDay.atZone(ZoneId.systemDefault()).toInstant());
-        Date endDate = Date.from(endOfDay.atZone(ZoneId.systemDefault()).toInstant());
+        final String startDate = sdf.format(Date.from(startOfDay.atZone(ZoneId.systemDefault()).toInstant()));
+        final String endDate = sdf.format(Date.from(endOfDay.atZone(ZoneId.systemDefault()).toInstant()));
 
         return postRepository.findByCreationDateBetween(startDate, endDate);
+    }
+
+    @Override
+    public void deleteByIdIn(List<String> postIdIn) {
+        postRepository.deleteByIdIn(postIdIn);
     }
 
     private String saveJsonFileForDataCleaning(List<RequestPostDTO> differencePosts) throws IOException {
@@ -377,7 +329,7 @@ public class PostServiceImpl implements PostService {
     }
 
 
-    private String saveJsonToFile(List<DataCleaningDTO> dataList, String baseFileName) throws IOException {
+    private void saveJsonToFile(List<DataCleaningDTO> dataList, String baseFileName) throws IOException {
         String fileName = baseFileName + ".json";
         String date = svf.format(new Date());
         File file = new File(configProperties.getFileSavePath() + date + "-" + fileName);
@@ -387,7 +339,6 @@ public class PostServiceImpl implements PostService {
         }
         existingDataList.addAll(dataList);
         objectMapper.writeValue(file, existingDataList);
-        return file.getAbsolutePath(); // return file的絕對路徑
     }
 
 

@@ -15,12 +15,39 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" type="text/css" th:href="@{css/style.css}" />
+    <script>
+    function isMobile() {
+      const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+      const isIOS = /iPad|iPhone|iPod/.test(userAgent) && !window.MSStream;
+      const isAndroid = /Mobi|Android/i.test(userAgent);
+      const isWindowsPhone = /Windows Phone/i.test(userAgent);
+      const isWindowsTablet = /Windows/i.test(userAgent) && !/Mobile/i.test(userAgent);
+      const isBlackBerry = /BlackBerry/i.test(userAgent) || /BB10/i.test(userAgent);
 
-    <meta property="og:title" content="羽球配對找零打" />
-    <meta property="og:description" content="搜尋最適合您的零打團！" />
-      <meta property="og:image" th:content="@{images/badminton.jpg}" />
-    <meta property="og:url" content="http://54.238.141.0/badminton/posts" />
-    <meta property="og:type" content="website" />
+      return isIOS || isAndroid || isWindowsPhone || isWindowsTablet || isBlackBerry;
+    }
+
+    function getDeviceType() {
+      const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+      const isIOS = /iPad|iPhone|iPod/.test(userAgent) && !window.MSStream;
+      const isAndroid = /Mobi|Android/i.test(userAgent);
+      const isWindowsPhone = /Windows Phone/i.test(userAgent);
+      const isWindowsTablet = /Windows/i.test(userAgent) && !/Mobile/i.test(userAgent);
+      const isBlackBerry = /BlackBerry/i.test(userAgent) || /BB10/i.test(userAgent);
+
+      return isIOS ? 'iOS' :
+             isAndroid ? 'Android' :
+             isWindowsPhone ? 'Windows Phone' :
+             isWindowsTablet ? 'Windows Tablet' :
+             isBlackBerry ? 'BlackBerry' :
+             'Desktop';
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const deviceType = getDeviceType();
+      console.log(`Current Device Type: ${deviceType}`);
+    });
+  </script>
   </head>
   <body>
     <div class="limiter">
@@ -79,8 +106,15 @@
                   </div>
               </div>
 
+              <div class="row mt-3" style="margin-top: 10px; margin-bottom: 10px;">
+                  <div class="col-12 text-left">
+                     <button type="button" class="btn btn-success btn-sm btn-rounded" x-on:click="showTodayNewPostBtn();">最新上架</button>
+                  </div>
+              </div>
 
-            <table>
+
+
+              <table>
               <thead>
                 <tr class="table100-head">
                   <th class="th-leader">團主名</th>
@@ -98,7 +132,7 @@
                   <tr>
                     <td class="th-leader">
                       <a
-                        :href="item.link"
+                        :href="isMobile() ? item.shortLink : item.link"
                         target="_blank"
                         x-text="item.name"
                       ></a>
@@ -185,6 +219,7 @@
     <script th:src="@{js/alpine.2.8.2.min.js}"></script>
     <script th:inline="javascript">
       const posts = /*[[${posts}]]*/
+
         function loadData(eleData) {
           return {
             pageNumber: 0,
@@ -250,16 +285,21 @@
                 },
               });
             },
-<!--            showNewestPosts() {-->
-<!--              let _this = this;-->
-<!--              _this.myForData.sort((a, b) => {-->
-<!--                let dateA = new Date(a.creationDate);-->
-<!--                let dateB = new Date(b.creationDate);-->
-<!--                return dateB - dateA;-->
-<!--              });-->
-
-<!--              console.log(_this.myForData);-->
-<!--            },-->
+            showTodayNewPostBtn (){
+              let _this = this;
+              $.ajax({
+                url: "getTodayNewPosts",
+                type: "get",
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                success: function (response) {
+                  if (response.code == "C000"){
+                    _this.myForData = response.data;
+                    this.pageNumber = 0;
+                  }
+                },
+              });
+            },
           };
         };
 

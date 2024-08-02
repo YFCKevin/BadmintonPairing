@@ -27,4 +27,7 @@ public interface PostService {
     void deleteById(String id);
 
     List<Post> getPostsForToday();
+
+    void deleteByIdIn(List<String> postIdIn);
+
 }

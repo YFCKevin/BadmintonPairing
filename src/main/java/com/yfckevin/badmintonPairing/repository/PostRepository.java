@@ -9,5 +9,7 @@ import java.util.List;
 
 public interface PostRepository extends MongoRepository<Post, String> {
     @Query("{ 'creationDate' : { $gte: ?0, $lt: ?1 } }")
-    List<Post> findByCreationDateBetween(Date startDate, Date endDate);
+    List<Post> findByCreationDateBetween(String startDate, String endDate);
+
+    void deleteByIdIn(List<String> postIdIn);
 }

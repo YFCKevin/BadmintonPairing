@@ -96,12 +96,18 @@
                     <div class="col d-flex">
                         <button type="button" class="btn btn-warning btn-sm btn-rounded" x-on:click="searchSamePosts();">相同貼文</button>
                     </div>
+                    <div class="col d-flex justify-content-end">
+                        <button type="button" class="btn btn-danger btn-sm btn-rounded" x-on:click="deleteAllPosts();">全部刪除</button>  <!--                        x-show="selectedFiles.length > 0"-->
+                    </div>
                 </div>
 
                 <div class="table-responsive custom-table-responsive" style="overflow-x: auto;">
                     <table>
                         <thead>
                         <tr class="table100-head">
+                            <th class="col">
+                                <input type="checkbox" id="select-all" x-on:change="toggleSelectAll($event)">
+                            </th>
                             <th class="col">編號</th>
                             <th class="col">團主名</th>
                             <th class="col">團主編號</th>
@@ -118,35 +124,38 @@
                         </tr>
                         </thead>
                         <tbody>
-                        <template x-for="(item,index) in getData()" :key="index">
-                            <tr>
-                                <td class="th-num" x-text="getItemNumber(index)"></td>
-                                <td class="th-name" x-text="item.name"></td>
-                                <td class="th-userId" x-text="item.userId"></td>
-                                <td class="th-place" x-text="item.place"></td>
-                                <td class="th-time" x-text="item.time"></td>
-                                <td class="th-fee" x-text="item.fee"></td>
-                                <td class="th-level" x-text="item.level"></td>
-                                <td
-                                        class="th-brand"
-                                        x-text="item.brand === '' ? '-' : item.brand"
-                                ></td>
-                                <td
-                                        class="th-airConditioner"
-                                        x-text="item.airConditioner == '未標示' ? '-' : (item.airConditioner == '有冷氣' ? 'Y' : 'N')"
-                                ></td>
-                                <td
-                                        class="th-parkInfo"
-                                        x-text="item.parkInfo === '' ? '-' : item.parkInfo"
-                                ></td>
-                                <td class="th-contact" x-text="item.contact"></td>
-                                <td class="th-creationDate" x-text="item.creationDate"></td>
-                                <td class="th-action">
-                                    <button style="padding: 5px; margin: 5px" class="btn btn-primary" x-on:click="edit(item.id)">編輯</button>
-                                    <button style="padding: 5px; margin: 5px" class="btn btn-danger" x-on:click="deletePost(item.id)">刪除</button>
-                                </td>
-                            </tr>
-                        </template>
+                            <template x-for="(item,index) in getData()" :key="index">
+                                <tr>
+                                    <td class="th-select">
+                                        <input type="checkbox" :value="item.id" x-on:change="update($event)">
+                                    </td>
+                                    <td class="th-num" x-text="getItemNumber(index)"></td>
+                                    <td class="th-name" x-text="item.name"></td>
+                                    <td class="th-userId" x-text="item.userId"></td>
+                                    <td class="th-place" x-text="item.place"></td>
+                                    <td class="th-time" x-text="item.time"></td>
+                                    <td class="th-fee" x-text="item.fee"></td>
+                                    <td class="th-level" x-text="item.level"></td>
+                                    <td
+                                            class="th-brand"
+                                            x-text="item.brand === '' ? '-' : item.brand"
+                                    ></td>
+                                    <td
+                                            class="th-airConditioner"
+                                            x-text="item.airConditioner == '未標示' ? '-' : (item.airConditioner == '有冷氣' ? 'Y' : 'N')"
+                                    ></td>
+                                    <td
+                                            class="th-parkInfo"
+                                            x-text="item.parkInfo === '' ? '-' : item.parkInfo"
+                                    ></td>
+                                    <td class="th-contact" x-text="item.contact"></td>
+                                    <td class="th-creationDate" x-text="item.creationDate"></td>
+                                    <td class="th-action">
+                                        <button style="padding: 5px; margin: 5px" class="btn btn-primary" x-on:click="edit(item.id)">編輯</button>
+                                        <button style="padding: 5px; margin: 5px" class="btn btn-danger" x-on:click="deletePost(item.id)">刪除</button>
+                                    </td>
+                                </tr>
+                            </template>
                         </tbody>
                     </table>
                     <nav class="mt-5 mb-4" x-show="pageCount() > 1">
@@ -274,6 +283,7 @@
 <script th:inline="javascript">
       const postDTOList = /*[[${postDTOList}]]*/
       let passId;   // for edit
+      let selectedPostIds = [];   //裝需要轉換成txt檔的文章
 
         function loadData(eleData) {
           return {
@@ -434,25 +444,68 @@
                 },
               });
             },
+            toggleSelectAll(event) {
+              const isChecked = event.target.checked;
+              const checkboxes = $('tbody input[type="checkbox"]');
+              if (isChecked) {
+                selectedPostIds = [];
+                checkboxes.each((index, checkbox) => {
+                  checkbox.checked = true;
+                  selectedPostIds.push(checkbox.value);
+                });
+              } else {
+                checkboxes.each((index, checkbox) => {
+                  checkbox.checked = false;
+                });
+                selectedPostIds = [];
+              }
+            },
+            update(event) {
+              const checkbox = event.target;
+              const value = checkbox.value;
+              if (checkbox.checked) {
+                if (!selectedPostIds.includes(value)) {
+                    selectedPostIds.push(value);
+                }
+              } else {
+                selectedPostIds = selectedPostIds.filter(item => item !== value);
+              }
+            },
+            deleteAllPosts (){
+              if (selectedPostIds.length <= 0){
+                alert('請選擇貼文')
+                return;
+              }
+              $.ajax({
+                url: "deleteAllPosts",
+                type: "post",
+                dataType: "json",
+                data: JSON.stringify(selectedPostIds),
+                contentType: "application/json; charset=utf-8",
+                success: function (response) {
+                  alert('刪除成功！')
+                },
+              });
+            },
           };
         };
 
         function openSaveModal(){
-            $("#modalLabel").text('新增貼文');
-            $("#editModal").modal('show');
+          $("#modalLabel").text('新增貼文');
+          $("#editModal").modal('show');
         }
 
 
         function handleSelection(value) {
-            switch (value) {
-                case 'todayNewLeaders':
-                    todayNewLeaders();
-                    break;
-            }
+          switch (value) {
+            case 'todayNewLeaders':
+              todayNewLeaders();
+              break;
+          }
         }
 
         function clearKeyword() {
-            $('#keyword').val('');
+          $('#keyword').val('');
         }
     </script>
 </body>

@@ -74,6 +74,7 @@
                         <button type="button" class="btn btn-danger btn-sm btn-rounded" x-on:click="searchIssues();">疑慮文章</button>
                         <button type="button" class="btn btn-success btn-sm btn-rounded" x-on:click="textCompletion();">openAI</button>
                         <button type="button" class="btn btn-warning btn-sm btn-rounded" x-on:click="getUnfinishedFiles();">取得未完成資料</button>
+                        <button x-show="postData && postData.length > 0" type="button" class="btn btn-success btn-sm btn-rounded" x-on:click="showTodayNewPostBtn();">今日新貼文</button>
                     </div>
                 </div>
 
@@ -100,7 +101,7 @@
                                 <td class="th-num" x-text="getItemNumber(index)"></td>
                                 <td class="th-name" x-text="item.name"></td>
                                 <td class="th-userId" x-text="item.userId"></td>
-                                <td class="th-postContent" x-text="item.postContent"></td>
+                                <td class="th-postContent" x-html="item.postContent"></td>
                                 <td class="th-action">
                                     <button style="padding: 5px; margin: 5px" class="btn btn-primary" x-on:click="edit(item.userId)">編輯</button>
                                     <button style="padding: 5px; margin: 5px" class="btn btn-danger" x-on:click="deleteFile(item.userId)">刪除</button>
@@ -196,26 +197,158 @@
     </div>
 </div>
 
+<!-- postModal -->
+<div class="modal fade" id="postModal" tabindex="-1" data-bs-backdrop="static" aria-labelledby="postModal" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">新貼文</h5>
+            </div>
+            <div style="overflow-x: auto;" class="modal-body">
+                <table>
+                    <thead>
+                    <tr class="table100-head">
+                        <th class="col">編號</th>
+                        <th class="col">團主名</th>
+                        <th class="col">團主編號</th>
+                        <th class="col">地點</th>
+                        <th class="col">時間</th>
+                        <th class="col">費用</th>
+                        <th class="col">程度</th>
+                        <th class="col">用球</th>
+                        <th class="col">冷氣</th>
+                        <th class="col">停車資訊</th>
+                        <th class="col">聯絡方式</th>
+                        <th class="col">創立時間</th>
+                        <th class="col">動作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+
+                        <template x-for="(item,index) in getPostData()" :key="index">
+
+                            <tr>
+                                <td class="th-num" x-text="getItemNumber(index)"></td>
+                                <td class="th-name" x-text="item.name"></td>
+                                <td class="th-userId" x-text="item.userId"></td>
+                                <td class="th-place" x-text="item.place"></td>
+                                <td class="th-time" x-text="item.time"></td>
+                                <td class="th-fee" x-text="item.fee"></td>
+                                <td class="th-level" x-text="item.level"></td>
+                                <td
+                                        class="th-brand"
+                                        x-text="item.brand === '' ? '-' : item.brand"
+                                ></td>
+                                <td
+                                        class="th-airConditioner"
+                                        x-text="item.airConditioner == '未標示' ? '-' : (item.airConditioner == '有冷氣' ? 'Y' : 'N')"
+                                ></td>
+                                <td
+                                        class="th-parkInfo"
+                                        x-text="item.parkInfo === '' ? '-' : item.parkInfo"
+                                ></td>
+                                <td class="th-contact" x-text="item.contact"></td>
+                                <td class="th-creationDate" x-text="item.creationDate"></td>
+                                <td class="th-action">
+                                    <button style="padding: 5px; margin: 5px" class="btn btn-primary" x-on:click="editPost(item.id)">編輯</button>
+                                    <button style="padding: 5px; margin: 5px" class="btn btn-danger" x-on:click="deletePost(item.id)">刪除</button>
+                                </td>
+                            </tr>
+
+                        </template>
+
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" x-on:click="closePostModal()">關閉</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- editPostModal -->
+<div class="modal fade" id="editPostModal" tabindex="-1" data-bs-backdrop="static" aria-labelledby="editModal" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">編輯貼文</h5>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="editName_p">團主名</label>
+                    <input type="text" class="form-control" id="editName_p">
+                </div>
+                <div class="form-group">
+                    <label for="editUserId_p">圖主編號</label>
+                    <input type="text" class="form-control" id="editUserId_p" >
+                </div>
+                <div class="form-group">
+                    <label for="editPlace_p">地點</label>
+                    <input type="text" class="form-control" id="editPlace_p">
+                </div>
+                <div class="form-group">
+                    <label for="editTime_p">時間</label>
+                    <input type="text" class="form-control" id="editTime_p" >
+                </div>
+                <div class="form-group">
+                    <label for="editFee_p">費用</label>
+                    <input type="text" class="form-control" id="editFee_p">
+                </div>
+                <div class="form-group">
+                    <label for="editLevel_p">程度</label>
+                    <input type="text" class="form-control" id="editLevel_p" >
+                </div>
+                <div class="form-group">
+                    <label for="editBrand_p">用球</label>
+                    <input type="text" class="form-control" id="editBrand_p" >
+                </div>
+                <div class="form-group">
+                    <label for="editAirConditioner_p">冷氣</label>
+                    <select class="form-control" id="editAirConditioner_p">
+                        <option value="no_mention">未標示</option>
+                        <option value="present">有</option>
+                        <option value="absent">無</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="editParkInfo_p">停車資訊</label>
+                    <input type="text" class="form-control" id="editParkInfo_p">
+                </div>
+                <div class="form-group">
+                    <label for="editContact_p">聯絡方式</label>
+                    <input type="text" class="form-control" id="editContact_p" >
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" x-on:click="closeEditPostModal()">關閉</button>
+                <button type="button" class="btn btn-primary" x-on:click="savePost()">儲存</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script th:src="@{js/alpine.2.8.2.min.js}"></script>
 <script th:src="@{js/jquery.min.js}"></script>
 <script th:src="@{js/bootstrap.min.js}"></script>
 <script th:inline="javascript">
       const postDTOList = /*[[${postDTOList}]]*/
       const sortedDateList = /*[[${sortedDateList}]]*/
-      let passId;   // for edit
+      let passId;   // for file edit
+      let passPostId;   // for post edit
       let selectedFiles = [];   //裝需要轉換成txt檔的文章
       let fileDateData = /*[[${today}]]*/; //當前選擇的檔案日期，給findFileByUserId API使用
+      let postData = /*[[${postData}]]*/    //喂openAI後產生的今日新貼文
 
         function loadData(eleData) {
           return {
             pageNumber: 0,
-            size: 40,
+            size: 20,
             total: "",
             startDate: "",
             endDate: "",
             myForData: eleData,
-            postData: [],
-
+            postData: postData,
 
             init() {
               const today = new Date();
@@ -230,8 +363,11 @@
               this.total = filterData.length;
               return filterData.slice(start, end);
             },
-            getFileDateData() {
+            getFileDateData (){
               return sortedDateList;
+            },
+            getPostData (){
+              return this.postData;
             },
             pages() {
               return Array.from({
@@ -385,12 +521,29 @@
                 contentType: "application/json; charset=utf-8",
                 success: function (response) {
                   if (response.code == "C000"){
-                    _this.myForData = response.data;
+                    const postDTOList = response.data.postDTOList;
+                    const keywords = response.data.keywords;
+                    const issueData = postDTOList.map(issue => {
+                      issue.postContent = _this.highlightKeywords(issue.postContent, keywords);
+                        return issue;
+                      });
+                    _this.myForData = issueData;
                   }
                 },
               });
             },
+            highlightKeywords(text, keywords) {
+                keywords.split('|').forEach(keyword => {
+                    const regex = new RegExp(keyword, 'g');
+                    text = text.replace(regex, `<span style="background-color: yellow; font-weight: bold; font-size: 1.25rem; color: black;">${keyword}</span>`);
+                });
+                return text;
+            },
             textCompletion (){
+              if (selectedFiles.length == 0){
+                alert("至少選擇一則檔案！")
+                return;
+              }
               let _this = this;
               $.ajax({
                 url: "convertToPosts/" + fileDateData,
@@ -400,7 +553,7 @@
                 contentType: "application/json; charset=utf-8",
                 success: function (response) {
                   if (response.code == "C000"){
-                    _this.postData = response.data;
+                    alert("完成")
                   } else {
                     alert("例外發生")
                   }
@@ -437,6 +590,94 @@
                     fileDateData = date;
                     _this.myForData = response.data;
                   }
+                },
+              });
+            },
+            closePostModal (){
+              $("#postModal").modal('hide');
+            },
+            closeEditPostModal (){
+              $("#editPostModal").modal('hide');
+              passPostId = '';
+              $("#editName_p").val('');
+              $("#editUserId_p").val('');
+              $("#editTime_p").val('');
+              $("#editPlace_p").val('');
+              $("#editFee_p").val('');
+              $("#editLevel_p").val('');
+              $("#editBrand_p").val('');
+              $("#editParkInfo_p").val('');
+              $("#editContact_p").val('');
+              $("#editAirConditioner_p").val('');
+              $("#modalLabel_p").text('');
+              document.getElementById('editName_p').readOnly = false;
+              document.getElementById('editUserId_p').readOnly = false;
+            },
+            showTodayNewPostBtn (){
+              $("#postModal").modal('show');
+            },
+            editPost(id){
+              passPostId = id;
+              $.ajax({
+                url: "findPostById/" + id,
+                type: "get",
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                success: function (response) {
+                  const post = response.data;
+                  $("#editName_p").val(post.name);
+                  $("#editUserId_p").val(post.userId);
+                  $("#editTime_p").val(post.startTime + " ～ " + post.endTime);
+                  $("#editPlace_p").val(post.place);
+                  $("#editFee_p").val(post.fee);
+                  $("#editLevel_p").val(post.level);
+                  $("#editBrand_p").val(post.brand);
+                  $("#editParkInfo_p").val(post.parkInfo);
+                  $("#editContact_p").val(post.contact);
+                  $("#editAirConditioner_p").val(post.airConditioner);
+                  $("#modalLabel_p").text('編輯貼文');
+                  document.getElementById('editName_p').readOnly = true;
+                  document.getElementById('editUserId_p').readOnly = true;
+                  $("#editPostModal").modal('show');
+                },
+              });
+            },
+            deletePost(id){
+              $.ajax({
+                url: "deletePost/" + id,
+                type: "get",
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                success: function (response) {
+                  alert('刪除成功')
+                  location.reload();
+                },
+              });
+            },
+            savePost(){
+              let data = {};
+              data.id = passPostId;
+              data.name = $("#editName_p").val();
+              data.userId = $("#editUserId_p").val();
+              data.place = $("#editPlace_p").val();
+              let times = $("#editTime_p").val().split(" ～ ");
+              data.startTime = times[0];
+              data.endTime = times[1];
+              data.fee = $("#editFee_p").val();
+              data.level = $("#editLevel_p").val();
+              data.brand = $("#editBrand_p").val();
+              data.airConditioner = $("#editAirConditioner_p").val();
+              data.parkInfo = $("#editParkInfo_p").val();
+              data.contact = $("#editContact_p").val();
+              $.ajax({
+                url: "savePost",
+                type: "post",
+                dataType: "json",
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                success: function (response) {
+                  alert('儲存成功')
+                  location.reload();
                 },
               });
             },

@@ -398,6 +398,32 @@ public class BackendManageController {
         return ResponseEntity.ok(resultStatus);
     }
 
+
+    /**
+     * 刪除全部貼文
+     *
+     * @param postIdList
+     * @param session
+     * @return
+     */
+    @PostMapping("/deleteAllPosts")
+    public ResponseEntity<?> deleteAllPosts(@RequestBody List<String> postIdList, HttpSession session) {
+
+        final String member = (String) session.getAttribute("admin");
+        if (member != null) {
+            logger.info("[deleteAllPosts]");
+        }
+
+        ResultStatus resultStatus = new ResultStatus();
+
+        postService.deleteByIdIn(postIdList);
+        resultStatus.setCode("C000");
+        resultStatus.setMessage("成功");
+
+        return ResponseEntity.ok(resultStatus);
+    }
+
+
     /**
      * 查詢貼文
      *
@@ -543,6 +569,25 @@ public class BackendManageController {
             model.addAttribute("sortedDateList", sortedDateList);
 
             model.addAttribute("today", ssf.format(new Date()));
+
+            // 取出喂openAI的貼文結果列表
+            LocalDateTime now = LocalDateTime.now();
+            LocalDateTime startOfToday = now.toLocalDate().atStartOfDay();
+            LocalDateTime endOfTodayLater = now.withHour(23).withMinute(59).withSecond(59).withNano(0);
+            String startOfTodayFormatted = startOfToday.format(ddf);
+            String endOfTodayFormatted = endOfTodayLater.format(ddf);
+
+            final List<PostDTO> todayNewPostList = postService.findTodayNewPosts(startOfTodayFormatted, endOfTodayFormatted)
+                    .stream()
+                    .map(post -> {
+                        try {
+                            return constructPostDTO(post);
+                        } catch (ParseException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }).toList();
+
+            model.addAttribute("postData", todayNewPostList);
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -693,6 +738,7 @@ public class BackendManageController {
 
     /**
      * 透過唯一值userId取得file
+     *
      * @param userId
      * @param date
      * @param session
@@ -732,11 +778,12 @@ public class BackendManageController {
 
     /**
      * 篩選出問題文章
+     *
      * @param session
      * @return
      */
     @GetMapping("/searchIssues/{date}")
-    public ResponseEntity<?> searchIssues (@PathVariable String date, HttpSession session) throws IOException, ParseException {
+    public ResponseEntity<?> searchIssues(@PathVariable String date, HttpSession session) throws IOException, ParseException {
 
         final String member = (String) session.getAttribute("admin");
         if (member != null) {
@@ -747,7 +794,8 @@ public class BackendManageController {
 
         date = svf.format(ssf.parse(date)); // 日期更換回yyyyMMdd
 
-        Pattern issuePattern = Pattern.compile("教練|場地出租|場地釋出|釋出|場地分享|場地轉讓|轉讓|場地轉租");
+        String keywords = "教練|場地出租|場地釋出|釋出|場地分享|場地轉讓|轉讓|場地轉租";
+        Pattern issuePattern = Pattern.compile(keywords);
 
         List<RequestPostDTO> postDTOList = constructPostDTOFromDailyPostsFile(date);
         postDTOList = postDTOList.stream()
@@ -756,14 +804,19 @@ public class BackendManageController {
 
         resultStatus.setCode("C000");
         resultStatus.setMessage("成功");
-        resultStatus.setData(postDTOList);
+
+        Map<String, Object> dataMap = new HashMap<>();
+        dataMap.put("keywords", keywords);
+        dataMap.put("postDTOList", postDTOList);
+
+        resultStatus.setData(dataMap);
 
         return ResponseEntity.ok(resultStatus);
     }
 
 
     @PostMapping("/convertToPosts/{date}")
-    public ResponseEntity<?> convertToPosts (@PathVariable String date, @RequestBody List<String> userIdList, HttpSession session) throws ParseException, IOException {
+    public ResponseEntity<?> convertToPosts(@PathVariable String date, @RequestBody List<String> userIdList, HttpSession session) throws ParseException, IOException {
 
         final String member = (String) session.getAttribute("admin");
         if (member != null) {
@@ -782,23 +835,25 @@ public class BackendManageController {
                     .toList();
 
             if (requestPostDTOList.size() > 0) {
-                constructPrompt(requestPostDTOList);
+                final String prompt = constructPrompt(requestPostDTOList);
+                // call openAi text completion
+                final List<Post> postList = openAiService.generatePosts(prompt);
+                final List<PostDTO> postDTOList = postList.stream().map(p -> {
+                    try {
+                        return constructPostDTO(p);
+                    } catch (ParseException e) {
+                        throw new RuntimeException(e);
+                    }
+                }).toList();
+
+                // 結果呈現回前端
+                resultStatus.setCode("C000");
+                resultStatus.setMessage("成功");
+                resultStatus.setData(postDTOList);
+            } else {
+                resultStatus.setCode("C006");
+                resultStatus.setMessage("未選取檔案");
             }
-
-            // call openAi text completion
-            final List<Post> postList = openAiService.generatePosts();
-            final List<PostDTO> postDTOList = postList.stream().map(p -> {
-                try {
-                    return constructPostDTO(p);
-                } catch (ParseException e) {
-                    throw new RuntimeException(e);
-                }
-            }).toList();
-
-            // 結果呈現回前端
-            resultStatus.setCode("C000");
-            resultStatus.setMessage("成功");
-            resultStatus.setData(postDTOList);
 
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
@@ -810,9 +865,8 @@ public class BackendManageController {
     }
 
 
-
     @GetMapping("/getUnfinishedFiles/{date}")
-    public ResponseEntity<?> getUnfinishedFiles (@PathVariable String date, HttpSession session) throws ParseException, IOException {
+    public ResponseEntity<?> getUnfinishedFiles(@PathVariable String date, HttpSession session) throws ParseException, IOException {
 
         final String member = (String) session.getAttribute("admin");
         if (member != null) {
@@ -834,6 +888,7 @@ public class BackendManageController {
         if (requestPostDTOList.size() > 0) {
             resultStatus.setCode("C005");
             resultStatus.setMessage("尚有檔案未匯入資料庫");
+            resultStatus.setData(requestPostDTOList);
         } else {
             resultStatus.setCode("C000");
             resultStatus.setMessage("成功");
@@ -843,49 +898,27 @@ public class BackendManageController {
     }
 
 
-    private void constructPrompt(List<RequestPostDTO> postDTOList) {
-        String date = svf.format(new Date());
-        String outputTextFilePath = configProperties.getFileSavePath() + date + "-" + "prompt_disposable.txt";
-        File file = new File(outputTextFilePath);
+    private String constructPrompt(List<RequestPostDTO> postDTOList) {
+        // 使用 StringBuilder 來構建文件的內容
+        StringBuilder builder = new StringBuilder();
 
-        try {
-            // 使用 StringBuilder 來構建文件的內容
-            StringBuilder builder = new StringBuilder();
-
-            // 如果文件存在，讀取現有內容並存入 StringBuilder
-            if (file.exists()) {
-                try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        builder.append(line);
-                    }
-                }
-            }
-
-            // 將新貼文資料 append 到 builder
-            for (RequestPostDTO post : postDTOList) {
-                String name = post.getName();
-                String postContent = post.getPostContent();
-                String userId = post.getUserId();
-                builder.append(name).append(" | ").append(userId).append("::: ").append(postContent).append(" /// ");
-            }
-
-            // 去掉最後的 " /// "
-            if (builder.length() > 0) {
-                builder.setLength(builder.length() - 4);
-            }
-
-            //  清空舊資料，再利用 FileWriter 把 builder 資料寫入
-            try (FileWriter fileWriter = new FileWriter(outputTextFilePath, false)) {
-                fileWriter.write(builder.toString());
-            }
-
-            logger.info("轉換完成，結果已寫入 {}", outputTextFilePath);
-        } catch (IOException e) {
-            e.printStackTrace();
+        // 將新貼文資料 append 到 builder
+        for (RequestPostDTO post : postDTOList) {
+            String name = post.getName();
+            String postContent = post.getPostContent();
+            String userId = post.getUserId();
+            builder.append(name).append(" | ").append(userId).append("::: ").append(postContent).append(" /// ");
         }
-    }
 
+        // 去掉最後的 " /// "
+        if (builder.length() > 0) {
+            builder.setLength(builder.length() - 4);
+        }
+
+        logger.info("建構完成prompt");
+
+        return builder.toString();
+    }
 
 
     private List<RequestPostDTO> constructPostDTOFromDailyPostsFile(String date) throws IOException {
@@ -895,7 +928,8 @@ public class BackendManageController {
         if (!file.exists()) {
             return Collections.emptyList();
         }
-        TypeRef<List<RequestPostDTO>> typeRef = new TypeRef<>() {};
+        TypeRef<List<RequestPostDTO>> typeRef = new TypeRef<>() {
+        };
         return JsonPath.parse(file).read("$", typeRef);
     }
 

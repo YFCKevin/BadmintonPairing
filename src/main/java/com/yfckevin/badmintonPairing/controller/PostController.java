@@ -4,8 +4,10 @@ import com.yfckevin.badmintonPairing.dto.PostDTO;
 import com.yfckevin.badmintonPairing.dto.SearchDTO;
 import com.yfckevin.badmintonPairing.entity.Leader;
 import com.yfckevin.badmintonPairing.entity.Post;
+import com.yfckevin.badmintonPairing.exception.ResultStatus;
 import com.yfckevin.badmintonPairing.service.LeaderService;
 import com.yfckevin.badmintonPairing.service.PostService;
+import jakarta.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -78,6 +80,47 @@ public class PostController {
     }
 
 
+    @GetMapping("/getTodayNewPosts")
+    public ResponseEntity<?> getTodayNewPosts (HttpSession session){
+
+        final String member = (String) session.getAttribute("admin");
+        if (member != null) {
+            logger.info("[getTodayNewPosts]");
+        }
+
+        ResultStatus resultStatus = new ResultStatus();
+
+        // 每日新貼文
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime startOfToday = now.toLocalDate().atStartOfDay();
+        LocalDateTime endOfTodayLater = now.withHour(23).withMinute(59).withSecond(59).withNano(0);
+        String startOfTodayNewPosts = startOfToday.format(ddf);
+        String endOfTodayNewPosts = endOfTodayLater.format(ddf);
+
+        final List<Post> todayPosts = postService.findTodayNewPosts(startOfTodayNewPosts, endOfTodayNewPosts);
+        final Set<String> userIdList = todayPosts.stream().map(Post::getUserId).collect(Collectors.toSet());
+        final Map<String, Leader> leaderMap = leaderService.findAllByUserIdIn(userIdList)
+                .stream()
+                .collect(Collectors.toMap(Leader::getUserId, Function.identity()));
+
+        final List<PostDTO> todayNewPostList = todayPosts
+                .stream()
+                .map(post -> {
+                    try {
+                        return constructPostDTO(leaderMap, post);
+                    } catch (ParseException e) {
+                        throw new RuntimeException(e);
+                    }
+                }).toList();
+
+        resultStatus.setCode("C000");
+        resultStatus.setMessage("成功");
+        resultStatus.setData(todayNewPostList);
+
+        return ResponseEntity.ok(resultStatus);
+    }
+
+
     /**
      * 用團主名、地點、用球、停車資訊、起迄時間做模糊查詢
      *
@@ -129,7 +172,9 @@ public class PostController {
         postDTO.setUserId(post.getUserId());
         Leader leader = leaderMap.get(post.getUserId());
         if (leader != null) {
+//            System.out.println(leader.getName() + " /// " + leader.getLink());
             postDTO.setLink(leader.getLink());
+            postDTO.setShortLink("https://www.facebook.com/" + leader.getUserId());
         }
 
 

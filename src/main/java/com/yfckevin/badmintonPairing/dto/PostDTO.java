@@ -16,7 +16,8 @@ public class PostDTO {
     private String parkInfo;
     private String type;
     private String airConditioner;
-    private String link;
+    private String link;    //桌機版
+    private String shortLink;   //手機版
     private String creationDate;
     private String modificationDate;
     private String deletionDate;
@@ -180,5 +181,13 @@ public class PostDTO {
 
     public void setDayOfWeek(String dayOfWeek) {
         this.dayOfWeek = dayOfWeek;
+    }
+
+    public String getShortLink() {
+        return shortLink;
+    }
+
+    public void setShortLink(String shortLink) {
+        this.shortLink = shortLink;
     }
 }
