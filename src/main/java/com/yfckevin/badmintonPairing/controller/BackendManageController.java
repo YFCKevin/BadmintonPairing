@@ -33,6 +33,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.TextStyle;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -816,7 +817,7 @@ public class BackendManageController {
 
 
     @PostMapping("/convertToPosts/{date}")
-    public ResponseEntity<?> convertToPosts(@PathVariable String date, @RequestBody List<String> userIdList, HttpSession session) throws ParseException, IOException {
+    public CompletableFuture<ResponseEntity<ResultStatus>> convertToPosts(@PathVariable String date, @RequestBody List<String> userIdList, HttpSession session) throws ParseException, IOException {
 
         final String member = (String) session.getAttribute("admin");
         if (member != null) {
@@ -836,32 +837,42 @@ public class BackendManageController {
 
             if (requestPostDTOList.size() > 0) {
                 final String prompt = constructPrompt(requestPostDTOList);
-                // call openAi text completion
-                final List<Post> postList = openAiService.generatePosts(prompt);
-                final List<PostDTO> postDTOList = postList.stream().map(p -> {
-                    try {
-                        return constructPostDTO(p);
-                    } catch (ParseException e) {
-                        throw new RuntimeException(e);
-                    }
-                }).toList();
 
-                // 結果呈現回前端
-                resultStatus.setCode("C000");
-                resultStatus.setMessage("成功");
-                resultStatus.setData(postDTOList);
+                return openAiService.generatePosts(prompt)
+                        .thenApply(postList -> {
+                            final List<PostDTO> postDTOList = postList.stream().map(p -> {
+                                try {
+                                    return constructPostDTO(p);
+                                } catch (ParseException e) {
+                                    throw new RuntimeException(e);
+                                }
+                            }).toList();
+
+                            // 結果呈現回前端
+                            resultStatus.setCode("C000");
+                            resultStatus.setMessage("成功");
+                            resultStatus.setData(postDTOList);
+                            return ResponseEntity.ok(resultStatus);
+                        })
+                        .exceptionally(ex -> {
+                            logger.error(ex.getMessage(), ex);
+                            resultStatus.setCode("C999");
+                            resultStatus.setMessage("例外發生");
+                            return ResponseEntity.ok(resultStatus);
+                        });
+
             } else {
                 resultStatus.setCode("C006");
                 resultStatus.setMessage("未選取檔案");
+                return CompletableFuture.completedFuture(ResponseEntity.ok(resultStatus));
             }
 
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
             resultStatus.setCode("C999");
             resultStatus.setMessage("例外發生");
+            return CompletableFuture.completedFuture(ResponseEntity.ok(resultStatus));
         }
-
-        return ResponseEntity.ok(resultStatus);
     }
 
 

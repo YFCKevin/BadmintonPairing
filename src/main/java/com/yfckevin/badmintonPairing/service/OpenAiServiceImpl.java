@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.*;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -21,6 +22,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 public class OpenAiServiceImpl implements OpenAiService {
@@ -42,30 +44,40 @@ public class OpenAiServiceImpl implements OpenAiService {
     }
 
 
+    @Async
     @Override
-    public List<Post> generatePosts(String prompt) throws Exception {
-        //組final prompt
-        String pre_prompt = "要求：\n" +
-                "1.資料格式是作者名稱 | userId::: 貼文內容 /// name::: 貼文內容\n" +
-                "2.羽球社團找人打球的資訊，要從作者名稱和貼文內容整理出JSON檔，欄位包括：\n" +
-                "name：作者名稱\n" +
-                "userId：userId\n" +
-                "place：活動地點\n" +
-                "startTime：開始時間，格式為2024-MM-dd HH:mm:ss\n" +
-                "endTime：結束時間，格式為2024-MM-dd HH:mm:ss\n" +
-                "level：程度，用字串表示\n" +
-                "fee：費用，僅取數字\n" +
-                "duration：時長，以分鐘表示，且為數字型態\n" +
-                "brand：使用的球種品牌，若無則留空\n" +
-                "contact：聯絡方式，若無則留空\n" +
-                "parkInfo：關於停車場的相關資訊，若無則留空\n" +
-                "type：固定為\"disposable\"\n" +
-                "airConditioner：冷氣資訊，以字串表示，present:有，absent:無，no_mention:未標示\n" +
-                "\n" +
-                "3.每則貼文內容可能包含多個打球資訊，必須分開成獨立的JSON物件。\n" +
-                "4.確保只匯出json格式";
+    public CompletableFuture<List<Post>> generatePosts(String prompt) throws Exception {
 
-        return callOpenAI(prompt + "\n" + pre_prompt);
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+
+                //組final prompt
+                String pre_prompt = "要求：\n" +
+                        "1.資料格式是作者名稱 | userId::: 貼文內容 /// name::: 貼文內容\n" +
+                        "2.羽球社團找人打球的資訊，要從作者名稱和貼文內容整理出JSON檔，欄位包括：\n" +
+                        "name：作者名稱\n" +
+                        "userId：userId\n" +
+                        "place：活動地點\n" +
+                        "startTime：開始時間，格式為2024-MM-dd HH:mm:ss\n" +
+                        "endTime：結束時間，格式為2024-MM-dd HH:mm:ss\n" +
+                        "level：程度，用字串表示\n" +
+                        "fee：費用，僅取數字\n" +
+                        "duration：時長，以分鐘表示，且為數字型態\n" +
+                        "brand：使用的球種品牌，若無則留空\n" +
+                        "contact：聯絡方式，若無則留空\n" +
+                        "parkInfo：關於停車場的相關資訊，若無則留空\n" +
+                        "type：固定為\"disposable\"\n" +
+                        "airConditioner：冷氣資訊，以字串表示，present:有，absent:無，no_mention:未標示\n" +
+                        "\n" +
+                        "3.每則貼文內容可能包含多個打球資訊，必須分開成獨立的JSON物件。\n" +
+                        "4.確保只匯出json格式";
+
+                return callOpenAI(prompt + "\n" + pre_prompt);
+
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 
     private List<Post> callOpenAI(String prompt) throws Exception {
