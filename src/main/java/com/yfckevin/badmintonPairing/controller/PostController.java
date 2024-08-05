@@ -80,6 +80,11 @@ public class PostController {
     }
 
 
+    /**
+     * 取得每日新貼文
+     * @param session
+     * @return
+     */
     @GetMapping("/getTodayNewPosts")
     public ResponseEntity<?> getTodayNewPosts (HttpSession session){
 
@@ -111,7 +116,9 @@ public class PostController {
                     } catch (ParseException e) {
                         throw new RuntimeException(e);
                     }
-                }).toList();
+                })
+                .sorted(Comparator.comparing(PostDTO::getStartTime))
+                .toList();
 
         resultStatus.setCode("C000");
         resultStatus.setMessage("成功");
@@ -172,7 +179,6 @@ public class PostController {
         postDTO.setUserId(post.getUserId());
         Leader leader = leaderMap.get(post.getUserId());
         if (leader != null) {
-//            System.out.println(leader.getName() + " /// " + leader.getLink());
             postDTO.setLink(leader.getLink());
             postDTO.setShortLink("https://www.facebook.com/" + leader.getUserId());
         }
