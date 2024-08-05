@@ -11,7 +11,7 @@
     <link rel="icon" type="image/png" th:href="@{images/favicon.ico}" />
     <link rel="stylesheet" type="text/css" th:href="@{css/bootstrap.min.css}" />
     <link
-      href="http://maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css"
+      href="https://maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css"
       rel="stylesheet"
     />
     <link rel="stylesheet" type="text/css" th:href="@{css/style.css}" />
@@ -125,6 +125,7 @@
                   <th class="th-level">程度</th>
                   <th class="th-airConditioner">冷氣</th>
                   <th class="th-parkInfo">停車資訊</th>
+                  <th class="th-action">動作</th>
                 </tr>
               </thead>
               <tbody>
@@ -153,6 +154,11 @@
                       class="th-parkInfo"
                       x-text="item.parkInfo === '' ? '-' : item.parkInfo"
                     ></td>
+                    <td class="th-action">
+                      <button type="button" class="btn btn-primary" style="padding: 5px; margin: 5px"
+                              x-on:click="importCalender(item.place, item.startTime, item.endTime, item.fee, item.parkInfo, item.name)"
+                      >Google行事曆</button>
+                    </td>
                   </tr>
                 </template>
               </tbody>
@@ -280,7 +286,7 @@
                 data: JSON.stringify(data),
                 contentType: "application/json; charset=utf-8",
                 success: function (response) {
-                  console.log(response);
+                  _this.pageNumber = 0;
                   _this.myForData = response;
                 },
               });
@@ -295,7 +301,36 @@
                 success: function (response) {
                   if (response.code == "C000"){
                     _this.myForData = response.data;
-                    this.pageNumber = 0;
+                    _this.pageNumber = 0;
+                  }
+                },
+              });
+            },
+            importCalender (place, startTime, endTime, fee, parkInfo, name){
+              let data = {};
+              data.summary = "羽球"
+              data.location = place;
+              data.start = startTime;
+              data.end = endTime;
+              // 組備註資料
+              let description;
+              if (parkInfo !== ""){
+                description = "－聯絡人：" + name + "－費用：" + fee + "－停車資訊：" + parkInfo;
+              } else {
+                description = "－聯絡人：" + name + "－費用：" + fee;
+              }
+              data.description = description;
+              $.ajax({
+                url: "importCalendar",
+                type: "post",
+                dataType: "json",
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                success: function (response) {
+                  if (response.code == "C000"){
+                    alert('匯入行事曆成功')
+                  } else if (response.code == "C007"){
+                    window.location.href = 'oauth2/authorize';
                   }
                 },
               });

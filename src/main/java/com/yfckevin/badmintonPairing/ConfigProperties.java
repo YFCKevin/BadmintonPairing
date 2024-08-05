@@ -25,6 +25,12 @@ public class ConfigProperties {
     private String gptBackupSavePath;
     @Value("${config.crawlerDomain}")
     private String crawlerDomain;
+    @Value("${google.client.id}")
+    private String clientId;
+    @Value("${google.client.secret}")
+    private String clientSecret;
+    @Value("${google.redirect.uri}")
+    private String redirectUri;
 
     public String getCrawlerDomain() {
         return crawlerDomain;
@@ -65,15 +71,16 @@ public class ConfigProperties {
     public String getPicSavePath() {
         return picSavePath;
     }
-//    @Value("${OPENAI_SECRET_KEY}")
-//    private String apiKey;
-//
-//    @PostConstruct
-//    public void init() {
-//        System.out.println("OpenAI Secret Key: " + apiKey);
-//    }
-//
-//    public String getApiKey() {
-//        return apiKey;
-//    }
+
+    public String getClientId() {
+        return clientId;
+    }
+
+    public String getClientSecret() {
+        return clientSecret;
+    }
+
+    public String getRedirectUri() {
+        return redirectUri;
+    }
 }

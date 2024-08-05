@@ -43,9 +43,15 @@ public class BadmintonPairingApplication {
 	}
 	@Bean(name = "ssf")
 	public SimpleDateFormat standardDateFormat() {
-		SimpleDateFormat svf = new SimpleDateFormat("yyyy-MM-dd");
-		svf.setTimeZone(TimeZone.getTimeZone("Asia/Taipei"));
-		return svf;
+		SimpleDateFormat ssf = new SimpleDateFormat("yyyy-MM-dd");
+		ssf.setTimeZone(TimeZone.getTimeZone("Asia/Taipei"));
+		return ssf;
+	}
+	@Bean(name = "isoSdf")
+	public SimpleDateFormat isoSdf() {
+		SimpleDateFormat isoSdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX");
+		isoSdf.setTimeZone(TimeZone.getTimeZone("Asia/Taipei"));
+		return isoSdf;
 	}
 	@Bean
 	public DateTimeFormatter dateTimeFormatter() {
