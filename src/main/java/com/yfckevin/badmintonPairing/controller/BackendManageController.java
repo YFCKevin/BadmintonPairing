@@ -795,7 +795,7 @@ public class BackendManageController {
 
         date = svf.format(ssf.parse(date)); // 日期更換回yyyyMMdd
 
-        String keywords = "教練|場地出租|場地釋出|釋出|場地分享|場地轉讓|轉讓|場地轉租";
+        String keywords = "教練|已滿|已額滿|場地出租|場地釋出|釋出|場地分享|場地轉讓|轉讓|場地轉租|徵場地";
         Pattern issuePattern = Pattern.compile(keywords);
 
         List<RequestPostDTO> postDTOList = constructPostDTOFromDailyPostsFile(date);
