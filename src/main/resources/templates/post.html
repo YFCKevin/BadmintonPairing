@@ -8,6 +8,12 @@
     <title>羽球配對</title>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta property="og:title" content="羽球配對">
+    <meta property="og:description" content="找到您的專屬羽球團">
+    <meta property="og:image" th:content="@{images/badminton.jpg}">
+    <meta property="og:url" content="https://www.gurula.cc/badminton/posts">
+    <meta property="og:type" content="website">
+
     <link rel="icon" type="image/png" th:href="@{images/favicon.ico}" />
     <link rel="stylesheet" type="text/css" th:href="@{css/bootstrap.min.css}" />
     <link
@@ -15,39 +21,7 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" type="text/css" th:href="@{css/style.css}" />
-    <script>
-    function isMobile() {
-      const userAgent = navigator.userAgent || navigator.vendor || window.opera;
-      const isIOS = /iPad|iPhone|iPod/.test(userAgent) && !window.MSStream;
-      const isAndroid = /Mobi|Android/i.test(userAgent);
-      const isWindowsPhone = /Windows Phone/i.test(userAgent);
-      const isWindowsTablet = /Windows/i.test(userAgent) && !/Mobile/i.test(userAgent);
-      const isBlackBerry = /BlackBerry/i.test(userAgent) || /BB10/i.test(userAgent);
-
-      return isIOS || isAndroid || isWindowsPhone || isWindowsTablet || isBlackBerry;
-    }
-
-    function getDeviceType() {
-      const userAgent = navigator.userAgent || navigator.vendor || window.opera;
-      const isIOS = /iPad|iPhone|iPod/.test(userAgent) && !window.MSStream;
-      const isAndroid = /Mobi|Android/i.test(userAgent);
-      const isWindowsPhone = /Windows Phone/i.test(userAgent);
-      const isWindowsTablet = /Windows/i.test(userAgent) && !/Mobile/i.test(userAgent);
-      const isBlackBerry = /BlackBerry/i.test(userAgent) || /BB10/i.test(userAgent);
-
-      return isIOS ? 'iOS' :
-             isAndroid ? 'Android' :
-             isWindowsPhone ? 'Windows Phone' :
-             isWindowsTablet ? 'Windows Tablet' :
-             isBlackBerry ? 'BlackBerry' :
-             'Desktop';
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-      const deviceType = getDeviceType();
-      console.log(`Current Device Type: ${deviceType}`);
-    });
-  </script>
+    <script th:src="@{js/deviceType.js}"></script>
   </head>
   <body>
     <div class="limiter">
@@ -60,10 +34,11 @@
                   <div class="row">
                       <div style="margin-top: 10px" class="col-md-3">
                           <div class="form-group d-flex align-items-center">
-                              <label class="input-group-text mr-2" for="startDate">開始日期</label>
+                              <label class="input-group-text mr-2" style="border-radius: 0; border: none" for="startDate">開始日期</label>
                               <input
                                       type="date"
                                       class="form-control"
+                                      style="border-radius: 0;"
                                       id="startDate"
                                       x-model="startDate"
                               />
@@ -71,10 +46,11 @@
                       </div>
                       <div style="margin-top: 10px" class="col-md-3">
                           <div class="form-group d-flex align-items-center">
-                              <label class="input-group-text mr-2" for="endDate">結束日期</label>
+                              <label class="input-group-text mr-2" style="border-radius: 0; border: none" for="endDate">結束日期</label>
                               <input
                                       type="date"
                                       class="form-control"
+                                      style="border-radius: 0;"
                                       id="endDate"
                                       x-model="endDate"
                               />
@@ -82,10 +58,11 @@
                       </div>
                       <div style="margin-top: 10px" class="col-md-6">
                           <div class="form-group d-flex align-items-center">
-                              <label class="input-group-text mr-2" for="keyword">關鍵字</label>
+                              <label class="input-group-text mr-2" style="border-radius: 0; border: none" for="keyword">關鍵字</label>
                               <input
                                       type="text"
                                       class="form-control"
+                                      style="border-radius: 0;"
                                       id="keyword"
                                       placeholder="可搜尋團主名、地點、用球..."
                               />
@@ -109,6 +86,9 @@
               <div class="row mt-3" style="margin-top: 10px; margin-bottom: 10px;">
                   <div class="col-12 text-left">
                      <button type="button" class="btn btn-success btn-sm btn-rounded" x-on:click="showTodayNewPostBtn();">最新上架</button>
+                  </div>
+                  <div class="col-12 d-flex justify-content-end">
+                      <span id="google_authorize_text" style="color: white;"></span>
                   </div>
               </div>
 
@@ -225,6 +205,7 @@
     <script th:src="@{js/alpine.2.8.2.min.js}"></script>
     <script th:inline="javascript">
       const posts = /*[[${posts}]]*/
+      const clientId = /*[[${clientId}]]*/
 
         function loadData(eleData) {
           return {
@@ -242,6 +223,10 @@
 
               this.startDate = today.toISOString().split("T")[0];
               this.endDate = threeDaysLater.toISOString().split("T")[0];
+
+              if (clientId != null){  // google驗證過
+                $("#google_authorize_text").text('* Google串接成功，可將羽球資訊匯入行事曆');
+              }
             },
             getData() {
               const start = this.pageNumber * this.size,

@@ -11,7 +11,6 @@ import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.services.calendar.CalendarScopes;
 import com.yfckevin.badmintonPairing.ConfigProperties;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,7 +48,7 @@ public class AuthController {
     }
 
     @GetMapping("/callback")
-    public String callback(@RequestParam("code") String code, HttpSession session, HttpServletResponse response) {
+    public String callback(@RequestParam("code") String code, HttpSession session) {
         logger.info("[callback]");
         try {
             final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();

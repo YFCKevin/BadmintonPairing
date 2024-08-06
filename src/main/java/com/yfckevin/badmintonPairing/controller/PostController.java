@@ -1,5 +1,8 @@
 package com.yfckevin.badmintonPairing.controller;
 
+import com.google.api.client.auth.oauth2.ClientParametersAuthentication;
+import com.google.api.client.auth.oauth2.Credential;
+import com.google.api.client.http.HttpExecuteInterceptor;
 import com.yfckevin.badmintonPairing.dto.PostDTO;
 import com.yfckevin.badmintonPairing.dto.SearchDTO;
 import com.yfckevin.badmintonPairing.entity.Leader;
@@ -47,7 +50,7 @@ public class PostController {
      * @return
      */
     @GetMapping("/posts")
-    public String posts(Model model) throws ParseException {
+    public String posts(Model model, HttpSession session) throws ParseException {
         logger.info("[posts]");
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime startOfToday = now.toLocalDate().atStartOfDay();
@@ -75,6 +78,15 @@ public class PostController {
                 .toList();
 
         model.addAttribute("posts", postDTOList);
+
+        Credential credential = (Credential) session.getAttribute("credential");
+        if (credential != null) {
+            ClientParametersAuthentication clientAuth = (ClientParametersAuthentication) credential.getClientAuthentication();
+
+            model.addAttribute("clientId", clientAuth.getClientId());
+
+        }
+
 
         return "post";
     }
