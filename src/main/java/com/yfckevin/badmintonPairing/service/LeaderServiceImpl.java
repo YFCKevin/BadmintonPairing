@@ -154,7 +154,7 @@ public class LeaderServiceImpl implements LeaderService {
 
     @Override
     public void deleteById(String id) {
-        postRepository.deleteById(id);
+        leaderRepository.deleteById(id);
     }
 
     private static String extractUserId(String link) {
