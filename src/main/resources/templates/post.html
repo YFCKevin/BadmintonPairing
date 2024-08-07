@@ -1,208 +1,291 @@
 <!DOCTYPE html>
-<html
-  lang="en"
-  xmlns:th="http://www.w3.org/1999/xhtml"
-  xmlns:x-on="http://www.w3.org/1999/xhtml"
->
-  <head>
-    <title>羽球配對</title>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta property="og:title" content="羽球配對">
-    <meta property="og:description" content="找到您的專屬羽球團">
-    <meta property="og:image" th:content="@{images/badminton.jpg}">
-    <meta property="og:url" content="https://www.gurula.cc/badminton/posts">
-    <meta property="og:type" content="website">
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml" xmlns:x-on="http://www.w3.org/1999/xhtml">
 
-    <link rel="icon" type="image/png" th:href="@{images/favicon.ico}" />
-    <link rel="stylesheet" type="text/css" th:href="@{css/bootstrap.min.css}" />
-    <link
-      href="https://maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" type="text/css" th:href="@{css/style.css}" />
-    <script th:src="@{js/deviceType.js}"></script>
-  </head>
-  <body>
-    <div class="limiter">
-      <div class="container-table100">
-        <div class="wrap-table100">
-          <div class="table100" x-data="loadData(posts)" x-init="init()">
+    <head>
+        <meta charset="utf-8">
+        <title>羽球配對</title>
+        <meta content="width=device-width, initial-scale=1.0" name="viewport">
+        <meta content="" name="keywords">
+        <meta content="" name="description">
 
-              <!-- Search Bar -->
-              <div class="mb-3">
-                  <div class="row">
-                      <div style="margin-top: 10px" class="col-md-3">
-                          <div class="form-group d-flex align-items-center">
-                              <label class="input-group-text mr-2" style="border-radius: 0; border: none" for="startDate">開始日期</label>
-                              <input
-                                      type="date"
-                                      class="form-control"
-                                      style="border-radius: 0;"
-                                      id="startDate"
-                                      x-model="startDate"
-                              />
-                          </div>
-                      </div>
-                      <div style="margin-top: 10px" class="col-md-3">
-                          <div class="form-group d-flex align-items-center">
-                              <label class="input-group-text mr-2" style="border-radius: 0; border: none" for="endDate">結束日期</label>
-                              <input
-                                      type="date"
-                                      class="form-control"
-                                      style="border-radius: 0;"
-                                      id="endDate"
-                                      x-model="endDate"
-                              />
-                          </div>
-                      </div>
-                      <div style="margin-top: 10px" class="col-md-6">
-                          <div class="form-group d-flex align-items-center">
-                              <label class="input-group-text mr-2" style="border-radius: 0; border: none" for="keyword">關鍵字</label>
-                              <input
-                                      type="text"
-                                      class="form-control"
-                                      style="border-radius: 0;"
-                                      id="keyword"
-                                      placeholder="可搜尋團主名、地點、用球..."
-                              />
-                              <i class="fa fas fa-times clear-btn" onclick="clearKeyword()"></i>
-                          </div>
-                      </div>
-                  </div>
-                  <div class="row mt-3" style="margin-top: 10px">
-                      <div class="col d-flex justify-content-end">
-                          <button
-                                  class="btn btn-primary"
-                                  type="button"
-                                  x-on:click="search()"
-                          >
-                              搜尋
-                          </button>
-                      </div>
-                  </div>
-              </div>
+        <!-- Google Web Fonts -->
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=Playball&display=swap" rel="stylesheet">
 
-              <div class="row mt-3" style="margin-top: 10px; margin-bottom: 10px;">
-                  <div class="col-12 text-left">
-                     <button type="button" class="btn btn-success btn-sm btn-rounded" x-on:click="showTodayNewPostBtn();">最新上架</button>
-                  </div>
-                  <div class="col-12 d-flex justify-content-end">
-                      <span id="google_authorize_text" style="color: white;"></span>
-                  </div>
-              </div>
+        <!-- Icon Font Stylesheet -->
+        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css"/>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
 
+        <!-- Libraries Stylesheet -->
+<!--        <link th:href="@{css/animate.min.css}" rel="stylesheet">-->
+        <link th:href="@{css/lightbox.min.css}" rel="stylesheet">
+        <link th:href="@{css/owl.carousel.min.css}" rel="stylesheet">
 
+        <!-- Customized Bootstrap Stylesheet -->
+        <link rel="icon" type="image/png" th:href="@{images/favicon.ico}" />
+        <link rel="stylesheet" type="text/css" th:href="@{css/bootstrap.min.css}" />
 
-              <table>
-              <thead>
-                <tr class="table100-head">
-                  <th class="th-leader">團主名</th>
-                  <th class="th-place">地點</th>
-                  <th class="th-time">時間</th>
-                  <th class="th-fee">費用 (NT)</th>
-                  <th class="th-brand">用球</th>
-                  <th class="th-level">程度</th>
-                  <th class="th-airConditioner">冷氣</th>
-                  <th class="th-parkInfo">停車資訊</th>
-                  <th class="th-action">動作</th>
-                </tr>
-              </thead>
-              <tbody>
-                <template x-for="(item,index) in getData()" :key="index">
-                  <tr>
-                    <td class="th-leader">
-                      <a
-                        :href="isMobile() ? item.shortLink : item.link"
-                        target="_blank"
-                        x-text="item.name"
-                      ></a>
-                    </td>
-                    <td class="th-place" x-text="item.place"></td>
-                    <td class="th-time" x-text="item.time"></td>
-                    <td class="th-fee" x-text="item.fee"></td>
-                    <td
-                      class="th-brand"
-                      x-text="item.brand === '' ? '-' : item.brand"
-                    ></td>
-                    <td class="th-level" x-text="item.level"></td>
-                    <td
-                      class="th-airConditioner"
-                      x-text="item.airConditioner == '未標示' ? '-' : (item.airConditioner == '有冷氣' ? 'Y' : 'N')"
-                    ></td>
-                    <td
-                      class="th-parkInfo"
-                      x-text="item.parkInfo === '' ? '-' : item.parkInfo"
-                    ></td>
-                    <td class="th-action">
-                      <button type="button" class="btn btn-primary" style="padding: 5px; margin: 5px"
-                              x-on:click="importCalender(item.place, item.startTime, item.endTime, item.fee, item.parkInfo, item.name)"
-                      >Google行事曆</button>
-                    </td>
-                  </tr>
-                </template>
-              </tbody>
-            </table>
-            <nav class="mt-5 mb-4" x-show="pageCount() > 1">
-              <ul class="pagination justify-content-center card-page">
-                <li class="page-item" :class="{ 'disabled' : pageNumber==0 }">
-                  <a
-                    class="page-link page-prev"
-                    type="button"
-                    x-on:click="prevPage();"
-                    :disabled="pageNumber==0"
-                  >
-                    <i class="fa fas fa-chevron-left"></i>
-                  </a>
-                </li>
-                <li
-                  class="page-item disabled"
-                  :class="{ 'd-none' : pageCount() <= 4 || pageNumber == 0 || ( pageCount() > 4 && pageNumber == pageCount() ) }"
-                >
-                  <a class="page-link">···</a>
-                </li>
-                <template x-for="(page,index) in pages()" :key="index">
-                  <li
-                    class="page-item"
-                    :class="{ 'active' : index === pageNumber , 'd-none' : pageCount() > 4 && ( (index < pageNumber && pageNumber < pageCount() -4) || (index < pageCount() -4 && pageNumber >= pageCount() -4) || index >= pageNumber+4 ) }"
-                  >
-                    <a
-                      class="page-link"
-                      type="button"
-                      x-on:click="viewPage(index);"
-                      x-text="index+1"
-                    ></a>
-                  </li>
-                </template>
-                <li
-                  class="page-item disabled"
-                  :class="{ 'd-none' : pageCount() <= 4 || pageNumber >= pageCount() -4}"
-                >
-                  <a class="page-link">···</a>
-                </li>
-                <li
-                  class="page-item"
-                  :class="{ 'disabled' : pageNumber >= pageCount() -1 }"
-                >
-                  <a
-                    class="page-link page-next"
-                    type="button"
-                    x-on:click="nextPage();"
-                    :disabled="pageNumber >= pageCount() -1"
-                  >
-                    <i class="fa fas fa-chevron-right"></i>
-                  </a>
-                </li>
-              </ul>
-            </nav>
-          </div>
+        <link rel="stylesheet" type="text/css" th:href="@{css/style.css}" />
+        <script th:src="@{js/deviceType.js}"></script>
+    </head>
+
+    <body x-data="loadData(posts)" x-init="init()">
+
+        <!-- Spinner Start -->
+        <div id="spinner" class="show w-100 vh-100 bg-white position-fixed translate-middle top-50 start-50  d-flex align-items-center justify-content-center">
+            <div class="spinner-grow text-primary" role="status"></div>
         </div>
-      </div>
-    </div>
+        <!-- Spinner End -->
 
+
+        <!-- Navbar start -->
+        <div class="container-fluid nav-bar">
+            <div class="container">
+                <nav class="navbar navbar-light navbar-expand-lg py-4">
+                    <a href="index.html" class="navbar-brand">
+                        <h1 class="text-primary fw-bold mb-0">Badminton<span class="text-dark">Pairing</span> </h1>
+                    </a>
+                    <button class="navbar-toggler py-2 px-3" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
+                        <span class="fa fa-bars text-primary"></span>
+                    </button>
+                    <div class="collapse navbar-collapse" id="navbarCollapse">
+                        <div class="navbar-nav mx-auto">
+                            <a th:href="@{index}" class="nav-item nav-link">首頁</a>
+                            <a th:href="@{posts}" class="nav-item nav-link active">零打貼文</a>
+                        </div>
+                    </div>
+                </nav>
+            </div>
+        </div>
+        <!-- Navbar End -->
+
+        <div class="container">
+            <div class="row g-4 py-6 wow bounceInUp" style="padding-bottom: 0rem;">
+                <div class="col-lg-4 col-md-6 d-flex align-items-center">
+                    <div class="input-group">
+                        <label class="border-primary input-group-text mr-2 bg-primary text-dark" for="startDate">開始日期</label>
+                        <input type="date" class="form-control" id="startDate" x-model="startDate"/>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6 d-flex align-items-center">
+                    <div class="input-group">
+                        <label class="input-group-text mr-2 bg-primary text-dark" for="endDate">結束日期</label>
+                        <input type="date" class="form-control" id="endDate" x-model="endDate"/>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6 d-flex align-items-center">
+                    <div class="input-group">
+                        <input id="keyword" type="search" class="form-control" placeholder="可搜尋團主名、地點、用球...">
+                        <button x-on:click="search()" style="height: 40px;" class="btn-search btn btn-primary btn-md-square rounded-end"><i class="fa fa-search"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Post Start -->
+        <div class="container-fluid menu py-6">
+            <div class="container">
+                <div class="tab-class text-center">
+                    <ul class="nav nav-pills d-inline-flex justify-content-center mb-5 wow bounceInUp d-none d-md-inline-flex" data-wow-delay="0.1s"> <!-- d-none d-md-inline-flex 手機端會隱藏 -->
+                        <li class="nav-item p-2">
+                            <a type="button" x-on:click="chooseDayOfWeek('Monday')" class="d-flex py-2 mx-2 border border-primary bg-white rounded-pill" data-bs-toggle="pill">
+                                <span class="text-dark" style="width: 150px;">星期一</span>
+                            </a>
+                        </li>
+                        <li class="nav-item p-2">
+                            <a type="button" x-on:click="chooseDayOfWeek('Tuesday')" class="d-flex py-2 mx-2 border border-primary bg-white rounded-pill" data-bs-toggle="pill">
+                                <span class="text-dark" style="width: 150px;">星期二</span>
+                            </a>
+                        </li>
+                        <li class="nav-item p-2">
+                            <a type="button" x-on:click="chooseDayOfWeek('Wednesday')" class="d-flex py-2 mx-2 border border-primary bg-white rounded-pill" data-bs-toggle="pill">
+                                <span class="text-dark" style="width: 150px;">星期三</span>
+                            </a>
+                        </li>
+                        <li class="nav-item p-2">
+                            <a type="button" x-on:click="chooseDayOfWeek('Thursday')" class="d-flex py-2 mx-2 border border-primary bg-white rounded-pill" data-bs-toggle="pill">
+                                <span class="text-dark" style="width: 150px;">星期四</span>
+                            </a>
+                        </li>
+                        <li class="nav-item p-2">
+                            <a type="button" x-on:click="chooseDayOfWeek('Friday')" class="d-flex py-2 mx-2 border border-primary bg-white rounded-pill" data-bs-toggle="pill">
+                                <span class="text-dark" style="width: 150px;">星期五</span>
+                            </a>
+                        </li>
+                        <li class="nav-item p-2">
+                            <a type="button" x-on:click="chooseDayOfWeek('Saturday')" class="d-flex py-2 mx-2 border border-primary bg-white rounded-pill" data-bs-toggle="pill">
+                                <span class="text-dark" style="width: 150px;">星期六</span>
+                            </a>
+                        </li>
+                        <li class="nav-item p-2">
+                            <a type="button" x-on:click="chooseDayOfWeek('Sunday')" class="d-flex py-2 mx-2 border border-primary bg-white rounded-pill" data-bs-toggle="pill">
+                                <span class="text-dark" style="width: 150px;">星期日</span>
+                            </a>
+                        </li>
+                    </ul>
+                    <div class="col-12 d-flex justify-content-end mb-3">
+                        <span id="google_authorize_text"></span>
+                    </div>
+                    <div class="tab-content">
+                        <div id="zero-content" class="tab-pane fade show p-0 active">
+                            <div class="row g-4">
+                                <div x-show="getData().length === 0">
+                                    <p>查無資料</p>
+                                </div>
+                                <template x-for="(item,index) in getData()" :key="index">
+                                    <div class="wow bounceInUp"> <!-- col-lg-6 -->
+                                        <div class="menu-item d-flex align-items-center">
+                                            <div class="w-100 d-flex flex-column text-start ps-4">
+                                                <div class="d-flex flex-column flex-md-row justify-content-between border-bottom border-primary pb-2 mb-2">
+                                                    <h4 class="mb-2 mb-md-0" x-text="item.place"></h4>
+                                                    <h4 class="text-primary" x-text="item.dayOfWeek"></h4>
+                                                </div>
+                                                <div class="d-flex align-items-center mb-0 flex-wrap">
+                                                    聯絡人：<p class="mb-0 ms-1">
+                                                    <a :href="isMobile() ? item.shortLink : item.link" target="_blank" x-text="item.name"></a>
+                                                </p>
+                                                </div>
+                                                <div class="d-flex align-items-center mb-0 flex-wrap">
+                                                    打球日期：<p class="mb-0 ms-1" x-text="item.time"></p>
+                                                </div>
+                                                <div class="d-flex align-items-center mb-0 flex-wrap">
+                                                    費用：<p class="mb-0 ms-1" x-text="item.fee"></p>元
+                                                </div>
+                                                <div class="d-flex align-items-center mb-0 flex-wrap">
+                                                    程度：<p class="mb-0 ms-1" x-text="item.level"></p>
+                                                </div>
+                                                <div class="d-flex align-items-center mb-0 flex-wrap">
+                                                    用球：<p class="mb-0 ms-1" x-text="item.brand === '' ? '未標示' : item.brand"></p>
+                                                </div>
+                                                <div class="d-flex align-items-center mb-0 flex-wrap">
+                                                    冷氣：<p class="mb-0 ms-1" x-text="item.airConditioner == '未標示' ? '未標示' : (item.airConditioner == '有冷氣' ? 'Y' : 'N')"></p>
+                                                </div>
+                                                <div class="d-flex align-items-center mb-2 flex-wrap">
+                                                    停車資訊：<p class="mb-0 ms-1" x-text="item.parkInfo === '' ? '未標示' : item.parkInfo"></p>
+                                                </div>
+                                                <div class="d-flex align-items-center mb-2">
+                                                    <button class="btn btn-primary py-2 d-xl-inline-block rounded-pill" type="button" x-on:click="importCalender(item.place, item.startTime, item.endTime, item.fee, item.parkInfo, item.name)">匯入行事曆</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                        <nav class="mt-5 mb-4" x-show="pageCount() > 1">
+                            <ul class="pagination justify-content-center card-page">
+                                <li class="page-item" :class="{ 'disabled' : pageNumber==0 }">
+                                    <a
+                                            class="page-link page-prev"
+                                            type="button"
+                                            x-on:click="prevPage();"
+                                            :disabled="pageNumber==0"
+                                    >
+                                        <i class="fa fas fa-chevron-left"></i>
+                                    </a>
+                                </li>
+                                <li
+                                        class="page-item disabled"
+                                        :class="{ 'd-none' : pageCount() <= 4 || pageNumber == 0 || ( pageCount() > 4 && pageNumber == pageCount() ) }"
+                                >
+                                    <a class="page-link">···</a>
+                                </li>
+                                <template x-for="(page,index) in pages()" :key="index">
+                                    <li
+                                            class="page-item"
+                                            :class="{ 'active' : index === pageNumber , 'd-none' : pageCount() > 4 && ( (index < pageNumber && pageNumber < pageCount() -4) || (index < pageCount() -4 && pageNumber >= pageCount() -4) || index >= pageNumber+4 ) }"
+                                    >
+                                        <a
+                                                class="page-link"
+                                                type="button"
+                                                x-on:click="viewPage(index);"
+                                                x-text="index+1"
+                                        ></a>
+                                    </li>
+                                </template>
+                                <li
+                                        class="page-item disabled"
+                                        :class="{ 'd-none' : pageCount() <= 4 || pageNumber >= pageCount() -4}"
+                                >
+                                    <a class="page-link">···</a>
+                                </li>
+                                <li
+                                        class="page-item"
+                                        :class="{ 'disabled' : pageNumber >= pageCount() -1 }"
+                                >
+                                    <a
+                                            class="page-link page-next"
+                                            type="button"
+                                            x-on:click="nextPage();"
+                                            :disabled="pageNumber >= pageCount() -1"
+                                    >
+                                        <i class="fa fas fa-chevron-right"></i>
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Post End -->
+
+
+        <!-- Footer Start -->
+        <div class="container-fluid footer py-6 my-6 mb-0 bg-light wow bounceInUp" data-wow-delay="0.1s">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-3 col-md-6">
+                        <div class="footer-item">
+                            <h1 class="text-primary">Badminton<span class="text-dark">Pairing</span></h1>
+                            <p class="lh-lg mb-4">尋找羽球好團</p>
+                            <div class="footer-icon d-flex">
+                                <a class="btn btn-primary btn-sm-square me-2 rounded-circle" href=""><i class="fab fa-facebook-f"></i></a>
+                                <a class="btn btn-primary btn-sm-square me-2 rounded-circle" href=""><i class="fab fa-twitter"></i></a>
+                                <a href="#" class="btn btn-primary btn-sm-square me-2 rounded-circle"><i class="fab fa-instagram"></i></a>
+                                <a href="#" class="btn btn-primary btn-sm-square rounded-circle"><i class="fab fa-linkedin-in"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Footer End -->
+
+
+        <!-- Copyright Start -->
+        <div class="container-fluid copyright bg-dark py-4">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-6 text-center text-md-start mb-3 mb-md-0">
+                        <span class="text-light"><a href="#"><i class="fas fa-copyright text-light me-2"></i>Badminton Pairing</a>, All right reserved.</span>
+                    </div>
+                    <div class="col-md-6 my-auto text-center text-md-end text-white">
+                        Designed By <a class="border-bottom" href="https://htmlcodex.com">HTML Codex</a> Distributed By <a class="border-bottom" href="https://themewagon.com">ThemeWagon</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Copyright End -->
+
+
+        <!-- Back to Top -->
+        <a href="#" class="btn btn-md-square btn-primary rounded-circle back-to-top"><i class="fa fa-arrow-up"></i></a>   
+
+        
+    <!-- JavaScript Libraries -->
     <script th:src="@{js/jquery.min.js}"></script>
-    <script th:src="@{js/bootstrap.min.js}"></script>
+    <script th:src="@{js/bootstrap.bundle.min.js}"></script>
     <script th:src="@{js/alpine.2.8.2.min.js}"></script>
+    <script th:src="@{js/wow.min.js}"></script>
+    <script th:src="@{js/easing.min.js}"></script>
+    <script th:src="@{js/waypoints.min.js}"></script>
+    <script th:src="@{js/counterup.min.js}"></script>
+    <script th:src="@{js/lightbox.min.js}"></script>
+    <script th:src="@{js/owl.carousel.min.js}"></script>
+    <script th:src="@{js/main.js}"></script>
+
     <script th:inline="javascript">
       const posts = /*[[${posts}]]*/
       const clientId = /*[[${clientId}]]*/
@@ -210,7 +293,7 @@
         function loadData(eleData) {
           return {
             pageNumber: 0,
-            size: 20,
+            size: 10,
             total: "",
             startDate: "",
             endDate: "",
@@ -320,6 +403,21 @@
                 },
               });
             },
+            chooseDayOfWeek (day){
+              let _this = this;
+              $.ajax({
+                url: "chooseDayOfWeek/" + day,
+                type: "get",
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                success: function (response) {
+                  if (response.code == "C000"){
+                    _this.myForData = response.data;
+                    _this.pageNumber = 0;
+                  }
+                },
+              });
+            },
           };
         };
 
@@ -327,5 +425,7 @@
             $('#keyword').val('');
         }
     </script>
-  </body>
+
+    </body>
+
 </html>

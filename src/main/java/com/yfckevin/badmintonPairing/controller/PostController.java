@@ -2,7 +2,6 @@ package com.yfckevin.badmintonPairing.controller;
 
 import com.google.api.client.auth.oauth2.ClientParametersAuthentication;
 import com.google.api.client.auth.oauth2.Credential;
-import com.google.api.client.http.HttpExecuteInterceptor;
 import com.yfckevin.badmintonPairing.dto.PostDTO;
 import com.yfckevin.badmintonPairing.dto.SearchDTO;
 import com.yfckevin.badmintonPairing.entity.Leader;
@@ -13,16 +12,21 @@ import com.yfckevin.badmintonPairing.service.PostService;
 import jakarta.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.TextStyle;
 import java.util.*;
@@ -35,12 +39,14 @@ public class PostController {
     private final PostService postService;
     private final LeaderService leaderService;
     private final DateTimeFormatter ddf;
+    private final SimpleDateFormat ssf;
     Logger logger = LoggerFactory.getLogger(PostController.class);
 
-    public PostController(PostService postService, LeaderService leaderService, DateTimeFormatter ddf) {
+    public PostController(PostService postService, LeaderService leaderService, DateTimeFormatter ddf, @Qualifier("ssf") SimpleDateFormat ssf) {
         this.postService = postService;
         this.leaderService = leaderService;
         this.ddf = ddf;
+        this.ssf = ssf;
     }
 
 
@@ -168,7 +174,58 @@ public class PostController {
                 .sorted(Comparator.comparing(PostDTO::getStartTime))
                 .toList();
 
+
+
         return ResponseEntity.ok(postDTOList);
+    }
+
+
+
+    @GetMapping("/chooseDayOfWeek/{day}")
+    public ResponseEntity<?> chooseDayOfWeek (@PathVariable String day, HttpSession session){
+        logger.info("[chooseDayOfWeek]");
+
+        ResultStatus resultStatus = new ResultStatus();
+
+        List<Post> postList = postService.findPostsByDaySorted(day, getNextDate(day).toString());
+
+        final Set<String> userIdList = postList.stream().map(Post::getUserId).collect(Collectors.toSet());
+
+        List<PostDTO> postDTOList = new ArrayList<>();
+        final Map<String, Leader> leaderMap = leaderService.findAllByUserIdIn(userIdList)
+                .stream()
+                .collect(Collectors.toMap(Leader::getUserId, Function.identity()));
+        postDTOList = postList.stream()
+                .map(post -> {
+                    try {
+                        return constructPostDTO(leaderMap, post);
+                    } catch (ParseException e) {
+                        throw new RuntimeException(e);
+                    }
+                })
+                .toList();
+
+        resultStatus.setCode("C000");
+        resultStatus.setMessage("成功");
+        resultStatus.setData(postDTOList);
+
+        return ResponseEntity.ok(resultStatus);
+    }
+
+    public static LocalDate getNextDate(String dayOfWeekStr) {
+        DayOfWeek dayOfWeek = DayOfWeek.valueOf(dayOfWeekStr.toUpperCase());
+        LocalDate now = LocalDate.now();
+
+        // 找到當前是星期幾
+        DayOfWeek currentDayOfWeek = now.getDayOfWeek();
+
+        // 計算相差天數
+        int daysToAdd = dayOfWeek.getValue() - currentDayOfWeek.getValue();
+        if (daysToAdd < 0) {
+            daysToAdd += 7;
+        }
+
+        return now.plusDays(daysToAdd);
     }
 
 
@@ -203,8 +260,8 @@ public class PostController {
             // 取得星期
             DayOfWeek dayOfWeek = startDateTime.getDayOfWeek();
             // 格式化星期
-            String dayOfWeekFormatted = dayOfWeek.getDisplayName(TextStyle.NARROW, Locale.TAIWAN);
-
+            String dayOfWeekFormatted = dayOfWeek.getDisplayName(TextStyle.FULL, Locale.TAIWAN);
+            postDTO.setDayOfWeek(dayOfWeekFormatted);
             final String formattedStartDate = startDateTime.format(DateTimeFormatter.ofPattern("MM/dd"));
             final String formattedStartTime = startDateTime.format(DateTimeFormatter.ofPattern("HH:mm"));
             final String formattedEndTime = endDateTime.format(DateTimeFormatter.ofPattern("HH:mm"));

@@ -308,6 +308,13 @@ public class PostServiceImpl implements PostService {
         postRepository.deleteByIdIn(postIdIn);
     }
 
+    @Override
+    public List<Post> findPostsByDaySorted(String day, String targetDay) {
+        String targetStartDate = targetDay + " 00:00:00";
+        String targetEndDate = targetDay + " 23:59:59";
+        return postRepository.findPostsByDayAndTime(day, targetStartDate, targetEndDate);
+    }
+
     private String saveJsonFileForDataCleaning(List<RequestPostDTO> differencePosts) throws IOException {
         File outputFile = new File(configProperties.getFileSavePath() + "dailyPosts.json");
         objectMapper.writeValue(outputFile, differencePosts);

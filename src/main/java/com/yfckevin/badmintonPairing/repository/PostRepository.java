@@ -12,4 +12,6 @@ public interface PostRepository extends MongoRepository<Post, String> {
     List<Post> findByCreationDateBetween(String startDate, String endDate);
 
     void deleteByIdIn(List<String> postIdIn);
+    @Query("{ 'dayOfWeek': ?0, 'startTime': { $gte: ?1, $lte: ?2 } }")
+    List<Post> findPostsByDayAndTime(String day, String targetStartDate, String targetEndDate);
 }

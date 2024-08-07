@@ -30,4 +30,5 @@ public interface PostService {
 
     void deleteByIdIn(List<String> postIdIn);
 
+    List<Post> findPostsByDaySorted(String day, String targetDate);
 }
