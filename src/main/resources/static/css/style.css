@@ -468,6 +468,27 @@ h4, h5, h6, .h4, .h5, .h6 {
 }
 /*** Footer End ***/
 
+/* 保持在手機端也能並排顯示 */
+@media (max-width: 767.98px) {
+    .col-md-6.d-flex {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+    }
+    .col-md-6.d-flex label,
+    .col-md-6.d-flex input,
+    .col-md-6.d-flex .input-group-text {
+        width: auto;
+        margin-bottom: 0;
+    }
+    .col-md-6.d-flex input {
+        flex-grow: 1;
+    }
+    .col-md-6.d-flex .input-group-text {
+        margin-left: 0.5rem;
+    }
+}
+
 
 
 
