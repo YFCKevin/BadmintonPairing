@@ -2,11 +2,14 @@
 <html lang="en" xmlns:th="http://www.w3.org/1999/xhtml" xmlns:x-on="http://www.w3.org/1999/xhtml">
 
     <head>
-        <meta charset="utf-8">
         <title>羽球配對</title>
-        <meta content="width=device-width, initial-scale=1.0" name="viewport">
-        <meta content="" name="keywords">
-        <meta content="" name="description">
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta property="og:title" content="羽球配對">
+        <meta property="og:description" content="找到您的專屬羽球團">
+        <meta property="og:image" th:content="@{images/badminton.jpg}">
+        <meta property="og:url" content="https://www.gurula.cc/badminton/index">
+        <meta property="og:type" content="website">
 
         <!-- Google Web Fonts -->
         <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -43,7 +46,7 @@
         <div class="container-fluid nav-bar">
             <div class="container">
                 <nav class="navbar navbar-light navbar-expand-lg py-4">
-                    <a href="index.html" class="navbar-brand">
+                    <a th:href="@{index}" class="navbar-brand">
                         <h1 class="text-primary fw-bold mb-0">Badminton<span class="text-dark">Pairing</span> </h1>
                     </a>
                     <button class="navbar-toggler py-2 px-3" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
@@ -165,7 +168,8 @@
                                                     停車資訊：<p class="mb-0 ms-1" x-text="item.parkInfo === '' ? '未標示' : item.parkInfo"></p>
                                                 </div>
                                                 <div class="d-flex align-items-center mb-2">
-                                                    <button class="btn btn-primary py-2 d-xl-inline-block rounded-pill" type="button" x-on:click="importCalender(item.place, item.startTime, item.endTime, item.fee, item.parkInfo, item.name)">匯入行事曆</button>
+                                                    <button class="btn btn-primary py-2 d-xl-inline-block rounded-pill me-2" type="button" x-on:click="importCalender(item.place, item.startTime, item.endTime, item.fee, item.parkInfo, item.name)">匯入行事曆</button>
+                                                    <a type="button" class="btn btn-primary py-2 d-xl-inline-block rounded-pill" :href="isMobile() ? item.shortLink : item.link" target="_blank">聯絡人</a>
                                                 </div>
                                             </div>
                                         </div>
@@ -356,6 +360,7 @@
                 success: function (response) {
                   _this.pageNumber = 0;
                   _this.myForData = response;
+                  $('a[data-bs-toggle="pill"]').removeClass('active');
                 },
               });
             },

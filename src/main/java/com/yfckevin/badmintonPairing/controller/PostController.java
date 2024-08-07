@@ -39,14 +39,12 @@ public class PostController {
     private final PostService postService;
     private final LeaderService leaderService;
     private final DateTimeFormatter ddf;
-    private final SimpleDateFormat ssf;
     Logger logger = LoggerFactory.getLogger(PostController.class);
 
-    public PostController(PostService postService, LeaderService leaderService, DateTimeFormatter ddf, @Qualifier("ssf") SimpleDateFormat ssf) {
+    public PostController(PostService postService, LeaderService leaderService, DateTimeFormatter ddf) {
         this.postService = postService;
         this.leaderService = leaderService;
         this.ddf = ddf;
-        this.ssf = ssf;
     }
 
 

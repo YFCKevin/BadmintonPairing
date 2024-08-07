@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml" xmlns:x-on="http://www.w3.org/1999/xhtml">
+
+    <head>
+        <title>羽球配對</title>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta property="og:title" content="羽球配對">
+        <meta property="og:description" content="找到您的專屬羽球團">
+        <meta property="og:image" th:content="@{images/badminton.jpg}">
+        <meta property="og:url" content="https://www.gurula.cc/badminton/index">
+        <meta property="og:type" content="website">
+
+        <!-- Google Web Fonts -->
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=Playball&display=swap" rel="stylesheet">
+
+        <!-- Icon Font Stylesheet -->
+        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css"/>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
+
+        <!-- Libraries Stylesheet -->
+        <link th:href="@{css/animate.min.css}" rel="stylesheet">
+        <link th:href="@{css/lightbox.min.css}" rel="stylesheet">
+        <link th:href="@{css/owl.carousel.min.css}" rel="stylesheet">
+
+        <!-- Customized Bootstrap Stylesheet -->
+        <link rel="icon" type="image/png" th:href="@{images/favicon.ico}" />
+        <link rel="stylesheet" type="text/css" th:href="@{css/bootstrap.min.css}" />
+
+        <link rel="stylesheet" type="text/css" th:href="@{css/style.css}" />
+        <script th:src="@{js/deviceType.js}"></script>
+    </head>
+
+    <body>
+
+        <!-- Spinner Start -->
+        <div id="spinner" class="show w-100 vh-100 bg-white position-fixed translate-middle top-50 start-50  d-flex align-items-center justify-content-center">
+            <div class="spinner-grow text-primary" role="status"></div>
+        </div>
+        <!-- Spinner End -->
+
+
+        <!-- Navbar start -->
+        <div class="container-fluid nav-bar">
+            <div class="container">
+                <nav class="navbar navbar-light navbar-expand-lg py-4">
+                    <a th:href="@{index}" class="navbar-brand">
+                        <h1 class="text-primary fw-bold mb-0">Badminton<span class="text-dark">Pairing</span> </h1>
+                    </a>
+                    <button class="navbar-toggler py-2 px-3" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
+                        <span class="fa fa-bars text-primary"></span>
+                    </button>
+                    <div class="collapse navbar-collapse" id="navbarCollapse">
+                        <div class="navbar-nav mx-auto">
+                            <a th:href="@{index}" class="nav-item nav-link">首頁</a>
+                            <a th:href="@{posts}" class="nav-item nav-link active">零打貼文</a>
+                        </div>
+                    </div>
+                </nav>
+            </div>
+        </div>
+        <!-- Navbar End -->
+
+
+        <!-- Hero Start -->
+        <div class="container-fluid bg-light py-6 my-6 mt-0">
+            <div class="container">
+                <div class="row g-5 align-items-center">
+                    <div class="col-lg-7 col-md-12">
+                        <small class="d-inline-block fw-bold text-dark text-uppercase bg-light border border-primary rounded-pill px-4 py-1 mb-4 animated bounceInDown">首頁</small>
+                        <h1 class="display-1 mb-4 animated bounceInDown">Find Your Perfect <span class="text-primary">Badminton</span> Match</h1>
+                        <a th:href="@{posts}" class="btn btn-primary border-0 rounded-pill py-3 px-4 px-md-5 me-4 animated bounceInLeft">開始探索</a>
+<!--                        <a href="" class="btn btn-primary border-0 rounded-pill py-3 px-4 px-md-5 animated bounceInLeft">Know More</a>-->
+                    </div>
+                    <div class="col-lg-5 col-md-12">
+                        <img src="img/hero.png" class="img-fluid rounded animated zoomIn" alt="">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Hero End -->
+
+
+        <!-- About Satrt -->
+        <div class="container-fluid py-6">
+            <div class="container">
+                <div class="row g-5 align-items-center">
+                    <div class="col-lg-5 wow bounceInUp" data-wow-delay="0.1s">
+                        <img th:src="@{images/about.jpg}" class="img-fluid rounded" alt="">
+                    </div>
+                    <div class="col-lg-7 wow bounceInUp" data-wow-delay="0.3s">
+                        <small class="d-inline-block fw-bold text-dark text-uppercase bg-light border border-primary rounded-pill px-4 py-1 mb-3">關於我</small>
+                        <h1 class="display-5 mb-4">Badminton Team Matching Service</h1>
+                        <p class="mb-4">尋尋覓覓與你契合的羽球團隊！不再孤軍奮戰，加入我們，找到最適合你的羽球夥伴，一起揮灑汗水，提升技術，實現羽球夢想，讓每一次比賽充滿激情與挑戰。</p>
+                        <div class="row g-4 text-dark mb-5">
+                            <div class="col-sm-6">
+                                <i class="fas fa-share text-primary me-2"></i>最新又詳細的零打資訊
+                            </div>
+                            <div class="col-sm-6">
+                                <i class="fas fa-share text-primary me-2"></i>24/7 不間斷支持夢想
+                            </div>
+                            <div class="col-sm-6">
+                                <i class="fas fa-share text-primary me-2"></i>簡單操作無負擔
+                            </div>
+                            <div class="col-sm-6">
+                                <i class="fas fa-share text-primary me-2"></i>支援桌機與手機介面
+                            </div>
+                        </div>
+<!--                        <a href="" class="btn btn-primary py-3 px-5 rounded-pill">About Us<i class="fas fa-arrow-right ps-2"></i></a>-->
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- About End -->
+
+
+        <!-- Fact Start-->
+        <div class="container-fluid faqt py-6">
+            <div class="container">
+                <div class="row g-4 align-items-center">
+                    <div class="col-lg-7">
+                       <div class="row g-4">
+                            <div class="col-sm-4 wow bounceInUp" data-wow-delay="0.3s">
+                                <div class="faqt-item bg-primary rounded p-4 text-center">
+                                    <i class="fas fa-users fa-4x mb-4 text-white"></i>
+                                    <h1 class="display-4 fw-bold" data-toggle="counter-up">715</h1>
+                                    <p class="text-dark text-uppercase fw-bold mb-0">團主數</p>
+                                </div>
+                            </div>
+                            <div class="col-sm-4 wow bounceInUp" data-wow-delay="0.5s">
+                                <div class="faqt-item bg-primary rounded p-4 text-center">
+                                    <i class="fas fa-users-cog fa-4x mb-4 text-white"></i>
+                                    <h1 class="display-4 fw-bold" data-toggle="counter-up">50</h1>
+                                    <p class="text-dark text-uppercase fw-bold mb-0">每日平均新貼文</p>
+                                </div>
+                            </div>
+                            <div class="col-sm-4 wow bounceInUp" data-wow-delay="0.7s">
+                                <div class="faqt-item bg-primary rounded p-4 text-center">
+                                    <i class="fas fa-check fa-4x mb-4 text-white"></i>
+                                    <h1 class="display-4 fw-bold" data-toggle="counter-up">1399</h1>
+                                    <p class="text-dark text-uppercase fw-bold mb-0">累計零打貼文數</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-5 wow bounceInUp" data-wow-delay="0.1s">
+                        <div class="video">
+                            <button type="button" class="btn btn-play" data-bs-toggle="modal" data-src="https://www.youtube.com/watch?v=itD7_SwjFQ8" data-bs-target="#videoModal">
+                                <span></span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Modal Video -->
+        <div class="modal fade" id="videoModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content rounded-0">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Youtube Video</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <!-- 16:9 aspect ratio -->
+                        <div class="ratio ratio-16x9">
+                            <iframe width="560" height="315" src="https://www.youtube.com/embed/itD7_SwjFQ8?si=8ZgQz73BwZ16A4nb&amp;start=1" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Fact End -->
+
+
+        <!-- Post Start -->
+        <div class="container-fluid menu bg-light py-6 my-6" x-data="loadData(todayNewPostList);">
+            <div class="container">
+                <div class="text-center wow bounceInUp" data-wow-delay="0.1s" style="visibility: visible; animation-delay: 0.1s; animation-name: bounceInUp;">
+                    <small class="d-inline-block fw-bold text-dark text-uppercase bg-light border border-primary rounded-pill px-4 py-1 mb-3">今日貼文速報</small>
+                    <h1 class="display-5 mb-5">Latest Badminton Post Updates</h1>
+                </div>
+                <div class="tab-class text-center">
+                    <div class="tab-content">
+                        <div id="zero-content" class="tab-pane fade show p-0 active">
+                            <div class="row g-4">
+                                <div x-show="getData().length === 0">
+                                    <p>查無資料</p>
+                                </div>
+                                <template x-for="(item,index) in getData()" :key="index">
+                                    <div class="col-lg-6 wow bounceInUp">
+                                        <div class="menu-item d-flex align-items-center">
+                                            <div class="w-100 d-flex flex-column text-start ps-4">
+                                                <div class="d-flex flex-column flex-md-row justify-content-between border-bottom border-primary pb-2 mb-2">
+                                                    <h4 class="mb-2 mb-md-0" x-text="item.place"></h4>
+                                                    <h4 class="text-primary" x-text="item.dayOfWeek"></h4>
+                                                </div>
+                                                <div class="d-flex align-items-center mb-0 flex-wrap">
+                                                    聯絡人：<p class="mb-0 ms-1">
+                                                    <a :href="isMobile() ? item.shortLink : item.link" target="_blank" x-text="item.name"></a>
+                                                </p>
+                                                </div>
+                                                <div class="d-flex align-items-center mb-0 flex-wrap">
+                                                    打球日期：<p class="mb-0 ms-1" x-text="item.time"></p>
+                                                </div>
+                                                <div class="d-flex align-items-center mb-0 flex-wrap">
+                                                    費用：<p class="mb-0 ms-1" x-text="item.fee"></p>元
+                                                </div>
+                                                <div class="d-flex align-items-center mb-0 flex-wrap">
+                                                    程度：<p class="mb-0 ms-1" x-text="item.level"></p>
+                                                </div>
+                                                <div class="d-flex align-items-center mb-0 flex-wrap">
+                                                    用球：<p class="mb-0 ms-1" x-text="item.brand === '' ? '未標示' : item.brand"></p>
+                                                </div>
+                                                <div class="d-flex align-items-center mb-0 flex-wrap">
+                                                    冷氣：<p class="mb-0 ms-1" x-text="item.airConditioner == '未標示' ? '未標示' : (item.airConditioner == '有冷氣' ? 'Y' : 'N')"></p>
+                                                </div>
+                                                <div class="d-flex align-items-center mb-2 flex-wrap">
+                                                    停車資訊：<p class="mb-0 ms-1" x-text="item.parkInfo === '' ? '未標示' : item.parkInfo"></p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Post End -->
+
+
+        <!-- Footer Start -->
+        <div class="container-fluid footer py-6 my-6 mb-0 bg-light wow bounceInUp" data-wow-delay="0.1s">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-3 col-md-6">
+                        <div class="footer-item">
+                            <h1 class="text-primary">Badminton<span class="text-dark">Pairing</span></h1>
+                            <p class="lh-lg mb-4">尋找羽球好團</p>
+                            <div class="footer-icon d-flex">
+                                <a class="btn btn-primary btn-sm-square me-2 rounded-circle" href=""><i class="fab fa-facebook-f"></i></a>
+                                <a class="btn btn-primary btn-sm-square me-2 rounded-circle" href=""><i class="fab fa-twitter"></i></a>
+                                <a href="#" class="btn btn-primary btn-sm-square me-2 rounded-circle"><i class="fab fa-instagram"></i></a>
+                                <a href="#" class="btn btn-primary btn-sm-square rounded-circle"><i class="fab fa-linkedin-in"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Footer End -->
+
+
+        <!-- Copyright Start -->
+        <div class="container-fluid copyright bg-dark py-4">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-6 text-center text-md-start mb-3 mb-md-0">
+                        <span class="text-light"><a href="#"><i class="fas fa-copyright text-light me-2"></i>Badminton Pairing</a>, All right reserved.</span>
+                    </div>
+                    <div class="col-md-6 my-auto text-center text-md-end text-white">
+                        Designed By <a class="border-bottom" href="https://htmlcodex.com">HTML Codex</a> Distributed By <a class="border-bottom" href="https://themewagon.com">ThemeWagon</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Copyright End -->
+
+
+        <!-- Back to Top -->
+        <a href="#" class="btn btn-md-square btn-primary rounded-circle back-to-top"><i class="fa fa-arrow-up"></i></a>
+
+
+        <script th:src="@{js/jquery.min.js}"></script>
+        <script th:src="@{js/bootstrap.bundle.min.js}"></script>
+        <script th:src="@{js/alpine.2.8.2.min.js}"></script>
+        <script th:src="@{js/wow.min.js}"></script>
+        <script th:src="@{js/easing.min.js}"></script>
+        <script th:src="@{js/waypoints.min.js}"></script>
+        <script th:src="@{js/counterup.min.js}"></script>
+        <script th:src="@{js/lightbox.min.js}"></script>
+        <script th:src="@{js/owl.carousel.min.js}"></script>
+        <script th:src="@{js/main.js}"></script>
+
+        <script th:inline="javascript">
+          const todayNewPostList = /*[[${todayNewPostList}]]*/
+
+            function loadData(eleData) {
+              return {
+                pageNumber: 0,
+                size: 10,
+                total: "",
+                startDate: "",
+                endDate: "",
+                myForData: eleData,
+
+                getData() {
+                  const start = this.pageNumber * this.size,
+                    end = start + this.size;
+                  let filterData = this.myForData;
+                  this.total = filterData.length;
+                  return filterData.slice(start, end);
+                },
+              };
+            };
+        </script>
+
+    </body>
+</html>
