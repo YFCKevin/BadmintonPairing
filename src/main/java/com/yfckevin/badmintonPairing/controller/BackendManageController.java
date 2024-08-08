@@ -997,10 +997,25 @@ public class BackendManageController {
             final String formattedStartTime = startDateTime.format(DateTimeFormatter.ofPattern("HH:mm"));
             final String formattedEndTime = endDateTime.format(DateTimeFormatter.ofPattern("HH:mm"));
 
-            postDTO.setTime(formattedStartDate + "(" + dayOfWeekFormatted + ") " + formattedStartTime + " - " + formattedEndTime + " (" + post.getDuration() / 60 + "h)");
+            postDTO.setTime(formattedStartDate + "(" + dayOfWeekFormatted + ") " + formattedStartTime + " - " + formattedEndTime + " (" + formatDuration(post.getDuration()) + "h)");
         }
 
         return postDTO;
+    }
+
+    public String formatDuration(double duration) {
+        double hours = duration / 60;
+        if (hours == (int) hours) {
+            // 如果是整數
+            return String.format("%.0f", hours);
+        } else {
+            String hoursStr = String.format("%.2f", hours);
+            if (hoursStr.endsWith("0")) {
+                // 去掉末尾的零
+                hoursStr = hoursStr.substring(0, hoursStr.length() - 1);
+            }
+            return hoursStr;
+        }
     }
 
 
