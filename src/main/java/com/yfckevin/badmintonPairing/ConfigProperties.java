@@ -25,6 +25,8 @@ public class ConfigProperties {
     private String gptBackupSavePath;
     @Value("${config.crawlerDomain}")
     private String crawlerDomain;
+    @Value("${config.channelAccessToken}")
+    private String channelAccessToken;
     @Value("${google.client.id}")
     private String clientId;
     @Value("${google.client.secret}")
@@ -82,5 +84,9 @@ public class ConfigProperties {
 
     public String getRedirectUri() {
         return redirectUri;
+    }
+
+    public String getChannelAccessToken() {
+        return channelAccessToken;
     }
 }
