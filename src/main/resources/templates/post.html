@@ -12,8 +12,6 @@
         <meta property="og:type" content="website">
 
         <!-- Google Web Fonts -->
-        <link rel="preconnect" href="https://fonts.googleapis.com">
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=Playball&display=swap" rel="stylesheet">
 
         <!-- Icon Font Stylesheet -->
@@ -159,13 +157,13 @@
                                                     程度：<p class="mb-0 ms-1" x-text="item.level"></p>
                                                 </div>
                                                 <div class="d-flex align-items-center mb-0 flex-wrap">
-                                                    用球：<p class="mb-0 ms-1" x-text="item.brand === '' ? '未標示' : item.brand"></p>
+                                                    用球：<p class="mb-0 ms-1" x-html="item.brand === '' ? '&lt;i class=&quot;fas fa-question-circle&quot; style=&quot;color: gray;&quot; data-toggle=&quot;tooltip&quot; title=&quot;發文者未提供資訊，可點擊聯絡人連結進一步詢問！&quot;&gt;&lt;/i&gt;' : item.brand"></p>
                                                 </div>
                                                 <div class="d-flex align-items-center mb-0 flex-wrap">
-                                                    冷氣：<p class="mb-0 ms-1" x-text="item.airConditioner == '未標示' ? '未標示' : (item.airConditioner == '有冷氣' ? 'Y' : 'N')"></p>
+                                                    冷氣：<p class="mb-0 ms-1" x-html="item.airConditioner == '未標示' ? '<i class=&quot;fas fa-question-circle&quot; style=&quot;color: gray;&quot; data-toggle=&quot;tooltip&quot; title=&quot;發文者未提供資訊，可點擊聯絡人連結近一步詢問！&quot;></i>' : (item.airConditioner == '有冷氣' ? '<i class=&quot;fas fa-wind&quot; style=&quot;color: blue;&quot;></i>' : '<i class=&quot;fas fa-times-circle red-icon&quot; style=&quot;color: red;&quot;></i>')"></p>
                                                 </div>
                                                 <div class="d-flex align-items-center mb-2 flex-wrap">
-                                                    停車資訊：<p class="mb-0 ms-1" x-text="item.parkInfo === '' ? '未標示' : item.parkInfo"></p>
+                                                    停車資訊：<p class="mb-0 ms-1" x-html="item.parkInfo === '' ? '<i class=&quot;fas fa-question-circle&quot; style=&quot;color: gray;&quot; data-toggle=&quot;tooltip&quot; title=&quot;發文者未提供資訊，可點擊聯絡人連結近一步詢問！&quot;></i>' : item.parkInfo"></p>
                                                 </div>
                                                 <div class="d-flex align-items-center mb-2">
                                                     <button class="btn btn-primary py-2 d-xl-inline-block rounded-pill me-2" type="button" x-on:click="importCalender(item.place, item.startTime, item.endTime, item.fee, item.parkInfo, item.name)">匯入行事曆</button>
@@ -275,8 +273,22 @@
 
 
         <!-- Back to Top -->
-        <a href="#" class="btn btn-md-square btn-primary rounded-circle back-to-top"><i class="fa fa-arrow-up"></i></a>   
+        <a href="#" class="btn btn-md-square btn-primary rounded-circle back-to-top"><i class="fa fa-arrow-up"></i></a>
 
+
+        <div class="modal fade" id="infoModal" tabindex="-1" aria-labelledby="infoModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-md">
+                <div class="modal-content">
+                    <div class="modal-body py-3 px-3">
+                        <h5 class="modal-title h6"><i class="fab fa-google-plus-square me-2 text-danger fs-4"></i><span id="infoWord"></span></h5>
+                        <div class="text-end mt-4">
+                            <a type="button" class="btn btn-primary fs-15px me-2" title="確認" th:href="@{oauth2/authorize}">確認</a>
+                            <button type="button" class="btn btn-outline-secondary fs-15px" title="取消" data-bs-dismiss="modal">取消</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
         
     <!-- JavaScript Libraries -->
     <script th:src="@{js/jquery.min.js}"></script>
@@ -403,7 +415,8 @@
                   if (response.code == "C000"){
                     alert('匯入行事曆成功')
                   } else if (response.code == "C007"){
-                    window.location.href = 'oauth2/authorize';
+                    $("#infoWord").text('您尚未登入 Google 帳號，請先登入。')
+                    $("#infoModal").modal('show');
                   }
                 },
               });
@@ -429,6 +442,12 @@
         function clearKeyword() {
             $('#keyword').val('');
         }
+
+        $(document).ready(function(){
+          $('[data-toggle="tooltip"]').tooltip({
+            delay: { "show": 1, "hide": 100 }  // 設置顯示和隱藏的延遲時間（單位：毫秒）
+          });
+        });
     </script>
 
     </body>

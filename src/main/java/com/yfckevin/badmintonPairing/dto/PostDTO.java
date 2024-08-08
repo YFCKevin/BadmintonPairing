@@ -10,7 +10,7 @@ public class PostDTO {
     private String endTime;
     private String level;
     private int fee;
-    private int duration;
+    private double duration;
     private String brand;
     private String contact;
     private String parkInfo;
@@ -87,11 +87,11 @@ public class PostDTO {
         this.fee = fee;
     }
 
-    public int getDuration() {
+    public double getDuration() {
         return duration;
     }
 
-    public void setDuration(int duration) {
+    public void setDuration(double duration) {
         this.duration = duration;
     }
 
