@@ -201,6 +201,7 @@ public class PostController {
                         throw new RuntimeException(e);
                     }
                 })
+                .sorted(Comparator.comparing(PostDTO::getStartTime))
                 .toList();
 
         resultStatus.setCode("C000");

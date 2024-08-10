@@ -74,7 +74,7 @@
                         <button type="button" class="btn btn-danger btn-sm btn-rounded" x-on:click="searchIssues();">疑慮文章</button>
                         <button type="button" class="btn btn-success btn-sm btn-rounded" x-on:click="textCompletion();">openAI</button>
                         <button type="button" class="btn btn-warning btn-sm btn-rounded" x-on:click="getUnfinishedFiles();">取得未完成資料</button>
-                        <button x-show="postData && postData.length > 0" type="button" class="btn btn-success btn-sm btn-rounded" x-on:click="showTodayNewPostBtn();">今日新貼文</button>
+                        <button x-show="postData && postData.length > 0" type="button" class="btn btn-success btn-sm btn-rounded" x-on:click="showTodayNewPostBtn();">今日新貼文 ([[${#lists.size(postData)}]])</button>
                     </div>
                 </div>
 
