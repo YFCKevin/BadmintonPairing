@@ -43,6 +43,8 @@ public class ConfigProperties {
     private String redisPassword;
     @Value("${spring.data.mongodb.uri}")
     private String mongodbUri;
+    @Value("${google.map.key}")
+    private String googleMapApiKey;
 
     public String getCrawlerDomain() {
         return crawlerDomain;
@@ -118,5 +120,9 @@ public class ConfigProperties {
 
     public String getMongodbUri() {
         return mongodbUri;
+    }
+
+    public String getGoogleMapApiKey() {
+        return googleMapApiKey;
     }
 }
