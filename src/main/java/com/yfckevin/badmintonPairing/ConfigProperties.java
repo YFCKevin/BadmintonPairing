@@ -25,6 +25,8 @@ public class ConfigProperties {
     private String gptBackupSavePath;
     @Value("${config.crawlerDomain}")
     private String crawlerDomain;
+    @Value("${config.globalDomain}")
+    private String globalDomain;
     @Value("${config.channelAccessToken}")
     private String channelAccessToken;
     @Value("${google.client.id}")
@@ -33,6 +35,14 @@ public class ConfigProperties {
     private String clientSecret;
     @Value("${google.redirect.uri}")
     private String redirectUri;
+    @Value("${spring.redis.host}")
+    private String redisDomain;
+    @Value("${spring.redis.port}")
+    private int redisPort;
+    @Value("${spring.redis.password}")
+    private String redisPassword;
+    @Value("${spring.data.mongodb.uri}")
+    private String mongodbUri;
 
     public String getCrawlerDomain() {
         return crawlerDomain;
@@ -88,5 +98,25 @@ public class ConfigProperties {
 
     public String getChannelAccessToken() {
         return channelAccessToken;
+    }
+
+    public String getRedisDomain() {
+        return redisDomain;
+    }
+
+    public int getRedisPort() {
+        return redisPort;
+    }
+
+    public String getRedisPassword() {
+        return redisPassword;
+    }
+
+    public String getGlobalDomain() {
+        return globalDomain;
+    }
+
+    public String getMongodbUri() {
+        return mongodbUri;
     }
 }
