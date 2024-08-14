@@ -21,10 +21,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @RestController
 @RequestMapping("/api")
@@ -71,10 +70,23 @@ public class DataProcessingController {
         // 蒐集links
         final List<String> linkList = leaderService.findAllByUserIdIn(userIds).stream().map(Leader::getLink).toList();
 
-        // 寄信通知每日需更新的link筆數
-        MailUtils.sendMail("pigmonkey0921@gmail.com", "每日項目", "共" + postList.size() + "筆");
-        // call爬蟲API取得新貼文
-        crawlerService.callCrawlerAPIGetNewPosts(linkList);
+        // 寄信通知每日需更新的link笔数
+        MailUtils.sendMail("pigmonkey0921@gmail.com", "每日项目", "共" + linkList.size() + "筆");
+
+        int batchSize = 50;
+        int totalLinks = linkList.size();
+
+        List<List<String>> batches = IntStream.range(0, (totalLinks + batchSize - 1) / batchSize)
+                .mapToObj(i -> linkList.subList(i * batchSize, Math.min(totalLinks, (i + 1) * batchSize)))
+                .toList();
+
+        for (int i = 12; i < batches.size(); i++) {
+            List<String> batch = batches.get(i);
+            final int getNewPosts = crawlerService.callCrawlerAPIGetNewPosts(batch);
+            System.out.println("第幾次迴圈：" + i);
+            System.out.println("新貼文數: " + getNewPosts);
+            Thread.sleep(120 * 1000);
+        }
     }
 
 }
