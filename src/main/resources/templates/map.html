@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml" xmlns="http://www.w3.org/1999/html"
+      xmlns:x-on="http://www.w3.org/1999/xhtml">
+
+    <head>
+        <title>羽球配對</title>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta property="og:title" content="羽球配對">
+        <meta property="og:description" content="找到您的專屬羽球團">
+        <meta property="og:image" th:content="@{images/badminton.jpg}">
+        <meta property="og:url" content="https://www.gurula.cc/badminton/index">
+        <meta property="og:type" content="website">
+
+        <!-- Google Web Fonts -->
+        <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=Playball&display=swap" rel="stylesheet">
+
+        <!-- Icon Font Stylesheet -->
+        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css"/>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
+
+        <!-- Libraries Stylesheet -->
+        <!--        <link th:href="@{css/animate.min.css}" rel="stylesheet">-->
+        <link th:href="@{css/lightbox.min.css}" rel="stylesheet">
+        <link th:href="@{css/owl.carousel.min.css}" rel="stylesheet">
+
+        <!-- Customized Bootstrap Stylesheet -->
+        <link rel="icon" type="image/png" th:href="@{images/favicon.ico}" />
+        <link rel="stylesheet" type="text/css" th:href="@{css/bootstrap.min.css}" />
+
+        <link rel="stylesheet" type="text/css" th:href="@{css/style.css}" />
+        <script th:src="@{js/deviceType.js}"></script>
+    </head>
+
+    <body x-data="loadData()" x-init="initData()">
+
+        <!-- Spinner Start -->
+        <div id="spinner" class="show w-100 vh-100 bg-white position-fixed translate-middle top-50 start-50  d-flex align-items-center justify-content-center">
+            <div class="spinner-grow text-primary" role="status"></div>
+        </div>
+        <!-- Spinner End -->
+
+        <!-- Navbar start -->
+        <div class="container-fluid nav-bar">
+            <div class="container">
+                <nav class="navbar navbar-light navbar-expand-lg py-4">
+                    <a th:href="@{index}" class="navbar-brand">
+                        <h1 class="text-primary fw-bold mb-0">Badminton<span class="text-dark">Pairing</span> </h1>
+                    </a>
+                    <button class="navbar-toggler py-2 px-3" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
+                        <span class="fa fa-bars text-primary"></span>
+                    </button>
+                    <div class="collapse navbar-collapse" id="navbarCollapse">
+                        <div class="navbar-nav mx-auto">
+                            <a th:href="@{index}" class="nav-item nav-link active">首頁</a>
+                            <a th:href="@{posts}" class="nav-item nav-link">零打貼文</a>
+                        </div>
+                    </div>
+                </nav>
+            </div>
+        </div>
+        <!-- Navbar End -->
+
+        <!-- Contact Start -->
+        <div class="container-fluid contact py-6 wow bounceInUp" data-wow-delay="0.1s">
+            <div class="container">
+                <div class="row mb-3">
+                    <!-- 搜尋範圍 -->
+                    <div class="col-12 mb-3">
+                        <div class="d-flex align-items-center justify-content-end">
+                            <label class="me-3">搜尋範圍</label>
+                            <button type="button" data-radius="5" class="btn btn-md-square btn-primary rounded-circle me-2 radius">大</button>
+                            <button type="button" data-radius="3" class="btn btn-md-square btn-primary rounded-circle me-2 radius active">中</button>
+                            <button type="button" data-radius="1" class="btn btn-md-square btn-primary rounded-circle radius">小</button>
+                        </div>
+                    </div>
+                    <!-- 附近按鈕與交通方式 -->
+                    <div class="col-12 d-flex justify-content-between align-items-center">
+                        <!-- 附近按鈕 -->
+                        <div class="d-flex justify-content-start align-items-center">
+                            <button type="button" class="btn btn-primary d-flex flex-column align-items-center px-2 py-1 rounded-pill" onclick="searchNearby()">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span class="mt-1">附近</span>
+                            </button>
+                        </div>
+                        <!-- 交通方式 -->
+                        <div class="d-flex align-items-center">
+                            <label class="me-3">交通方式</label>
+                            <button type="button" data-travel="WALKING" class="btn btn-md-square btn-primary rounded-circle me-2 travel"><i class="fas fa-walking"></i></button>
+                            <button type="button" data-travel="DRIVING" class="btn btn-md-square btn-primary rounded-circle me-2 travel active"><i class="fas fa-car"></i></button>
+                            <button type="button" data-travel="BICYCLING" class="btn btn-md-square btn-primary rounded-circle travel"><i class="fas fa-biking"></i></button>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-5 bg-light rounded contact-form">
+                    <div class="row g-4">
+                        <div id="map" style="height: 500px; width: 100vw;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Contact End -->
+
+
+        <!-- Footer Start -->
+        <div class="container-fluid footer py-6 my-6 mb-0 bg-light wow bounceInUp" data-wow-delay="0.1s">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-3 col-md-6">
+                        <div class="footer-item">
+                            <h1 class="text-primary">Badminton<span class="text-dark">Pairing</span></h1>
+                            <p class="lh-lg mb-4">尋找羽球好團</p>
+                            <div class="footer-icon d-flex">
+                                <a class="btn btn-primary btn-sm-square me-2 rounded-circle" href=""><i class="fab fa-facebook-f"></i></a>
+                                <a class="btn btn-primary btn-sm-square me-2 rounded-circle" href=""><i class="fab fa-twitter"></i></a>
+                                <a href="#" class="btn btn-primary btn-sm-square me-2 rounded-circle"><i class="fab fa-instagram"></i></a>
+                                <a href="#" class="btn btn-primary btn-sm-square rounded-circle"><i class="fab fa-linkedin-in"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Footer End -->
+
+
+        <!-- Copyright Start -->
+        <div class="container-fluid copyright bg-dark py-4">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-6 text-center text-md-start mb-3 mb-md-0">
+                        <span class="text-light"><a href="#"><i class="fas fa-copyright text-light me-2"></i>Badminton Pairing</a>, All right reserved.</span>
+                    </div>
+                    <div class="col-md-6 my-auto text-center text-md-end text-white">
+                        Designed By <a class="border-bottom" href="https://htmlcodex.com">HTML Codex</a> Distributed By <a class="border-bottom" href="https://themewagon.com">ThemeWagon</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Copyright End -->
+
+        <!-- 更換當前位置確認modal -->
+        <div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModal" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-md">
+                <div class="modal-content">
+                    <div class="modal-body py-3 px-3">
+                        <h5 class="modal-title h6"><span>確定要更換當前位置嗎？</span></h5>
+                        <div class="text-end mt-4">
+                            <button type="button" class="btn btn-primary fs-15px me-2" title="確認" id="confirmButton">確認</button>
+                            <button type="button" class="btn btn-outline-secondary fs-15px" title="取消" id="cancelButton" data-bs-dismiss="modal">取消</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 貼文modal -->
+        <div class="modal fade" id="postModal" tabindex="-1" aria-labelledby="postModal" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-md">
+                <div class="modal-content">
+                    <div class="modal-body py-3 px-3">
+                        <h4 class="mb-4">球館的零打資訊</h4>
+                        <div class="row g-4">
+                            <div x-show="getData().length === 0">
+                                <p>查無資料</p>
+                            </div>
+                            <template x-for="(item,index) in getData()" :key="index">
+                                <div class="wow bounceInUp"> <!-- col-lg-6 -->
+                                    <div class="menu-item d-flex align-items-center">
+                                        <div class="w-100 d-flex flex-column text-start ps-2">
+                                            <div class="d-flex flex-column flex-md-row justify-content-between border-bottom border-primary mb-2">
+                                                <h5 class="mb-2 mb-md-0" x-text="item.time"></h5>
+                                            </div>
+                                            <div class="d-flex align-items-center mb-0 flex-wrap">
+                                                聯絡人：<p class="mb-0 ms-1">
+                                                <a :href="isMobile() ? item.shortLink : item.link" target="_blank" x-text="item.name"></a>
+                                            </p>
+                                            </div>
+                                            <div class="d-flex align-items-center mb-0 flex-wrap">
+                                                費用：<p class="mb-0 ms-1" x-text="item.fee"></p>元
+                                            </div>
+                                            <div class="d-flex align-items-center mb-0 flex-wrap">
+                                                程度：<p class="mb-0 ms-1" x-text="item.level"></p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                        <div class="text-end mt-4">
+                            <button type="button" class="btn btn-outline-secondary fs-15px" x-on:click="closePostModal()">關閉</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+<!--        infoModal-->
+        <div class="modal fade" id="infoModal" tabindex="-1" aria-labelledby="infoModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-md">
+                <div class="modal-content">
+                    <div class="modal-body py-3 px-3">
+                        <h5 class="modal-title h6">
+                            <div class="d-flex align-items-start mb-3">
+                                <i class="fas fa-tools me-2 text-danger fs-4"></i>
+                                <span id="infoWord">您所在的區域沒有球館，建議您重新搜尋：</span>
+                            </div>
+                            <div class="d-flex flex-column">
+                                <span class="ps-3 mb-2">>>>> 擴大搜尋範圍。</span>
+                                <span class="ps-3">>>>> 點擊地圖的其他地點後，再次搜尋附近的球館。</span>
+                            </div>
+                        </h5>
+                        <div class="text-end mt-4">
+                            <button type="button" class="btn btn-outline-secondary fs-15px" title="關閉" data-bs-dismiss="modal">關閉</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Back to Top -->
+        <a href="#" class="btn btn-md-square btn-primary rounded-circle back-to-top"><i class="fa fa-arrow-up"></i></a>
+
+        <input type="hidden" id="latitude_input">
+        <input type="hidden" id="longitude_input">
+
+        <script th:src="@{js/jquery.min.js}"></script>
+        <script th:src="@{js/bootstrap.bundle.min.js}"></script>
+        <script th:src="@{js/alpine.2.8.2.min.js}"></script>
+        <script th:src="@{js/wow.min.js}"></script>
+        <script th:src="@{js/easing.min.js}"></script>
+        <script th:src="@{js/waypoints.min.js}"></script>
+        <script th:src="@{js/counterup.min.js}"></script>
+        <script th:src="@{js/lightbox.min.js}"></script>
+        <script th:src="@{js/owl.carousel.min.js}"></script>
+        <script th:src="@{js/main.js}"></script>
+    </body>
+
+    <script src="https://maps.googleapis.com/maps/api/js?key=api_key&callback=initMap" async defer></script>
+    <script th:inline="javascript">
+        let courtData = [];  // 球館列表
+        let posts = [];      // 該球館的零打資訊
+        let radius = 3;     // 搜尋範圍
+        let map;
+        let directionsService;
+        let directionsRenderer;
+        let userLocation;
+        let currentMarker;  // 當前位置標記
+        let selectedMode = 'DRIVING'; // 默認是汽車
+        let infoWindows = []; // 所有的資訊視窗
+        let currentInfoWindow = null; // 當前打開的資訊視窗
+        let hasRoute = false;  // 是否有開啟路線規劃
+
+        function initMap() {
+            // 初始化 Directions
+            directionsService = new google.maps.DirectionsService();
+            directionsRenderer = new google.maps.DirectionsRenderer({
+                suppressMarkers: true,
+                suppressInfoWindows: true
+            });
+
+            // 取得使用者當前位置
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition((position) => {
+                    userLocation = {
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude
+                    };
+
+                    document.getElementById("latitude_input").value = userLocation.lat;
+                    document.getElementById("longitude_input").value = userLocation.lng;
+
+                    // 初始化地圖並把地圖中心設定為起點
+                    map = new google.maps.Map(document.getElementById("map"), {
+                        center: userLocation,
+                        zoom: 14
+                    });
+
+                    // 加上使用者的marker
+                    currentMarker = new google.maps.Marker({
+                        position: userLocation,
+                        map: map,
+                        title: "您的所在位置"
+                    });
+
+                    // 加上地圖的click事件
+                    map.addListener("click", (event) => {
+                        const clickedLocation = event.latLng;
+
+                        if (hasRoute) {
+                            $('#confirmModal').modal('show');
+
+                            $('#confirmButton').off('click').on('click', () => {
+                                // 清空路線、marker並重新設定當前位置
+                                updateCurrentLocation(clickedLocation);
+                                $('#confirmModal').modal('hide');
+                            });
+
+                            // 取消click事件
+                            $('#cancelButton').off('click').on('click', () => {
+                                $('#confirmModal').modal('hide');
+                            });
+                        } else {
+                            // 如果没有路線規劃，則直接重設當前位置
+                            updateCurrentLocation(clickedLocation);
+                        }
+
+                    });
+
+                    // 繪製地圖標記
+                    drawCourtMarkers();
+
+                }, () => {
+                    handleLocationError(true, map.getCenter());
+                });
+            } else {
+                handleLocationError(false, map.getCenter());
+            }
+        }
+
+        function drawCourtMarkers() {
+            // 僅保留當前的使用者marker
+            if (currentMarker) {
+                currentMarker.setMap(map); // 確認 currentMarker 在地圖上
+            } else {
+                console.warn('Current marker is not defined.');
+            }
+
+            // 清掉舊的球場marker
+            const existingMarkers = map.markers || [];
+            existingMarkers.forEach(marker => {
+                // 不清除 currentMarker，只清除其他marker
+                if (marker !== currentMarker) {
+                    marker.setMap(null);
+                } else {
+                    console.log('Skipped current location marker.');
+                }
+            });
+
+            // 清除所有的資訊視窗
+            infoWindows.forEach(infoWindow => {
+                infoWindow.close();
+            });
+            infoWindows = [];
+
+            // 重新設定現有的markers（不包括 currentMarker）
+            map.markers = [currentMarker];
+
+            // 在地圖上標記球館並設定marker
+            courtData.forEach((court) => {
+                if (typeof court.latitude === 'number' && !isNaN(court.latitude) && typeof court.longitude === 'number' && !isNaN(court.longitude)) {
+                    const marker = new google.maps.Marker({
+                        position: { lat: court.latitude, lng: court.longitude },
+                        map: map,
+                        title: court.name
+                    });
+
+                    // 建立資訊視窗
+                    const infoWindow = new google.maps.InfoWindow();
+
+                    // 加上click事件
+                    marker.addListener("click", () => {
+                        // 關閉已打開的資訊視窗
+                        if (currentInfoWindow) {
+                            currentInfoWindow.close();
+                        }
+
+                        // 計算並顯示路線
+                        calculateAndDisplayRoute(court, infoWindow);
+
+                        // 保存當前的資訊視窗
+                        currentInfoWindow = infoWindow;
+                    });
+
+                    map.markers.push(marker);
+                } else {
+                    console.warn(`Invalid coordinates: ${court.latitude}, ${court.longitude} for court: ${court.name}`);
+                }
+            });
+        }
+
+
+
+        function calculateAndDisplayRoute(court, infoWindow) {
+            const request = {
+                origin: userLocation,
+                destination: { lat: court.latitude, lng: court.longitude }, // 球館位置
+                travelMode: google.maps.TravelMode[selectedMode] // 交通方式
+            };
+
+            directionsService.route(request, (result, status) => {
+                if (status === google.maps.DirectionsStatus.OK) {
+                    directionsRenderer.setDirections(result);
+                    hasRoute = true; // 表示存在路線
+
+                    // 顯示交通時間
+                    const duration = result.routes[0].legs[0].duration.text;
+                    const content = `
+                        <span style="color: black;">
+                            前往 <a href="#" onclick="getCourtAvailabilityInfo('${court.id}')" style="color: black; text-decoration: underline; font-weight: bold;">${court.name}</a>
+                            預估時間 ${duration}
+                        </span>
+                    `;
+
+
+                    // 顯示資訊視窗
+                    infoWindow.setContent(content);
+                    infoWindow.open(map, new google.maps.Marker({
+                        position: { lat: court.latitude, lng: court.longitude },
+                        map: map,
+                        title: court.name
+                    }));
+
+                    infoWindows.push(infoWindow);
+                } else {
+                    alert("無法取得: " + status);
+                }
+            });
+        }
+
+        function updateCurrentLocation(clickedLocation) {
+            console.log('updateCurrentLocation');
+
+            // 清掉舊的路徑
+            directionsRenderer.setMap(null);
+            hasRoute = false; // 更新路线规划状态
+
+            // 清掉所有標記
+            if (map.markers) {
+                map.markers.forEach(marker => marker.setMap(null));
+                map.markers = []; // 清空标记数组
+            }
+
+            document.getElementById("latitude_input").value = clickedLocation.lat();
+            document.getElementById("longitude_input").value = clickedLocation.lng();
+
+            if (currentMarker) {
+                currentMarker.setMap(null);
+            }
+
+            currentMarker = new google.maps.Marker({
+                position: clickedLocation,
+                map: map,
+                title: "您的新位置"
+            });
+
+            map.markers = [currentMarker];
+
+            // 更新當前使用者的位置
+            userLocation = {
+                lat: clickedLocation.lat(),
+                lng: clickedLocation.lng()
+            };
+        }
+
+
+        function handleLocationError(browserHasGeolocation, pos) {
+            const message = browserHasGeolocation
+                ? "Error: Geolocation service failed."
+                : "Error: Your browser doesn't support geolocation.";
+            alert(message);
+            map.setCenter(pos);
+        }
+
+        $(document).ready(function() {
+            $('.radius').click(function() {
+                $('.radius').removeClass('active');
+                $(this).addClass('active');
+                radius = $(this).data('radius');
+            });
+
+            $('.travel').click(function() {
+                if (!$(this).hasClass('active')) {
+                    $('.travel').removeClass('active');
+                    $(this).addClass('active');
+                    selectedMode = $(this).data('travel');
+
+                    directionsRenderer.setMap(null);
+
+                    if (currentInfoWindow) {
+                        currentInfoWindow.close();
+                        currentInfoWindow = null;
+                    }
+                    drawCourtMarkers();
+                }
+            });
+        });
+
+
+        function searchNearby() {
+            let data = {
+                radius: radius,
+                myLat: $("#latitude_input").val(),
+                myLon: $("#longitude_input").val()
+            };
+
+            directionsRenderer.setMap(null);
+
+            if (currentInfoWindow) {
+                currentInfoWindow.close();
+                currentInfoWindow = null;
+            }
+
+            map.markers.forEach(marker => {
+                if (marker !== currentMarker) {
+                    marker.setMap(null);
+                }
+            });
+
+            map.markers = [currentMarker];
+
+            $.ajax({
+                url: "getNearbyCourts",
+                type: "post",
+                dataType: "json",
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                success: function (response) {
+                    if (response.code === "C000") {
+                        courtData = response.data;
+                        if (courtData.length > 0){
+                            drawCourtMarkers();
+                        } else {
+                            $("#infoModal").modal('show');
+                            return;
+                        }
+                    }
+                },
+            });
+        }
+
+        function getCourtAvailabilityInfo (postId){
+            $.ajax({
+                url: "getCourtAvailabilityInfo/" + postId,
+                type: "get",
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                success: function (response) {
+                    if (response.code === "C000") {
+                        posts = response.data;
+                        document.dispatchEvent(new CustomEvent('update-data', { detail: posts }));
+                        console.log('Dispatched update-data event with:', posts);
+                        $("#postModal").modal('show')
+                    }
+                },
+            });
+        }
+
+
+        function loadData() {
+          return {
+            pageNumber: 0,
+            size: 10,
+            total: "",
+            myForData: [],
+
+            initData() {
+                console.log('Initializing data with posts:', window.posts);
+                // 初始化數據，從全局變數 posts 中獲取
+                this.myForData = window.posts || [];
+                this.total = this.myForData.length;
+
+                // 監聽自定義事件以更新數據
+                document.addEventListener('update-data', (event) => {
+                    console.log('Received update-data event with:', event.detail);
+                    this.myForData = event.detail;
+                    this.total = this.myForData.length;
+                });
+            },
+
+            getData() {
+              const start = this.pageNumber * this.size,
+                end = start + this.size;
+              let filterData = this.myForData;
+              this.total = filterData.length;
+              return filterData.slice(start, end);
+            },
+            closePostModal (){
+              $("#postModal").modal('hide');
+            },
+          };
+        };
+    </script>
+
+
+</html>

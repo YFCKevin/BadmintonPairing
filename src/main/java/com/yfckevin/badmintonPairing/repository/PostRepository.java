@@ -14,4 +14,6 @@ public interface PostRepository extends MongoRepository<Post, String> {
     void deleteByIdIn(List<String> postIdIn);
     @Query("{ 'dayOfWeek': ?0, 'startTime': { $gte: ?1, $lte: ?2 } }")
     List<Post> findPostsByDayAndTime(String day, String targetStartDate, String targetEndDate);
+
+    List<Post> findByIdIn(List<String> strings);
 }

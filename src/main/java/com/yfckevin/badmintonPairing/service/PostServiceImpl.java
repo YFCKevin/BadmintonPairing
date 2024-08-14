@@ -37,7 +37,6 @@ import java.util.regex.Pattern;
 
 @Service
 public class PostServiceImpl implements PostService {
-    Logger logger = LoggerFactory.getLogger(PostServiceImpl.class);
     private final SimpleDateFormat svf;
     private final SimpleDateFormat ssf;
     private final SimpleDateFormat sdf;
@@ -313,6 +312,11 @@ public class PostServiceImpl implements PostService {
         String targetStartDate = targetDay + " 00:00:00";
         String targetEndDate = targetDay + " 23:59:59";
         return postRepository.findPostsByDayAndTime(day, targetStartDate, targetEndDate);
+    }
+
+    @Override
+    public List<Post> findByIdIn(List<String> strings) {
+        return postRepository.findByIdIn(strings);
     }
 
     private String saveJsonFileForDataCleaning(List<RequestPostDTO> differencePosts) throws IOException {

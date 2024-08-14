@@ -5,6 +5,7 @@ import com.yfckevin.badmintonPairing.entity.Post;
 
 import java.io.IOException;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -31,4 +32,6 @@ public interface PostService {
     void deleteByIdIn(List<String> postIdIn);
 
     List<Post> findPostsByDaySorted(String day, String targetDate);
+
+    List<Post> findByIdIn(List<String> strings);
 }
