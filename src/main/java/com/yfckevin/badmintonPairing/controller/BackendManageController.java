@@ -1,17 +1,15 @@
 package com.yfckevin.badmintonPairing.controller;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.TypeRef;
 import com.yfckevin.badmintonPairing.ConfigProperties;
 import com.yfckevin.badmintonPairing.dto.*;
-import com.yfckevin.badmintonPairing.entity.Leader;
-import com.yfckevin.badmintonPairing.entity.Post;
+import com.yfckevin.badmintonPairing.entity.*;
 import com.yfckevin.badmintonPairing.enums.AirConditionerType;
 import com.yfckevin.badmintonPairing.exception.ResultStatus;
-import com.yfckevin.badmintonPairing.service.LeaderService;
-import com.yfckevin.badmintonPairing.service.OpenAiService;
-import com.yfckevin.badmintonPairing.service.PostService;
+import com.yfckevin.badmintonPairing.service.*;
 import com.yfckevin.badmintonPairing.utils.ConfigurationUtil;
 import jakarta.servlet.http.HttpSession;
 import org.apache.commons.lang3.StringUtils;
@@ -24,6 +22,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.ParseException;
@@ -45,17 +45,25 @@ public class BackendManageController {
     private final LeaderService leaderService;
     private final PostService postService;
     private final OpenAiService openAiService;
+    private final CourtService courtService;
+    private final TemplateSubjectService templateSubjectService;
+    private final TemplateDetailService templateDetailService;
+    private final FollowerService followerService;
     private final SimpleDateFormat sdf;
     private final DateTimeFormatter ddf;
     private final SimpleDateFormat svf;
     private final SimpleDateFormat ssf;
     private final ObjectMapper objectMapper;
 
-    public BackendManageController(ConfigProperties configProperties, LeaderService leaderService, PostService postService, OpenAiService openAiService, @Qualifier("sdf") SimpleDateFormat sdf, DateTimeFormatter ddf, @Qualifier("svf") SimpleDateFormat svf, @Qualifier("ssf") SimpleDateFormat ssf, ObjectMapper objectMapper) {
+    public BackendManageController(ConfigProperties configProperties, LeaderService leaderService, PostService postService, OpenAiService openAiService, CourtService courtService, TemplateSubjectService templateSubjectService, TemplateDetailService templateDetailService, FollowerService followerService, @Qualifier("sdf") SimpleDateFormat sdf, DateTimeFormatter ddf, @Qualifier("svf") SimpleDateFormat svf, @Qualifier("ssf") SimpleDateFormat ssf, ObjectMapper objectMapper) {
         this.configProperties = configProperties;
         this.leaderService = leaderService;
         this.postService = postService;
         this.openAiService = openAiService;
+        this.courtService = courtService;
+        this.templateSubjectService = templateSubjectService;
+        this.templateDetailService = templateDetailService;
+        this.followerService = followerService;
         this.sdf = sdf;
         this.ddf = ddf;
         this.svf = svf;
@@ -320,6 +328,10 @@ public class BackendManageController {
 
         model.addAttribute("postDTOList", postDTOList);
 
+        //取得所有球館資訊，配對用
+        final List<Court> courtList = courtService.findAllByOrderByCreationDateAsc();
+        model.addAttribute("courtList", courtList);
+
         return "backend/postManagement";
     }
 
@@ -452,6 +464,10 @@ public class BackendManageController {
                     }
                 }).toList();
 
+        if (StringUtils.isNotBlank(searchDTO.getLabelCourt())) {
+            postDTOList = postDTOList.stream().filter(p -> searchDTO.getLabelCourt().equals(p.getLabelCourt())).toList();
+        }
+
         resultStatus.setCode("C000");
         resultStatus.setMessage("成功");
         resultStatus.setData(postDTOList);
@@ -525,6 +541,44 @@ public class BackendManageController {
         resultStatus.setMessage("成功");
         resultStatus.setData(postDTOList);
 
+        return ResponseEntity.ok(resultStatus);
+    }
+
+
+    /**
+     * 配對貼文與球館，將貼文id存入球館entity，以及在貼文標記labelCourt
+     * @param dto
+     * @param session
+     * @return
+     */
+    @PostMapping("/matePostsAndCourt")
+    public ResponseEntity<?> matePostsAndCourt (@RequestBody MateDTO dto, HttpSession session){
+
+        final String member = (String) session.getAttribute("admin");
+        if (member != null) {
+            logger.info("[matePostAndCourt]");
+        }
+        ResultStatus resultStatus = new ResultStatus();
+
+        final Optional<Court> opt = courtService.findById(dto.getCourtId());
+        if (opt.isPresent()) {
+            final Court court = opt.get();
+            final List<String> newPostIds = Arrays.asList(court.getPostId().split(","));
+            Set<String> uniquePostId = new HashSet<>(newPostIds);
+            uniquePostId.addAll(dto.getPostIdList());
+            final String postId = uniquePostId.stream()
+                    .map(String::valueOf)
+                    .collect(Collectors.joining(","));
+            court.setPostId(postId);
+            courtService.save(court);
+
+            final List<Post> postList = postService.findByIdIn(newPostIds).stream()
+                    .peek(p -> p.setLabelCourt(true)).toList();
+            postService.saveAll(postList);
+
+            resultStatus.setCode("C000");
+            resultStatus.setMessage("成功");
+        }
         return ResponseEntity.ok(resultStatus);
     }
 
@@ -795,7 +849,7 @@ public class BackendManageController {
 
         date = svf.format(ssf.parse(date)); // 日期更換回yyyyMMdd
 
-        String keywords = "教練|已滿|已額滿|場地出租|場地釋出|釋出|場地分享|場地轉讓|轉讓|場地轉租|徵場地";
+        String keywords = "教練|已滿|已額滿|場地出租|場地釋出|釋出|場地分享|場地轉讓|轉讓|場地轉租|徵場地|單打";
         Pattern issuePattern = Pattern.compile(keywords);
 
         List<RequestPostDTO> postDTOList = constructPostDTOFromDailyPostsFile(date);
@@ -815,7 +869,16 @@ public class BackendManageController {
         return ResponseEntity.ok(resultStatus);
     }
 
-
+    /**
+     * 打OpenAI的text completion
+     *
+     * @param date
+     * @param userIdList
+     * @param session
+     * @return
+     * @throws ParseException
+     * @throws IOException
+     */
     @PostMapping("/convertToPosts/{date}")
     public CompletableFuture<ResponseEntity<ResultStatus>> convertToPosts(@PathVariable String date, @RequestBody List<String> userIdList, HttpSession session) throws ParseException, IOException {
 
@@ -875,7 +938,15 @@ public class BackendManageController {
         }
     }
 
-
+    /**
+     * 取得尚未匯入DB的零打資訊
+     *
+     * @param date
+     * @param session
+     * @return
+     * @throws ParseException
+     * @throws IOException
+     */
     @GetMapping("/getUnfinishedFiles/{date}")
     public ResponseEntity<?> getUnfinishedFiles(@PathVariable String date, HttpSession session) throws ParseException, IOException {
 
@@ -906,6 +977,165 @@ public class BackendManageController {
         }
 
         return ResponseEntity.ok(resultStatus);
+    }
+
+
+    /**
+     * 導頁到球館管理介面
+     *
+     * @param session
+     * @param model
+     * @return
+     */
+    @GetMapping("/forwardCourtManagement")
+    public String forwardCourtManagement(HttpSession session, Model model) {
+        final String member = (String) session.getAttribute("admin");
+        if (member != null) {
+            logger.info("[forwardCourtManagement]");
+        } else {
+            return "redirect:/backendLogin";
+        }
+
+        List<Court> courtList = courtService.findAllByOrderByCreationDateAsc();
+        List<CourtDTO> courtDTOList = courtList.stream()
+                .map(this::constructCourtDTO).toList();
+
+        model.addAttribute("courtDTOList", courtDTOList);
+
+        return "courtManagement";
+    }
+
+
+    @PostMapping("/saveCourt")
+    public ResponseEntity<?> saveCourt (@RequestBody CourtDTO dto, HttpSession session){
+
+        final String member = (String) session.getAttribute("admin");
+        if (member != null) {
+            logger.info("[saveCourt]");
+        }
+        ResultStatus resultStatus = new ResultStatus();
+
+        if (StringUtils.isBlank(dto.getId())) { //新增
+            Court court = new Court();
+            court.setName(dto.getName());
+            court.setAddress(dto.getAddress());
+            court.setLatitude(dto.getLatitude());
+            court.setLongitude(dto.getLongitude());
+            court.setCreationDate(sdf.format(new Date()));
+            court.setPostId(dto.getPostId());
+            courtService.save(court);
+        } else {    //更新
+            final Optional<Court> opt = courtService.findById(dto.getId());
+            if (opt.isPresent()){
+                final Court court = opt.get();
+                court.setLongitude(dto.getLongitude());
+                court.setName(dto.getName());
+                court.setAddress(dto.getAddress());
+                court.setLatitude(dto.getLatitude());
+                court.setPostId(dto.getPostId());
+                courtService.save(court);
+            }
+        }
+        resultStatus.setCode("C000");
+        resultStatus.setMessage("成功");
+        return ResponseEntity.ok(resultStatus);
+    }
+
+
+    @GetMapping("/deleteCourt/{id}")
+    public ResponseEntity<?> deleteCourt (@PathVariable String id, HttpSession session){
+
+        final String member = (String) session.getAttribute("admin");
+        if (member != null) {
+            logger.info("[deleteCourt]");
+        }
+        ResultStatus resultStatus = new ResultStatus();
+
+        final Optional<Court> opt = courtService.findById(id);
+        if (opt.isPresent()) {
+            courtService.delete(opt.get());
+            resultStatus.setCode("C000");
+            resultStatus.setMessage("成功");
+        }
+        return ResponseEntity.ok(resultStatus);
+    }
+
+
+
+    @PostMapping("/searchCourt")
+    public ResponseEntity<?> searchCourt (@RequestBody SearchDTO searchDTO, HttpSession session){
+
+        final String member = (String) session.getAttribute("admin");
+        if (member != null) {
+            logger.info("[searchCourt]");
+        }
+        ResultStatus resultStatus = new ResultStatus();
+
+        final List<CourtDTO> courtDTOList = courtService.findCourtByCondition(searchDTO.getKeyword())
+                .stream().map(this::constructCourtDTOSimple).toList();
+
+        resultStatus.setCode("C000");
+        resultStatus.setMessage("成功");
+        resultStatus.setData(courtDTOList);
+        return ResponseEntity.ok(resultStatus);
+    }
+
+
+
+    @GetMapping("/findCourtById/{id}")
+    public ResponseEntity<?> findCourtById (@PathVariable String id, HttpSession session){
+
+        final String member = (String) session.getAttribute("admin");
+        if (member != null) {
+            logger.info("[findCourtById]");
+        }
+        ResultStatus resultStatus = new ResultStatus();
+
+        final Optional<Court> opt = courtService.findById(id);
+        if (opt.isPresent()) {
+            final Court court = opt.get();
+            CourtDTO courtDTO = constructCourtDTO(court);
+            resultStatus.setCode("C000");
+            resultStatus.setMessage("成功");
+            resultStatus.setData(courtDTO);
+        }
+        return ResponseEntity.ok(resultStatus);
+    }
+
+    private CourtDTO constructCourtDTO(Court court) {
+        CourtDTO courtDTO = new CourtDTO();
+        courtDTO.setAddress(court.getAddress());
+        courtDTO.setLatitude(court.getLatitude());
+        courtDTO.setLongitude(court.getLongitude());
+        courtDTO.setName(court.getName());
+        courtDTO.setId(court.getId());
+        courtDTO.setCreationDate(court.getCreationDate());
+        List<String> postIdsList = (court.getPostId() == null || court.getPostId().trim().isEmpty())
+                ? Collections.emptyList()
+                : Arrays.asList(court.getPostId().split(","));
+        final List<PostDTO> postDTOList = postService.findByIdIn(postIdsList)
+                .stream().map(p -> {
+                    try {
+                        return constructPostDTO(p);
+                    } catch (ParseException e) {
+                        throw new RuntimeException(e);
+                    }
+                }).toList();
+        courtDTO.setPostDTOList(postDTOList);
+        return courtDTO;
+    }
+
+
+    private CourtDTO constructCourtDTOSimple(Court court) {
+        CourtDTO courtDTO = new CourtDTO();
+        courtDTO.setAddress(court.getAddress());
+        courtDTO.setLatitude(court.getLatitude());
+        courtDTO.setLongitude(court.getLongitude());
+        courtDTO.setName(court.getName());
+        courtDTO.setId(court.getId());
+        courtDTO.setCreationDate(court.getCreationDate());
+        courtDTO.setPostId(court.getPostId());
+        return courtDTO;
     }
 
 
@@ -983,6 +1213,7 @@ public class BackendManageController {
         postDTO.setParkInfo(post.getParkInfo());
         postDTO.setPlace(post.getPlace());
         postDTO.setUserId(post.getUserId());
+        postDTO.setLabelCourt(String.valueOf(post.isLabelCourt()));
 
         if (post.getStartTime() != null && post.getEndTime() != null) {
             LocalDateTime startDateTime = LocalDateTime.parse(post.getStartTime(), ddf);

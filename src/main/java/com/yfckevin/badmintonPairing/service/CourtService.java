@@ -6,9 +6,14 @@ import java.util.List;
 import java.util.Optional;
 
 public interface CourtService {
-    List<Court> findAll();
 
     void save(Court court);
 
     Optional<Court> findById(String id);
+
+    List<Court> findAllByOrderByCreationDateAsc();
+
+    void delete(Court court);
+
+    List<Court> findCourtByCondition(String keyword);
 }

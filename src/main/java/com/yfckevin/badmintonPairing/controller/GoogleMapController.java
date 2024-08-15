@@ -71,7 +71,7 @@ public class GoogleMapController {
         logger.info("[getNearbyCourts]");
         ResultStatus resultStatus = new ResultStatus();
 
-        List<Court> courtList = courtService.findAll();
+        List<Court> courtList = courtService.findAllByOrderByCreationDateAsc();
         List<Court> nearbyCourts = new ArrayList<>();
         for (Court court : courtList) {
             final double distance = calculateDistance(dto.getMyLat(), dto.getMyLon(), court.getLatitude(), court.getLongitude());
@@ -155,6 +155,7 @@ public class GoogleMapController {
         postDTO.setParkInfo(post.getParkInfo());
         postDTO.setPlace(post.getPlace());
         postDTO.setUserId(post.getUserId());
+        postDTO.setLabelCourt(String.valueOf(post.isLabelCourt()));
         Leader leader = leaderMap.get(post.getUserId());
         if (leader != null) {
             postDTO.setLink(leader.getLink());

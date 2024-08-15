@@ -17,6 +17,7 @@
     <div class="header-links">
         <a th:href="@{forwardLeaderManagement}">團主管理</a>
         <a th:href="@{forwardFileManagement}">檔案管理</a>
+        <a th:href="@{forwardTemplateManagement}">模板管理</a>
         <a th:href="@{backendLogout}">登出</a>
     </div>
 </div>
@@ -28,7 +29,7 @@
                 <!-- Search Bar -->
                 <div class="mb-3">
                     <div class="row">
-                        <div style="margin-top: 10px" class="col-md-3">
+                        <div style="margin-top: 10px" class="col-md-3 col-12 mb-3">
                             <div class="form-group d-flex align-items-center">
                                 <label class="input-group-text mr-2" for="startDate">開始日期</label>
                                 <input
@@ -39,7 +40,7 @@
                                 />
                             </div>
                         </div>
-                        <div style="margin-top: 10px" class="col-md-3">
+                        <div style="margin-top: 10px" class="col-md-3 col-12 mb-3">
                             <div class="form-group d-flex align-items-center">
                                 <label class="input-group-text mr-2" for="endDate">結束日期</label>
                                 <input
@@ -50,7 +51,16 @@
                                 />
                             </div>
                         </div>
-                        <div style="margin-top: 10px" class="col-md-6">
+                        <div style="margin-top: 10px" class="col-md-3 col-12 mb-3">
+                            <div class="form-group d-flex align-items-center">
+                                <label class="input-group-text mr-2" for="labelCourt">條件</label>
+                                <select id="labelCourt" class="form-control">
+                                    <option value="false">未加入</option>
+                                    <option value="true">已加入</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div style="margin-top: 10px" class="col-md-3 col-12 mb-3">
                             <div class="form-group d-flex align-items-center">
                                 <label class="input-group-text mr-2" for="keyword">關鍵字</label>
                                 <input
@@ -94,11 +104,17 @@
 
                 <div class="row mt-3" style="margin-top: 10px; margin-bottom: 10px;">
                     <div class="col d-flex">
-                        <button type="button" class="btn btn-warning btn-sm btn-rounded" x-on:click="searchSamePosts();">相同貼文</button>
+                        <button type="button" class="btn btn-warning btn-sm btn-rounded me-2" x-on:click="searchSamePosts();">(1)相同貼文</button>
+                        <button type="button" class="btn btn-warning btn-sm btn-rounded me-2" x-on:click="openCourtModal();">(2)選擇球館</button>
+                        <button type="button" class="btn btn-warning btn-sm btn-rounded" x-on:click="matePostsAndCourt();">(3)貼文球館配對</button>
                     </div>
                     <div class="col d-flex justify-content-end">
-                        <button type="button" class="btn btn-danger btn-sm btn-rounded" x-on:click="deleteAllPosts();">全部刪除</button>  <!--                        x-show="selectedFiles.length > 0"-->
+                        <button type="button" class="btn btn-danger btn-sm btn-rounded" x-on:click="deleteAllPosts();">全部刪除</button>  <!-- x-show="selectedFiles.length > 0" -->
                     </div>
+                </div>
+
+                <div class="row mt-3" style="margin-top: 10px; margin-bottom: 10px;">
+                    <span id="choose_court_id" style="color: black; background-color: yellow"></span>
                 </div>
 
                 <div class="table-responsive custom-table-responsive" style="overflow-x: auto;">
@@ -277,13 +293,78 @@
     </div>
 </div>
 
+<!-- courtModal -->
+<div class="modal fade" id="courtModal" tabindex="-1" data-bs-backdrop="static" aria-labelledby="courtModal" aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="mb-4">選擇球館</h4>
+            </div>
+            <div class="d-flex align-items-center">
+                <input type="text" class="form-control me-2 ms-2" id="courtKeyword" placeholder="可搜尋場館名、地址...">
+                <button class="btn btn-primary me-2" type="button" x-on:click="searchCourt()">搜尋</button>
+            </div>
+            <div style="overflow-x: auto;" class="modal-body">
+                <table>
+                    <thead>
+                    <tr class="table100-head">
+                        <th class="col">編號</th>
+                        <th class="col">動作</th>
+                        <th class="col">場館名</th>
+                        <th class="col">地址</th>
+                        <th class="col">經度</th>
+                        <th class="col">緯度</th>
+                        <th class="col">貼文編號集</th>
+                        <th class="col">創立時間</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+
+                    <template x-for="(item,index) in getCourtData()" :key="index">
+
+                        <tr>
+                            <td class="th-num" x-text="getItemNumber(index)"></td>
+                            <td class="th-action">
+                                <button style="padding: 5px; margin: 5px" class="btn btn-primary" x-on:click="chooseCourt(item.id, item.name)">選擇</button>
+                            </td>
+                            <td class="th-name" x-text="item.name"></td>
+                            <td class="th-address" x-text="item.address"></td>
+                            <td class="th-latitude" x-text="item.latitude"></td>
+                            <td class="th-longitude" x-text="item.longitude"></td>
+                            <td class="th-postId" x-html="item.postId.split(',').join('<br>')"></td>
+                            <td class="th-creationDate" x-text="item.creationDate"></td>
+                        </tr>
+
+                    </template>
+
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary fs-15px" title="關閉" data-bs-dismiss="modal">關閉</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 <script th:src="@{js/alpine.2.8.2.min.js}"></script>
 <script th:src="@{js/jquery.min.js}"></script>
 <script th:src="@{js/bootstrap.min.js}"></script>
 <script th:inline="javascript">
       const postDTOList = /*[[${postDTOList}]]*/
+      const courtData = /*[[${courtList}]]*/
       let passId;   // for edit
       let selectedPostIds = [];   //裝需要轉換成txt檔的文章
+      let postIdList = [];        //裝需要配對球館的貼文集
+      let courtId;                //裝要配對的球館id
+      let labelCourt = "false";             //放貼文加入球館的條件
+
+      $(document).ready(function() {
+        $('#labelCourt').on('change', function() {
+          labelCourt = $(this).val();
+        });
+      });
 
         function loadData(eleData) {
           return {
@@ -293,6 +374,7 @@
             startDate: "",
             endDate: "",
             myForData: eleData,
+            courtData: courtData,
 
             init() {
               const today = new Date();
@@ -306,6 +388,9 @@
               let filterData = this.myForData;
               this.total = filterData.length;
               return filterData.slice(start, end);
+            },
+            getCourtData (){
+              return this.courtData;
             },
             pages() {
               return Array.from({
@@ -337,6 +422,7 @@
               data.startDate = startDate;
               data.endDate = endDate;
               data.keyword = keyword;
+              data.labelCourt = labelCourt;
               $.ajax({
                 url: "postSearch",
                 type: "post",
@@ -449,15 +535,18 @@
               const checkboxes = $('tbody input[type="checkbox"]');
               if (isChecked) {
                 selectedPostIds = [];
+                postIdList = [];
                 checkboxes.each((index, checkbox) => {
                   checkbox.checked = true;
                   selectedPostIds.push(checkbox.value);
+                  postIdList.push(checkbox.value);
                 });
               } else {
                 checkboxes.each((index, checkbox) => {
                   checkbox.checked = false;
                 });
                 selectedPostIds = [];
+                postIdList = [];
               }
             },
             update(event) {
@@ -467,8 +556,12 @@
                 if (!selectedPostIds.includes(value)) {
                     selectedPostIds.push(value);
                 }
+                if (!postIdList.includes(value)){
+                    postIdList.push(value);
+                }
               } else {
                 selectedPostIds = selectedPostIds.filter(item => item !== value);
+                postIdList = postIdList.filter(item => item !== value);
               }
             },
             deleteAllPosts (){
@@ -487,6 +580,56 @@
                 },
               });
             },
+            openCourtModal (){ //選擇要配對的球館
+              $("#courtModal").modal('show');
+            },
+            chooseCourt (id, name){
+              courtId = id;
+              $("#choose_court_id").text('選擇的球館是：' + name + '(' + courtId + ')');
+              $("#courtModal").modal('hide');
+            },
+            matePostsAndCourt (){
+              if (postIdList.length <= 0){
+                alert('請勾選至少一個零打貼文')
+                return;
+              }
+              if (courtId == ''){
+                alert('請選擇球館')
+                return;
+              }
+              let data = {};
+              data.courtId = courtId
+              data.postIdList = postIdList;
+              $.ajax({
+                url: "matePostsAndCourt",
+                type: "post",
+                dataType: "json",
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                success: function (response) {
+                  if (response.code == "C000"){
+                    alert('配對完成')
+                  }
+                },
+              });
+            },
+            searchCourt (){
+              let _this = this;
+              let data = {};
+              data.keyword = $("#courtKeyword").val();
+              $.ajax({
+                url: "searchCourt",
+                type: "post",
+                dataType: "json",
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                success: function (response) {
+                  if (response.code == "C000"){
+                    _this.courtData = response.data;
+                  }
+                },
+              });
+            }
           };
         };
 

@@ -34,4 +34,6 @@ public interface PostService {
     List<Post> findPostsByDaySorted(String day, String targetDate);
 
     List<Post> findByIdIn(List<String> strings);
+
+    void saveAll(List<Post> postList);
 }

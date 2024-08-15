@@ -319,6 +319,11 @@ public class PostServiceImpl implements PostService {
         return postRepository.findByIdIn(strings);
     }
 
+    @Override
+    public void saveAll(List<Post> postList) {
+        postRepository.saveAll(postList);
+    }
+
     private String saveJsonFileForDataCleaning(List<RequestPostDTO> differencePosts) throws IOException {
         File outputFile = new File(configProperties.getFileSavePath() + "dailyPosts.json");
         objectMapper.writeValue(outputFile, differencePosts);

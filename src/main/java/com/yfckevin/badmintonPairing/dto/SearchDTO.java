@@ -4,6 +4,15 @@ public class SearchDTO {
     private String keyword;
     private String startDate;
     private String endDate;
+    private String labelCourt;
+
+    public String getLabelCourt() {
+        return labelCourt;
+    }
+
+    public void setLabelCourt(String labelCourt) {
+        this.labelCourt = labelCourt;
+    }
 
     public String getKeyword() {
         return keyword;

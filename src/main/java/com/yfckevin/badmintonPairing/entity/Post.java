@@ -4,6 +4,7 @@ import com.yfckevin.badmintonPairing.enums.AirConditionerType;
 import jakarta.persistence.Id;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.security.config.annotation.web.Saml2Dsl;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -31,6 +32,7 @@ public class Post {
     private String creationDate;
     private String modificationDate;
     private String deletionDate;
+    private boolean labelCourt; //是否已加入球館內，預設是無
 
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
@@ -179,5 +181,13 @@ public class Post {
 
     public void setDeletionDate(String deletionDate) {
         this.deletionDate = deletionDate;
+    }
+
+    public boolean isLabelCourt() {
+        return labelCourt;
+    }
+
+    public void setLabelCourt(boolean labelCourt) {
+        this.labelCourt = labelCourt;
     }
 }

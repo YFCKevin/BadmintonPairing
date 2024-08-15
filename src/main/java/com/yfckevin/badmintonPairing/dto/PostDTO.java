@@ -22,6 +22,15 @@ public class PostDTO {
     private String modificationDate;
     private String deletionDate;
     private String dayOfWeek;
+    private String labelCourt;
+
+    public String getLabelCourt() {
+        return labelCourt;
+    }
+
+    public void setLabelCourt(String labelCourt) {
+        this.labelCourt = labelCourt;
+    }
 
     public String getId() {
         return id;
