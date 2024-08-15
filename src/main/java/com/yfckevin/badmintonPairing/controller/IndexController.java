@@ -89,6 +89,7 @@ public class IndexController {
         postDTO.setParkInfo(post.getParkInfo());
         postDTO.setPlace(post.getPlace());
         postDTO.setUserId(post.getUserId());
+        postDTO.setLabelCourt(String.valueOf(post.isLabelCourt()));
         Leader leader = leaderMap.get(post.getUserId());
         if (leader != null) {
             postDTO.setLink(leader.getLink());
