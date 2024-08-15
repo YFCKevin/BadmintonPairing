@@ -11,6 +11,7 @@ import com.yfckevin.badmintonPairing.enums.AirConditionerType;
 import com.yfckevin.badmintonPairing.exception.ResultStatus;
 import com.yfckevin.badmintonPairing.service.*;
 import com.yfckevin.badmintonPairing.utils.ConfigurationUtil;
+import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpSession;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -547,12 +548,13 @@ public class BackendManageController {
 
     /**
      * 配對貼文與球館，將貼文id存入球館entity，以及在貼文標記labelCourt
+     *
      * @param dto
      * @param session
      * @return
      */
     @PostMapping("/matePostsAndCourt")
-    public ResponseEntity<?> matePostsAndCourt (@RequestBody MateDTO dto, HttpSession session){
+    public ResponseEntity<?> matePostsAndCourt(@RequestBody MateDTO dto, HttpSession session) {
 
         final String member = (String) session.getAttribute("admin");
         if (member != null) {
@@ -563,8 +565,10 @@ public class BackendManageController {
         final Optional<Court> opt = courtService.findById(dto.getCourtId());
         if (opt.isPresent()) {
             final Court court = opt.get();
-            final List<String> newPostIds = Arrays.asList(court.getPostId().split(","));
-            Set<String> uniquePostId = new HashSet<>(newPostIds);
+            final List<String> oldPostIds = Arrays.stream(court.getPostId().split(","))
+                    .filter(id -> !id.trim().isEmpty())
+                    .toList();
+            Set<String> uniquePostId = new HashSet<>(oldPostIds);
             uniquePostId.addAll(dto.getPostIdList());
             final String postId = uniquePostId.stream()
                     .map(String::valueOf)
@@ -572,7 +576,7 @@ public class BackendManageController {
             court.setPostId(postId);
             courtService.save(court);
 
-            final List<Post> postList = postService.findByIdIn(newPostIds).stream()
+            final List<Post> postList = postService.findByIdIn(uniquePostId.stream().toList()).stream()
                     .peek(p -> p.setLabelCourt(true)).toList();
             postService.saveAll(postList);
 
@@ -1007,7 +1011,7 @@ public class BackendManageController {
 
 
     @PostMapping("/saveCourt")
-    public ResponseEntity<?> saveCourt (@RequestBody CourtDTO dto, HttpSession session){
+    public ResponseEntity<?> saveCourt(@RequestBody CourtDTO dto, HttpSession session) {
 
         final String member = (String) session.getAttribute("admin");
         if (member != null) {
@@ -1026,7 +1030,7 @@ public class BackendManageController {
             courtService.save(court);
         } else {    //更新
             final Optional<Court> opt = courtService.findById(dto.getId());
-            if (opt.isPresent()){
+            if (opt.isPresent()) {
                 final Court court = opt.get();
                 court.setLongitude(dto.getLongitude());
                 court.setName(dto.getName());
@@ -1043,7 +1047,7 @@ public class BackendManageController {
 
 
     @GetMapping("/deleteCourt/{id}")
-    public ResponseEntity<?> deleteCourt (@PathVariable String id, HttpSession session){
+    public ResponseEntity<?> deleteCourt(@PathVariable String id, HttpSession session) {
 
         final String member = (String) session.getAttribute("admin");
         if (member != null) {
@@ -1061,9 +1065,8 @@ public class BackendManageController {
     }
 
 
-
     @PostMapping("/searchCourt")
-    public ResponseEntity<?> searchCourt (@RequestBody SearchDTO searchDTO, HttpSession session){
+    public ResponseEntity<?> searchCourt(@RequestBody SearchDTO searchDTO, HttpSession session) {
 
         final String member = (String) session.getAttribute("admin");
         if (member != null) {
@@ -1071,7 +1074,7 @@ public class BackendManageController {
         }
         ResultStatus resultStatus = new ResultStatus();
 
-        final List<CourtDTO> courtDTOList = courtService.findCourtByCondition(searchDTO.getKeyword())
+        final List<CourtDTO> courtDTOList = courtService.findCourtByCondition(searchDTO.getKeyword().trim())
                 .stream().map(this::constructCourtDTOSimple).toList();
 
         resultStatus.setCode("C000");
@@ -1081,9 +1084,8 @@ public class BackendManageController {
     }
 
 
-
     @GetMapping("/findCourtById/{id}")
-    public ResponseEntity<?> findCourtById (@PathVariable String id, HttpSession session){
+    public ResponseEntity<?> findCourtById(@PathVariable String id, HttpSession session) {
 
         final String member = (String) session.getAttribute("admin");
         if (member != null) {

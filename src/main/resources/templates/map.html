@@ -237,7 +237,7 @@
         <script th:src="@{js/main.js}"></script>
     </body>
 
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDluMetWqjUYf8R2AMHdEkMEAqz4u3eEeI&callback=initMap" async defer></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=xxx&callback=initMap" async defer></script>
     <script th:inline="javascript">
         let courtData = [];  // 球館列表
         let posts = [];      // 該球館的零打資訊
@@ -540,7 +540,6 @@
                     if (response.code === "C000") {
                         posts = response.data;
                         document.dispatchEvent(new CustomEvent('update-data', { detail: posts }));
-                        console.log('Dispatched update-data event with:', posts);
                         $("#postModal").modal('show')
                     }
                 },
@@ -563,7 +562,6 @@
 
                 // 監聽自定義事件以更新數據
                 document.addEventListener('update-data', (event) => {
-                    console.log('Received update-data event with:', event.detail);
                     this.myForData = event.detail;
                     this.total = this.myForData.length;
                 });
