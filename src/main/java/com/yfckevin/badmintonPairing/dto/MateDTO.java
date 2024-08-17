@@ -5,7 +5,7 @@ import java.util.List;
 
 public class MateDTO {
     private String courtId;
-    private List<String> postIdList = new ArrayList<>();
+    private List<String> matePostIds = new ArrayList<>();
 
     public String getCourtId() {
         return courtId;
@@ -15,11 +15,11 @@ public class MateDTO {
         this.courtId = courtId;
     }
 
-    public List<String> getPostIdList() {
-        return postIdList;
+    public List<String> getMatePostIds() {
+        return matePostIds;
     }
 
-    public void setPostIdList(List<String> postIdList) {
-        this.postIdList = postIdList;
+    public void setMatePostIds(List<String> matePostIds) {
+        this.matePostIds = matePostIds;
     }
 }
