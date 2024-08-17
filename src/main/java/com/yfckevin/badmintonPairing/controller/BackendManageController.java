@@ -21,6 +21,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.thymeleaf.expression.Lists;
 
 import java.io.*;
 import java.net.HttpURLConnection;
@@ -35,6 +36,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.TextStyle;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -465,7 +467,7 @@ public class BackendManageController {
                     }
                 }).toList();
 
-        if (StringUtils.isNotBlank(searchDTO.getLabelCourt())) {
+        if (!"All".equals(searchDTO.getLabelCourt()) && StringUtils.isNotBlank(searchDTO.getLabelCourt())) {
             postDTOList = postDTOList.stream().filter(p -> searchDTO.getLabelCourt().equals(p.getLabelCourt())).toList();
         }
 
@@ -546,6 +548,98 @@ public class BackendManageController {
     }
 
 
+    @PostMapping("/autoMate")
+    public ResponseEntity<?> autoMate(HttpSession session) {
+
+        final String member = (String) session.getAttribute("admin");
+        if (member != null) {
+            logger.info("[matePostAndCourt]");
+        }
+        ResultStatus resultStatus = new ResultStatus();
+
+        final List<Post> todayPosts = postService.findTodayNewPosts(ssf.format(new Date()) + " 00:00:00", ssf.format(new Date()) + " 23:59:59");
+        Map<String, List<String>> placeToIds = todayPosts.stream().collect(Collectors.toMap(
+                Post::getPlace,
+                post -> {
+                    List<String> idList = new ArrayList<>();
+                    idList.add(post.getId());
+                    return idList;
+                },
+                (existingIds, newIds) -> {
+                    List<String> ids = new ArrayList<>(existingIds);
+                    ids.addAll(newIds);
+                    return ids;
+                }
+        ));
+
+        List<Court> courtList = courtService.findAllByOrderByCreationDateAsc();
+        courtList = courtList.stream()
+                .map(c -> {
+                    //取得球館既有的貼文ids
+                    List<String> postIds = Arrays.asList(c.getPostId().split(","));
+                    //查出既有貼文細節資訊
+                    List<Post> posts = postService.findByIdIn(postIds);
+
+                    //把新貼文id根據place歸檔到所屬的球館的postId屬性
+                    if (posts != null && !posts.isEmpty()) {
+
+                        Set<String> places = posts.stream()
+                                .map(Post::getPlace)
+                                .collect(Collectors.toSet());
+
+                        //執行比對
+                        String newIds = places.stream()
+                                .flatMap(p -> placeToIds.getOrDefault(p, Collections.emptyList()).stream())
+                                .collect(Collectors.joining(","));
+
+                        // 更新postId
+                        String currentPostId = c.getPostId();
+                        if (currentPostId != null && !currentPostId.isEmpty()) {
+                            if (!currentPostId.endsWith(",")) {
+                                currentPostId += ",";
+                            }
+                            c.setPostId(currentPostId + newIds);
+                        } else {
+                            c.setPostId(newIds);
+                        }
+
+                        //更新貼文的labelCourt屬性
+                        final List<Post> postList = postService.findByIdIn(Arrays.asList(newIds.split(",")))
+                                .stream().peek(p -> p.setLabelCourt(true)).toList();
+                        postService.saveAll(postList);
+                    }
+                    return c;
+                }).toList();
+
+        courtService.saveAll(courtList);
+
+        resultStatus.setCode("C000");
+        resultStatus.setMessage("成功");
+
+        return ResponseEntity.ok(resultStatus);
+    }
+
+
+    @GetMapping("/notMatchedPosts")
+    public ResponseEntity<?> notMatchedPosts (HttpSession session){
+
+        final String member = (String) session.getAttribute("admin");
+        if (member != null) {
+            logger.info("[notMatchedPosts]");
+        }
+        ResultStatus resultStatus = new ResultStatus();
+
+        final List<Post> todayPostsNotYetMatched = postService.findTodayNewPosts(ssf.format(new Date()) + " 00:00:00", ssf.format(new Date()) + " 23:59:59")
+                .stream().filter(p -> !p.isLabelCourt()).toList();
+
+        resultStatus.setCode("C000");
+        resultStatus.setMessage("成功");
+        resultStatus.setData(todayPostsNotYetMatched);
+
+        return ResponseEntity.ok(resultStatus);
+    }
+
+
     /**
      * 配對貼文與球館，將貼文id存入球館entity，以及在貼文標記labelCourt
      *
@@ -569,7 +663,7 @@ public class BackendManageController {
                     .filter(id -> !id.trim().isEmpty())
                     .toList();
             Set<String> uniquePostId = new HashSet<>(oldPostIds);
-            uniquePostId.addAll(dto.getPostIdList());
+            uniquePostId.addAll(dto.getMatePostIds());
             final String postId = uniquePostId.stream()
                     .map(String::valueOf)
                     .collect(Collectors.joining(","));

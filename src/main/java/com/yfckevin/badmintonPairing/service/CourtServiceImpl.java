@@ -65,4 +65,9 @@ public class CourtServiceImpl implements CourtService{
 
         return mongoTemplate.find(query, Court.class);
     }
+
+    @Override
+    public void saveAll(List<Court> courtList) {
+        courtRepository.saveAll(courtList);
+    }
 }

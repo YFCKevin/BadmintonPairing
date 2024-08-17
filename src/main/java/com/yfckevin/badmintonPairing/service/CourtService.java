@@ -16,4 +16,6 @@ public interface CourtService {
     void delete(Court court);
 
     List<Court> findCourtByCondition(String keyword);
+
+    void saveAll(List<Court> courtList);
 }
