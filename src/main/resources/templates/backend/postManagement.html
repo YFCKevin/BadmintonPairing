@@ -17,7 +17,6 @@
     <div class="header-links">
         <a th:href="@{forwardLeaderManagement}">團主管理</a>
         <a th:href="@{forwardFileManagement}">檔案管理</a>
-        <a th:href="@{forwardTemplateManagement}">模板管理</a>
         <a th:href="@{backendLogout}">登出</a>
     </div>
 </div>
@@ -55,6 +54,7 @@
                             <div class="form-group d-flex align-items-center">
                                 <label class="input-group-text mr-2" for="labelCourt">條件</label>
                                 <select id="labelCourt" class="form-control">
+                                    <option value="All">請選擇</option>
                                     <option value="false">未加入</option>
                                     <option value="true">已加入</option>
                                 </select>
@@ -104,9 +104,11 @@
 
                 <div class="row mt-3" style="margin-top: 10px; margin-bottom: 10px;">
                     <div class="col d-flex">
-                        <button type="button" class="btn btn-warning btn-sm btn-rounded me-2" x-on:click="searchSamePosts();">(1)相同貼文</button>
-                        <button type="button" class="btn btn-warning btn-sm btn-rounded me-2" x-on:click="openCourtModal();">(2)選擇球館</button>
-                        <button type="button" class="btn btn-warning btn-sm btn-rounded" x-on:click="matePostsAndCourt();">(3)貼文球館配對</button>
+                        <button type="button" class="btn btn-warning btn-sm btn-rounded me-2" x-on:click="searchSamePosts();">相同貼文</button>
+                        <button type="button" class="btn btn-success btn-sm btn-rounded me-2" x-on:click="autoMate();">一鍵配對 (配對用)</button>
+                        <button type="button" class="btn btn-success btn-sm btn-rounded me-2" x-on:click="notMatchedPosts();">未完成配對貼文 (配對用)</button>
+                        <button type="button" class="btn btn-success btn-sm btn-rounded me-2" x-on:click="openCourtModal();">選擇球館 (配對用)</button>
+                        <button type="button" class="btn btn-success btn-sm btn-rounded" x-on:click="matePostsAndCourt();">貼文球館配對 (配對用)</button>
                     </div>
                     <div class="col d-flex justify-content-end">
                         <button type="button" class="btn btn-danger btn-sm btn-rounded" x-on:click="deleteAllPosts();">全部刪除</button>  <!-- x-show="selectedFiles.length > 0" -->
@@ -286,7 +288,7 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" x-on:click="closeModal()">關閉</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" x-on:click="closeCourtModal()">關閉</button>
                 <button type="button" class="btn btn-primary" x-on:click="save()">儲存</button>
             </div>
         </div>
@@ -298,7 +300,10 @@
     <div class="modal-dialog modal-xl" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h4 class="mb-4">選擇球館</h4>
+                <div class="mb-4 mb-md-0" style="color: black">選擇球館</div>
+            </div>
+            <div class="modal-header">
+                <button class="btn btn-primary me-2 d-flex justify-content-end" type="button" x-on:click="openSaveCourtBtn()">新增球館</button>
             </div>
             <div class="d-flex align-items-center">
                 <input type="text" class="form-control me-2 ms-2" id="courtKeyword" placeholder="可搜尋場館名、地址...">
@@ -347,6 +352,53 @@
     </div>
 </div>
 
+<!-- saveCourtModal -->
+<div class="modal fade" id="saveCourtModal" tabindex="-1" data-bs-backdrop="static" aria-labelledby="saveCourtModal" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title" style="color: black">新增球館</div>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="courtName">球館名稱</label>
+                    <input type="text" class="form-control" id="courtName">
+                </div>
+                <div class="form-group">
+                    <label for="courtAddress">地址</label>
+                    <input type="text" class="form-control" id="courtAddress" >
+                </div>
+                <div class="form-group">
+                    <label for="courtLongitude">經度</label>
+                    <input type="text" class="form-control" id="courtLongitude">
+                </div>
+                <div class="form-group">
+                    <label for="courtLatitude">緯度</label>
+                    <input type="text" class="form-control" id="courtLatitude" >
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" x-on:click="closeCourtModal()">關閉</button>
+                <button type="button" class="btn btn-primary" x-on:click="saveCourt()">儲存</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="infoModal" tabindex="-1" aria-labelledby="infoModal" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-md">
+        <div class="modal-content">
+            <div class="modal-body py-3 px-3">
+                <h4 class="modal-title h4"><span>是否要執行貼文和球館的自動配對？</span></h4>
+                <div class="text-end mt-4">
+                    <a type="button" class="btn btn-primary fs-15px me-2" title="確認" x-on:click="confirmAutoMate();">確認</a>
+                    <button type="button" class="btn btn-outline-secondary fs-15px" title="取消" data-bs-dismiss="modal">取消</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 
 <script th:src="@{js/alpine.2.8.2.min.js}"></script>
 <script th:src="@{js/jquery.min.js}"></script>
@@ -356,9 +408,9 @@
       const courtData = /*[[${courtList}]]*/
       let passId;   // for edit
       let selectedPostIds = [];   //裝需要轉換成txt檔的文章
-      let postIdList = [];        //裝需要配對球館的貼文集
+      let matePostIds = [];        //裝需要配對球館的貼文集
       let courtId;                //裝要配對的球館id
-      let labelCourt = "false";             //放貼文加入球館的條件
+      let labelCourt = "All";             //放貼文加入球館的條件
 
       $(document).ready(function() {
         $('#labelCourt').on('change', function() {
@@ -517,6 +569,12 @@
               document.getElementById('editName').readOnly = false;
               document.getElementById('editUserId').readOnly = false;
             },
+            closeCourtModal (){
+              $("#courtName").val('');
+              $("#courtAddress").val('');
+              $("#courtLongitude").val('');
+              $("#courtLatitude").val('');
+            },
             searchSamePosts (){
               let _this = this;
               $.ajax({
@@ -525,7 +583,6 @@
                 dataType: "json",
                 contentType: "application/json; charset=utf-8",
                 success: function (response) {
-                  console.log(response)
                   _this.myForData = response.data;
                 },
               });
@@ -535,18 +592,18 @@
               const checkboxes = $('tbody input[type="checkbox"]');
               if (isChecked) {
                 selectedPostIds = [];
-                postIdList = [];
+                matePostIds = [];
                 checkboxes.each((index, checkbox) => {
                   checkbox.checked = true;
                   selectedPostIds.push(checkbox.value);
-                  postIdList.push(checkbox.value);
+                  matePostIds.push(checkbox.value);
                 });
               } else {
                 checkboxes.each((index, checkbox) => {
                   checkbox.checked = false;
                 });
                 selectedPostIds = [];
-                postIdList = [];
+                matePostIds = [];
               }
             },
             update(event) {
@@ -556,12 +613,12 @@
                 if (!selectedPostIds.includes(value)) {
                     selectedPostIds.push(value);
                 }
-                if (!postIdList.includes(value)){
-                    postIdList.push(value);
+                if (!matePostIds.includes(value)){
+                    matePostIds.push(value);
                 }
               } else {
                 selectedPostIds = selectedPostIds.filter(item => item !== value);
-                postIdList = postIdList.filter(item => item !== value);
+                matePostIds = matePostIds.filter(item => item !== value);
               }
             },
             deleteAllPosts (){
@@ -589,7 +646,7 @@
               $("#courtModal").modal('hide');
             },
             matePostsAndCourt (){
-              if (postIdList.length <= 0){
+              if (matePostIds.length <= 0){
                 alert('請勾選至少一個零打貼文')
                 return;
               }
@@ -599,7 +656,7 @@
               }
               let data = {};
               data.courtId = courtId
-              data.postIdList = postIdList;
+              data.matePostIds = matePostIds;
               $.ajax({
                 url: "matePostsAndCourt",
                 type: "post",
@@ -608,7 +665,7 @@
                 contentType: "application/json; charset=utf-8",
                 success: function (response) {
                   if (response.code == "C000"){
-                    alert('配對完成')
+                    location.reload();
                   }
                 },
               });
@@ -629,7 +686,61 @@
                   }
                 },
               });
-            }
+            },
+            openSaveCourtBtn (){
+              $("#saveCourtModal").modal('show');
+            },
+            saveCourt (){
+              let data = {};
+              data.name = $("#courtName").val();
+              data.address = $("#courtAddress").val();
+              data.latitude = $("#courtLatitude").val();
+              data.longitude = $("#courtLongitude").val();
+              data.postId = "";
+              $.ajax({
+                url: "saveCourt",
+                type: "post",
+                dataType: "json",
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                success: function (response) {
+                  if (response.code == "C000"){
+                    location.reload();
+                  }
+                },
+              });
+            },
+            autoMate (){
+              $("#infoModal").modal('show');
+            },
+            confirmAutoMate (){
+              $.ajax({
+                url: "autoMate",
+                type: "post",
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                success: function (response) {
+                  if (response.code == "C000"){
+                    $("#infoModal"),modal('hide');
+                    alert('配對完成');
+                  }
+                },
+              });
+            },
+            notMatchedPosts (){
+              let _this = this;
+              $.ajax({
+                url: "notMatchedPosts",
+                type: "get",
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                success: function (response) {
+                  if (response.code == "C000"){
+                    _this.myForData = response.data;
+                  }
+                },
+              });
+            },
           };
         };
 
