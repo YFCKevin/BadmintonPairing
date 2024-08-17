@@ -281,7 +281,8 @@
                     currentMarker = new google.maps.Marker({
                         position: userLocation,
                         map: map,
-                        title: "您的所在位置"
+                        title: "您的所在位置",
+                        icon: 'https://maps.google.com/mapfiles/ms/icons/yellow-dot.png'
                     });
 
                     // 加上地圖的click事件
@@ -367,9 +368,12 @@
                         }
 
                         // 計算並顯示路線
-                        calculateAndDisplayRoute(court, infoWindow);
+                        calculateAndDisplayDistance(court, infoWindow);
 
-                        // 保存當前的資訊視窗
+                        // 確保 `InfoWindow` 的内容被更新，並且重新打開
+                        infoWindow.open(map, marker);
+
+                        // 保存當前的 `InfoWindow`
                         currentInfoWindow = infoWindow;
                     });
 
@@ -381,42 +385,43 @@
         }
 
 
+        function calculateAndDisplayDistance(court, infoWindow) {
+            console.log('calculateAndDisplayDistance')
+            const service = new google.maps.DistanceMatrixService();
+            service.getDistanceMatrix(
+                {
+                    origins: [userLocation],
+                    destinations: [{ lat: court.latitude, lng: court.longitude }],
+                    travelMode: google.maps.TravelMode[selectedMode],
+                    unitSystem: google.maps.UnitSystem.METRIC,
+                },
+                (response, status) => {
+                    if (status === google.maps.DistanceMatrixStatus.OK) {
+                        const result = response.rows[0].elements[0];
+                        const distance = result.distance.text;
+                        const duration = result.duration.text;
 
-        function calculateAndDisplayRoute(court, infoWindow) {
-            const request = {
-                origin: userLocation,
-                destination: { lat: court.latitude, lng: court.longitude }, // 球館位置
-                travelMode: google.maps.TravelMode[selectedMode] // 交通方式
-            };
+                        const content = `
+                            <span style="color: black;">
+                                前往 <a href="#" onclick="getCourtAvailabilityInfo('${court.id}')" style="color: black; text-decoration: underline; font-weight: bold;">${court.name}</a>
+                                 預估時間 ${duration}
+                            </span>
+                        `;
 
-            directionsService.route(request, (result, status) => {
-                if (status === google.maps.DirectionsStatus.OK) {
-                    directionsRenderer.setDirections(result);
-                    hasRoute = true; // 表示存在路線
+                        // 顯示資訊視窗
+                        infoWindow.setContent(content);
+                        infoWindow.open(map, new google.maps.Marker({
+                            position: { lat: court.latitude, lng: court.longitude },
+                            map: map,
+                            title: court.name
+                        }));
 
-                    // 顯示交通時間
-                    const duration = result.routes[0].legs[0].duration.text;
-                    const content = `
-                        <span style="color: black;">
-                            前往 <a href="#" onclick="getCourtAvailabilityInfo('${court.id}')" style="color: black; text-decoration: underline; font-weight: bold;">${court.name}</a>
-                            預估時間 ${duration}
-                        </span>
-                    `;
-
-
-                    // 顯示資訊視窗
-                    infoWindow.setContent(content);
-                    infoWindow.open(map, new google.maps.Marker({
-                        position: { lat: court.latitude, lng: court.longitude },
-                        map: map,
-                        title: court.name
-                    }));
-
-                    infoWindows.push(infoWindow);
-                } else {
-                    alert("無法取得: " + status);
+                        infoWindows.push(infoWindow);
+                    } else {
+                        alert("無法取得距離資訊: " + status);
+                    }
                 }
-            });
+            );
         }
 
         function updateCurrentLocation(clickedLocation) {
@@ -442,7 +447,8 @@
             currentMarker = new google.maps.Marker({
                 position: clickedLocation,
                 map: map,
-                title: "您的新位置"
+                title: "您的新位置",
+                icon: 'https://maps.google.com/mapfiles/ms/icons/yellow-dot.png'
             });
 
             map.markers = [currentMarker];
@@ -468,6 +474,7 @@
                 $('.radius').removeClass('active');
                 $(this).addClass('active');
                 radius = $(this).data('radius');
+                searchNearby();
             });
 
             $('.travel').click(function() {
