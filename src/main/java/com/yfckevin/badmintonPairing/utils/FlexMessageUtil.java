@@ -5,13 +5,17 @@ import com.yfckevin.badmintonPairing.ConfigProperties;
 import com.yfckevin.badmintonPairing.dto.PostDTO;
 import com.yfckevin.badmintonPairing.entity.Leader;
 import com.yfckevin.badmintonPairing.entity.Post;
+import com.yfckevin.badmintonPairing.entity.TemplateDetail;
+import com.yfckevin.badmintonPairing.entity.TemplateSubject;
 import com.yfckevin.badmintonPairing.service.LeaderService;
 import com.yfckevin.badmintonPairing.service.PostService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -28,6 +32,7 @@ public class FlexMessageUtil {
     private final LeaderService leaderService;
     private final DateTimeFormatter ddf;
     private final ConfigProperties configProperties;
+
     public FlexMessageUtil(PostService postService, LeaderService leaderService, DateTimeFormatter ddf, ConfigProperties configProperties) {
         this.postService = postService;
         this.leaderService = leaderService;
@@ -36,14 +41,16 @@ public class FlexMessageUtil {
     }
 
     // 組建圖文輪詢
-    public Map<String, Object> assembleImageCarouselTemplate() throws ParseException, JsonProcessingException {
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime startOfToday = now.toLocalDate().atStartOfDay();
-        LocalDateTime endOfTodayLater = now.withHour(23).withMinute(59).withSecond(59).withNano(0);
-        String startOfTodayFormatted = startOfToday.format(ddf);
-        String endOfTodayFormatted = endOfTodayLater.format(ddf);
-        final List<Post> postList = postService.findPostByConditions("", startOfTodayFormatted, endOfTodayFormatted)
-                .stream().limit(5).toList();
+    public Map<String, Object> assembleImageCarouselTemplate(String startDate, String endDate) throws ParseException, JsonProcessingException {
+        final List<Post> postList = postService.findPostByConditions("", startDate, endDate)
+                .stream().limit(10).toList();
+
+        if (postList.size() == 0) {
+            Map<String, Object> result = new HashMap<>();
+            result.put("error", "查無零打資訊");
+            return result;
+        }
+
         final Set<String> userIdList = postList.stream().map(Post::getUserId).collect(Collectors.toSet());
 
         List<PostDTO> postDTOList = new ArrayList<>();
@@ -131,6 +138,7 @@ public class FlexMessageUtil {
         postDTO.setParkInfo(post.getParkInfo());
         postDTO.setPlace(post.getPlace());
         postDTO.setUserId(post.getUserId());
+        postDTO.setLabelCourt(String.valueOf(post.isLabelCourt()));
         Leader leader = leaderMap.get(post.getUserId());
         if (leader != null) {
             postDTO.setLink(leader.getLink());
@@ -170,5 +178,88 @@ public class FlexMessageUtil {
             }
             return hoursStr;
         }
+    }
+
+    public Map<String, Object> assembleTextImageTemplate(TemplateDetail templateDetail) {
+
+        // Hero section
+        Map<String, Object> hero = new HashMap<>();
+        hero.put("type", "image");
+        hero.put("url", templateDetail.getCover());
+        hero.put("size", "full");
+        hero.put("aspectRatio", "25:13");
+        hero.put("aspectMode", "fit");
+        hero.put("position", "relative");
+
+        Map<String, Object> heroAction = new HashMap<>();
+        heroAction.put("type", "uri");
+        heroAction.put("uri", "https://www.gurula.cc/badminton/index");
+        hero.put("action", heroAction);
+
+        // Body section
+        Map<String, Object> titleText = new HashMap<>();
+        titleText.put("type", "text");
+        titleText.put("text", templateDetail.getMainTitle());
+        titleText.put("weight", "bold");
+        titleText.put("size", "xl");
+        titleText.put("margin", "md");
+
+        Map<String, Object> subtitleText = new HashMap<>();
+        subtitleText.put("type", "text");
+        subtitleText.put("text", templateDetail.getSubTitle());
+        subtitleText.put("weight", "regular");
+        subtitleText.put("size", "md");
+        subtitleText.put("color", "#999999");
+        subtitleText.put("margin", "sm");
+
+        Map<String, Object> singleTextContent = new HashMap<>();
+        singleTextContent.put("type", "text");
+        singleTextContent.put("text", templateDetail.getTextContent());
+        singleTextContent.put("size", "sm");
+        singleTextContent.put("color", "#666666");
+        singleTextContent.put("wrap", true);  // 設定自動換行
+
+        Map<String, Object> singleTextBox = new HashMap<>();
+        singleTextBox.put("type", "box");
+        singleTextBox.put("layout", "vertical");
+        singleTextBox.put("margin", "lg");
+        singleTextBox.put("spacing", "sm");
+        singleTextBox.put("contents", new Object[]{singleTextContent});
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("type", "box");
+        body.put("layout", "vertical");
+        body.put("contents", new Object[]{titleText, subtitleText, singleTextBox});
+
+        // Footer section
+        Map<String, Object> buttonAction = new HashMap<>();
+        buttonAction.put("type", "uri");
+        buttonAction.put("label", templateDetail.getButtonName());
+        buttonAction.put("uri", templateDetail.getButtonUrl());
+
+        Map<String, Object> button = new HashMap<>();
+        button.put("type", "button");
+        button.put("style", "link");
+        button.put("action", buttonAction);
+
+        Map<String, Object> footer = new HashMap<>();
+        footer.put("type", "box");
+        footer.put("layout", "vertical");
+        footer.put("contents", new Object[]{button});
+
+        // Combine into bubble
+        Map<String, Object> bubble = new HashMap<>();
+        bubble.put("type", "bubble");
+        bubble.put("hero", hero);
+        bubble.put("body", body);
+        bubble.put("footer", footer);
+
+        // Add the bubble into flex message wrapper
+        Map<String, Object> flexMessage = new HashMap<>();
+        flexMessage.put("type", "flex");
+        flexMessage.put("altText", "羽球配對新服務上線 [地圖搜搜]");
+        flexMessage.put("contents", bubble);
+
+        return flexMessage;
     }
 }

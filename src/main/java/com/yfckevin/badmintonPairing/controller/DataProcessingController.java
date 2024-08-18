@@ -80,7 +80,7 @@ public class DataProcessingController {
                 .mapToObj(i -> linkList.subList(i * batchSize, Math.min(totalLinks, (i + 1) * batchSize)))
                 .toList();
 
-        for (int i = 12; i < batches.size(); i++) {
+        for (int i = 0; i < batches.size(); i++) {
             List<String> batch = batches.get(i);
             final int getNewPosts = crawlerService.callCrawlerAPIGetNewPosts(batch);
             System.out.println("第幾次迴圈：" + i);

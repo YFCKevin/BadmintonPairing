@@ -389,7 +389,7 @@
     <div class="modal-dialog modal-dialog-centered modal-md">
         <div class="modal-content">
             <div class="modal-body py-3 px-3">
-                <h4 class="modal-title h4"><span>是否要執行貼文和球館的自動配對？</span></h4>
+                <div class="modal-title h4">是否要執行貼文和球館的自動配對？</div>
                 <div class="text-end mt-4">
                     <a type="button" class="btn btn-primary fs-15px me-2" title="確認" x-on:click="confirmAutoMate();">確認</a>
                     <button type="button" class="btn btn-outline-secondary fs-15px" title="取消" data-bs-dismiss="modal">取消</button>
@@ -722,7 +722,7 @@
                 success: function (response) {
                   if (response.code == "C000"){
                     $("#infoModal"),modal('hide');
-                    alert('配對完成');
+                    location.reload();
                   }
                 },
               });

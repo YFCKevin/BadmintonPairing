@@ -55,6 +55,7 @@ public class LineWebhookRequestDTO {
         private Source source;   // source 包含了事件的來源信息，即誰發送了這個訊息。
         private String replyToken;   // replyToken 是用來回覆這條訊息的標識符。
         private String mode;   // mode 表示事件的模式，例如 "active"。
+        private Postback postback; // 新增這一行
 
         public EventType getType() {
             return type;
@@ -120,10 +121,18 @@ public class LineWebhookRequestDTO {
             this.mode = mode;
         }
 
+        public Postback getPostback() {
+            return postback;
+        }
+
+        public void setPostback(Postback postback) {
+            this.postback = postback;
+        }
+
         @Override
         public String toString() {
             return "Event{" +
-                    "type='" + type + '\'' +
+                    "type=" + type +
                     ", message=" + message +
                     ", webhookEventId='" + webhookEventId + '\'' +
                     ", deliveryContext=" + deliveryContext +
@@ -131,6 +140,38 @@ public class LineWebhookRequestDTO {
                     ", source=" + source +
                     ", replyToken='" + replyToken + '\'' +
                     ", mode='" + mode + '\'' +
+                    ", postback=" + postback +
+                    '}';
+        }
+    }
+
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class Postback {
+        private String data;
+        private Map<String, String> params = new HashMap<>();
+
+        public String getData() {
+            return data;
+        }
+
+        public void setData(String data) {
+            this.data = data;
+        }
+
+        public Map<String, String> getParams() {
+            return params;
+        }
+
+        public void setParams(Map<String, String> params) {
+            this.params = params;
+        }
+
+        @Override
+        public String toString() {
+            return "Postback{" +
+                    "data='" + data + '\'' +
+                    ", params=" + params +
                     '}';
         }
     }
