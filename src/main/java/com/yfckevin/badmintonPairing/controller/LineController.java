@@ -42,13 +42,9 @@ public class LineController {
     private final RedisTemplate<String, String> redisTemplate;
     private final SimpleDateFormat sdf;
     private final SimpleDateFormat ssf;
-    private final SimpleDateFormat picSuffix;
-    private final FileUtils fileUtils;
-    private final TemplateDetailService templateDetailService;
-    private final TemplateSubjectService templateSubjectService;
     Logger logger = LoggerFactory.getLogger(LineController.class);
 
-    public LineController(ConfigProperties configProperties, RestTemplate restTemplate, LineService lineService, FollowerService followerService, FlexMessageUtil flexMessageUtil, RedisTemplate<String, String> redisTemplate, @Qualifier("sdf") SimpleDateFormat sdf, @Qualifier("ssf") SimpleDateFormat ssf, @Qualifier("picSuffix") SimpleDateFormat picSuffix, FileUtils fileUtils, TemplateDetailService templateDetailService, TemplateSubjectService templateSubjectService) {
+    public LineController(ConfigProperties configProperties, RestTemplate restTemplate, LineService lineService, FollowerService followerService, FlexMessageUtil flexMessageUtil, RedisTemplate<String, String> redisTemplate, @Qualifier("sdf") SimpleDateFormat sdf, @Qualifier("ssf") SimpleDateFormat ssf) {
         this.configProperties = configProperties;
         this.restTemplate = restTemplate;
         this.lineService = lineService;
@@ -57,10 +53,6 @@ public class LineController {
         this.redisTemplate = redisTemplate;
         this.sdf = sdf;
         this.ssf = ssf;
-        this.picSuffix = picSuffix;
-        this.fileUtils = fileUtils;
-        this.templateDetailService = templateDetailService;
-        this.templateSubjectService = templateSubjectService;
     }
 
     @PostMapping("/webhook")
