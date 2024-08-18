@@ -1,0 +1,607 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml" xmlns:x-on="http://www.w3.org/1999/xhtml"
+      xmlns="http://www.w3.org/1999/html">
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="icon" type="image/png" th:href="@{images/favicon.ico}" />
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" th:href="@{css/bootstrap.min.css}" />
+    <link rel="stylesheet" th:href="@{css/style_postManage.css}">
+    <title>模板管理</title>
+</head>
+<body x-data="loadData(templateDTOList)" x-init="init()">
+<div class="header">
+    <div class="header-title">模板管理</div>
+    <div class="header-links">
+        <a th:href="@{forwardLeaderManagement}">團主管理</a>
+        <a th:href="@{forwardPostManagement}">貼文管理</a>
+        <a th:href="@{forwardFileManagement}">檔案管理</a>
+        <a th:href="@{backendLogout}">登出</a>
+    </div>
+</div>
+<div class="limiter">
+    <div class="container-table100">
+        <div class="wrap-table100">
+            <div class="table100">
+
+                <!-- Search Bar -->
+                <div class="mb-3">
+                    <div class="row">
+                        <div style="margin-top: 10px" class="col-md-6">
+                            <div class="form-group d-flex align-items-center">
+                                <label class="input-group-text mr-2" for="keyword">關鍵字</label>
+                                <input
+                                        type="text"
+                                        class="form-control"
+                                        id="keyword"
+                                        placeholder="可標題、短描述..."
+                                />
+                                <i class="fa fas fa-times clear-btn" onclick="clearKeyword()"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mt-3" style="margin-top: 10px">
+                        <div class="col d-flex justify-content-end">
+                            <button
+                                    class="btn btn-primary"
+                                    type="button"
+                                    x-on:click="search()"
+                            >
+                                搜尋
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mt-3" style="margin-top: 10px; margin-bottom: 10px;">
+                    <div class="col d-flex">
+                        <button type="button" class="btn btn-success btn-sm btn-rounded" x-on:click="addTemplateSubject();">新增模板</button>
+                    </div>
+                </div>
+
+                <div class="table-responsive custom-table-responsive" style="overflow-x: auto;">
+                    <table>
+                        <thead>
+                            <tr class="table100-head">
+                                <th class="col">編號</th>
+                                <th class="col">標題</th>
+                                <th class="col">短描述</th>
+                                <th class="col">類型</th>
+                                <th class="col">模板訊息數量</th>
+                                <th class="col">發送對象數量</th>
+                                <th class="col">發送日期</th>
+                                <th class="col">創立時間</th>
+                                <th class="col">動作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template x-for="(item,index) in getData()" :key="index">
+                                <tr>
+                                    <td class="th-num" x-text="getItemNumber(index)"></td>
+                                    <td class="th-title" x-text="item.subjectTitle"></td>
+                                    <td class="th-altText" x-text="item.subjectAltText"></td>
+                                    <td class="th-templateType" x-text="item.templateType"></td>
+                                    <td class="th-details" x-text="item.detailDTOList.length"></td>
+                                    <td class="th-users" x-text="item.userIds.length"></td>
+                                    <td class="th-sendDate" x-text="item.sendDate"></td>
+                                    <td class="th-creationDate" x-text="item.creationDate"></td>
+                                    <td class="th-action">
+                                        <button style="padding: 5px; margin: 5px" class="btn btn-primary" :data-bs-toggle="'modal'" :data-bs-target="'#modal' + index">查看訊息</button> <!--  x-on:click="showTemplateDetail(item.id)" -->
+                                        <button style="padding: 5px; margin: 5px" class="btn btn-primary" x-on:click="addTemplateDetail(item.subjectId)">新增訊息</button>
+                                        <button style="padding: 5px; margin: 5px" class="btn btn-primary" x-on:click="openFollowerModal(item.subjectId);">發送對象</button>
+                                        <button style="padding: 5px; margin: 5px" class="btn btn-primary" x-on:click="pushTemplate(item.subjectId)">推播</button>
+                                    </td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                    <nav class="mt-5 mb-4" x-show="pageCount() > 1">
+                        <ul class="pagination justify-content-center card-page">
+                            <li class="page-item" :class="{ 'disabled' : pageNumber==0 }">
+                                <a
+                                        class="page-link page-prev"
+                                        type="button"
+                                        x-on:click="prevPage();"
+                                        :disabled="pageNumber==0"
+                                >
+                                    <i class="fa fas fa-chevron-left"></i>
+                                </a>
+                            </li>
+                            <li
+                                    class="page-item disabled"
+                                    :class="{ 'd-none' : pageCount() <= 4 || pageNumber == 0 || ( pageCount() > 4 && pageNumber == pageCount() ) }"
+                            >
+                                <a class="page-link">···</a>
+                            </li>
+                            <template x-for="(page,index) in pages()" :key="index">
+                                <li
+                                        class="page-item"
+                                        :class="{ 'active' : index === pageNumber , 'd-none' : pageCount() > 4 && ( (index < pageNumber && pageNumber < pageCount() -4) || (index < pageCount() -4 && pageNumber >= pageCount() -4) || index >= pageNumber+4 ) }"
+                                >
+                                    <a
+                                            class="page-link"
+                                            type="button"
+                                            x-on:click="viewPage(index);"
+                                            x-text="index+1"
+                                    ></a>
+                                </li>
+                            </template>
+                            <li
+                                    class="page-item disabled"
+                                    :class="{ 'd-none' : pageCount() <= 4 || pageNumber >= pageCount() -4}"
+                            >
+                                <a class="page-link">···</a>
+                            </li>
+                            <li
+                                    class="page-item"
+                                    :class="{ 'disabled' : pageNumber >= pageCount() -1 }"
+                            >
+                                <a
+                                        class="page-link page-next"
+                                        type="button"
+                                        x-on:click="nextPage();"
+                                        :disabled="pageNumber >= pageCount() -1"
+                                >
+                                    <i class="fa fas fa-chevron-right"></i>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- addSubjectModal -->
+<div class="modal fade" id="addModal" tabindex="-1" data-bs-backdrop="static" aria-labelledby="addModal" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">新增模板</div>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="subjectTitle">標題</label>
+                    <input type="text" class="form-control" id="subjectTitle">
+                </div>
+                <div class="form-group">
+                    <label for="subjectAltText">短描述</label>
+                    <input type="text" class="form-control" id="subjectAltText" >
+                </div>
+                <div class="form-group">
+                    <label for="templateType">類型</label>
+                    <select class="form-control" id="templateType">
+                        <option value="textImage">圖文訊息</option>
+                        <option value="carousel">輪詢訊息</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" x-on:click="closeModal()">關閉</button>
+                <button type="button" class="btn btn-primary" x-on:click="saveSubject()">儲存</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--detailModal-->
+<div class="modal fade" id="detailModal" tabindex="-1" data-bs-backdrop="static" aria-labelledby="detailModal" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <form id="detailForm" th:action="@{addTemplateDetail}" method="POST" enctype="multipart/form-data">
+                <div class="modal-header">
+                    <div class="modal-title">新增模板細節</div>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="mainTitle">主標題</label>
+                        <input type="text" class="form-control" id="mainTitle" name="mainTitle" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="subTitle">副標題</label>
+                        <input type="text" class="form-control" id="subTitle" name="subTitle" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="textContent">內容</label>
+                        <textarea class="form-control" id="textContent" name="textContent" style="height: 150px;" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">圖片</label>
+                        <div class="boxImg d-flex">
+                            <div class="upload-options me-3 ms-1">
+                                <label>
+                                    <input type="file" class="image-upload" accept=".jpeg,.jpg,.png,.gif" data-length="582" data-width="1163" required id="multipartFile" name="multipartFile"/>
+                                </label>
+                            </div>
+                            <div class="js--image-preview" id="coverPreview"></div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="buttonName">按鈕名稱</label>
+                        <input type="text" class="form-control" id="buttonName" name="buttonName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="buttonUrl">按鈕網址</label>
+                        <input type="text" class="form-control" id="buttonUrl" name="buttonUrl" required>
+                    </div>
+                    <input type="hidden" id="subjectId" name="subjectId">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" x-on:click="closeModal()">關閉</button>
+                    <button type="submit" class="btn btn-primary">儲存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- templateDetailModal -->
+<template x-for="(item, index) in templateDTOList" :key="'modal-' + index">
+    <div class="modal fade" :id="'modal' + index" tabindex="-1" aria-labelledby="'modalLabel' + index" aria-hidden="true">    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="mb-4 mb-md-0" style="color: black">呈現訊息</div>
+            </div>
+            <div style="overflow-x: auto;" class="modal-body">
+                <table>
+                    <thead>
+                    <tr class="table100-head">
+                        <th class="col">編號</th>
+                        <th class="col">標題</th>
+                        <th class="col">副標</th>
+                        <th class="col">內容</th>
+                        <th class="col">圖片</th>
+                        <th class="col">按鈕名稱</th>
+                        <th class="col">按鈕連結</th>
+                        <th class="col">創立時間</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+
+                    <template x-for="(detail, detailIndex) in item.detailDTOList" :key="detailIndex">
+
+                        <tr>
+                            <td class="th-num" x-text="detailIndex + 1"></td>
+                            <td class="th-mainTitle" x-text="detail.mainTitle"></td>
+                            <td class="th-subTitle" x-text="detail.subTitle"></td>
+                            <td class="th-textContent" x-text="detail.textContent"></td>
+                            <td class="th-coverPath">
+                                <img :src="detail.coverPath" alt="Cover Image" style="max-width: 50px; max-height: 50px;">
+                            </td>
+                            <td class="th-buttonName" x-html="detail.buttonName"></td>
+                            <td class="th-buttonUrl">
+                                <a :href="detail.buttonUrl" target="_blank">前往連結</a>
+                            </td>
+                            <td class="th-creationDate" x-text="detail.creationDate"></td>
+                        </tr>
+
+                    </template>
+
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary fs-15px" title="關閉" data-bs-dismiss="modal">關閉</button>
+            </div>
+        </div>
+    </div>
+</div>
+</template>
+
+<!--followerModal-->
+<div class="modal fade" id="followerModal" tabindex="-1" data-bs-backdrop="static" aria-labelledby="followerModal" aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="mb-4 mb-md-0" style="color: black">選擇發送對象</div>
+            </div>
+            <div class="d-flex align-items-center">
+                <input type="text" class="form-control me-2 ms-2" id="followerKeyword" placeholder="可搜尋場追蹤者名稱...">
+                <button class="btn btn-primary me-2" type="button" x-on:click="searchFollower()">搜尋</button>
+            </div>
+            <div style="overflow-x: auto;" class="modal-body">
+                <table>
+                    <thead>
+                    <tr class="table100-head">
+                        <th class="col">編號</th>
+                        <th class="col">動作</th>
+                        <th class="col">姓名</th>
+                        <th class="col">大頭貼</th>
+                        <th class="col">追蹤日期</th>
+                        <th class="col">退追日期</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+
+                    <template x-for="(item,index) in getFollowerData()" :key="index">
+
+                        <tr>
+                            <td class="th-num" x-text="getItemNumber(index)"></td>
+                                <td class="th-action">
+
+                                    <template x-if="item.flag == 1">
+                                        <input type="checkbox" checked="checked" :value="item.userId" :id="item.userId" x-on:change="chooseFollower(item.userId, item.displayName, $event.target.checked)">
+                                    </template>
+
+                                    <template x-if="item.flag == 0">
+                                        <input type="checkbox" :value="item.userId" :id="item.userId" x-on:change="chooseFollower(item.userId, item.displayName, $event.target.checked)">
+                                    </template>
+
+                                </td>
+                            <td class="th-displayName" x-text="item.displayName"></td>
+                            <td class="th-pictureUrl">
+                                <img :src="item.pictureUrl" alt="大頭貼" style="max-width: 50px; max-height: 50px; border-radius: 50%;">
+                            </td>
+                            <td class="th-followTime" x-text="item.followTime"></td>
+                            <td class="th-unfollowTime" x-text="item.unfollowTime"></td>
+                        </tr>
+
+                    </template>
+
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary fs-15px" title="關閉" data-bs-dismiss="modal" x-on:click="closeFollowerModal()">關閉</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="infoModal" tabindex="-1" aria-labelledby="infoModal" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-md">
+        <div class="modal-content">
+            <div class="modal-body py-3 px-3">
+                <div class="modal-title">是否要推播此模板？</div>
+                <div class="text-end mt-4">
+                    <a type="button" class="btn btn-primary fs-15px me-2" title="確認" x-on:click="confirmPush();">確認</a>
+                    <button type="button" class="btn btn-outline-secondary fs-15px" title="取消" data-bs-dismiss="modal">取消</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script th:src="@{js/alpine.2.8.2.min.js}"></script>
+<script th:src="@{js/jquery.min.js}"></script>
+<script th:src="@{js/bootstrap.min.js}"></script>
+    <script th:inline="javascript">
+        const templateDTOList = /*[[${templateDTOList}]]*/
+        console.log(templateDTOList)
+
+        function loadData(eleData) {
+          return {
+            pageNumber: 0,
+            size: 20,
+            total: "",
+            startDate: "",
+            endDate: "",
+            myForData: eleData,
+            followerData: [],
+            chooseUserId: [],
+
+            init() {
+              const today = new Date();
+              this.startDate = today.toISOString().split("T")[0];
+              this.endDate = today.toISOString().split("T")[0];
+            },
+            getData() {
+              const start = this.pageNumber * this.size,
+                end = start + this.size;
+              let filterData = this.myForData;
+              this.total = filterData.length;
+              return filterData.slice(start, end);
+            },
+            getFollowerData() {
+              let _this = this;
+              let filterData = this.followerData;
+              let newFollowerData = filterData.map(value => {
+                let isChecked = _this.chooseUserId.includes(value.userId);
+                return {
+                  id: value.userId,
+                  name: value.displayName,
+                  flag: isChecked ? 1 : 0,
+                  ...value // 保留其他属性
+                };
+              });
+              return newFollowerData;
+            },
+            pages() {
+              return Array.from({
+                length: Math.ceil(this.total / this.size),
+              });
+            },
+            nextPage() {
+              this.pageNumber++;
+            },
+            prevPage() {
+              this.pageNumber--;
+            },
+            pageCount() {
+              return Math.ceil(this.total / this.size);
+            },
+            viewPage(index) {
+              this.pageNumber = index;
+            },
+            getItemNumber(index) {
+              // 返回基於當前頁碼和每頁項目數的編號
+              return this.pageNumber * this.size + index + 1;
+            },
+            search() {
+              let _this = this;
+              let data = {};
+              let keyword = $("#keyword").val();
+              data.keyword = keyword;
+              $.ajax({
+                url: "templateSearch",
+                type: "post",
+                dataType: "json",
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                success: function (response) {
+                  _this.myForData = response.data;
+                },
+              });
+            },
+            addTemplateDetail (id){
+              $("#subjectId").val(id);
+              $("#detailModal").modal('show');
+            },
+            closeModal(){
+              $("#subjectTitle").val('');
+              $("#subjectAltText").val('');
+              $("#templateType").val('');
+              $("#mainTitle").val('');
+              $("#subTitle").val('');
+              $("#textContent").val('');
+              $("#buttonName").val('');
+              $("#buttonUrl").val('');
+              $("#subjectId").val('');
+            },
+            showTemplateDetail (){
+              $("#detailModal").modal('show');
+            },
+            addTemplateSubject (){
+              $("#addModal").modal('show');
+            },
+            saveSubject (){
+              let data = {};
+              data.title = $("#subjectTitle").val();
+              data.altText = $("#subjectAltText").val();
+              data.templateType = $("#templateType").val();
+              $.ajax({
+                url: "addTemplateSubject",
+                type: "post",
+                dataType: "json",
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                success: function (response) {
+                  location.reload();
+                },
+              });
+            },
+            openFollowerModal (id){
+              $("#subjectId").val(id);
+              let _this = this;
+              $.ajax({
+                url: "findTemplateSubjectById/" + id,
+                type: "get",
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                success: function (response) {
+                  if (response.code == "C000") {
+                    const userIds = response.data;
+                    _this.chooseUserId = userIds;
+                    _this.searchFollower();
+                    $("#followerModal").modal('show');
+                  }
+                },
+              });
+            },
+            chooseFollower (userId, name, isChecked){
+              chooseUserId = this.chooseUserId;
+              if (isChecked){
+                chooseUserId.push(userId);
+              } else {
+                const index = chooseUserId.indexOf(userId);
+                if (index > -1) {
+                    chooseUserId.splice(index, 1);
+                }
+              }
+            },
+            searchFollower (){
+              let _this = this;
+              $.ajax({
+                url: "showFollowers",
+                type: "get",
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                success: function (response) {
+                  if (response.code == "C000"){
+                    _this.followerData = response.data;
+                  }
+                },
+              });
+            },
+            closeFollowerModal (){
+              let _this = this;
+              let data = {};
+              data.subjectId = $("#subjectId").val();
+              data.userIdList = this.chooseUserId;
+              $.ajax({
+                url: "changeSendPeople",
+                type: "post",
+                dataType: "json",
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                success: function (response) {
+                  $("#followerModal").modal('hide');
+                  $("#subjectId").val('');
+                  $("#followerKeyword").val('');
+                  _this.searchFollower();
+                  setTimeout(function() {
+                    _this.chooseUserId = [];
+                  }, 0);
+                },
+              });
+            },
+            searchFollower (){
+              let _this = this;
+              let data = {};
+              data.keyword = $("#followerKeyword").val();
+              $.ajax({
+                url: "searchFollower",
+                type: "post",
+                dataType: "json",
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                success: function (response) {
+                  if (response.code == "C000"){
+                    _this.followerData = response.data;
+                  }
+                },
+              });
+            },
+            pushTemplate (id){
+              passSubjectId = id;
+              $("#infoModal").modal('show');
+            },
+            confirmPush (){
+              let data = {};
+              data.subjectId = passSubjectId;
+              $.ajax({
+                url: "pushSelectedFollowers",
+                type: "post",
+                dataType: "json",
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                success: function (response) {
+                  if (response.code == "C000"){
+                    $("#infoModal").modal('hide');
+                    alert('推播成功')
+                  } else if (response.code == "C012"){
+                    alert('推播人數不得為0')
+                    $("#infoModal").modal('hide');
+                    return;
+                  }
+                },
+              });
+            },
+          };
+        };
+
+        function openSaveModal(){
+          $("#modalLabel").text('新增貼文');
+          $("#editModal").modal('show');
+        }
+
+        function clearKeyword() {
+          $('#keyword').val('');
+        }
+    </script>
+</body>
+</html>

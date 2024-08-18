@@ -25,9 +25,12 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+                .csrf().disable() // 禁用 CSRF 保護
                 .authorizeRequests(authorizeRequests ->
                         authorizeRequests
-                                .requestMatchers("/badminton/**").permitAll()  // 公開API
+                                .requestMatchers("/badminton_images/**").permitAll() // 設置靜態資源的訪問權限
+                                .requestMatchers("/badminton_files/**").permitAll()
+                                .requestMatchers("/badminton/**").permitAll()
                                 .requestMatchers("/badminton/api/**").authenticated() // 需要身份驗證的API
                 ).httpBasic(); // 使用HTTP Basic認證
 

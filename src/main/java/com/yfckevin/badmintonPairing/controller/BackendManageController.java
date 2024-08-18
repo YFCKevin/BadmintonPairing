@@ -1,6 +1,6 @@
 package com.yfckevin.badmintonPairing.controller;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.TypeRef;
@@ -8,25 +8,28 @@ import com.yfckevin.badmintonPairing.ConfigProperties;
 import com.yfckevin.badmintonPairing.dto.*;
 import com.yfckevin.badmintonPairing.entity.*;
 import com.yfckevin.badmintonPairing.enums.AirConditionerType;
+import com.yfckevin.badmintonPairing.enums.TemplateType;
 import com.yfckevin.badmintonPairing.exception.ResultStatus;
 import com.yfckevin.badmintonPairing.service.*;
 import com.yfckevin.badmintonPairing.utils.ConfigurationUtil;
-import jakarta.annotation.Resource;
+import com.yfckevin.badmintonPairing.utils.FileUtils;
+import com.yfckevin.badmintonPairing.utils.FlexMessageUtil;
 import jakarta.servlet.http.HttpSession;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.thymeleaf.expression.Lists;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -36,7 +39,6 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.TextStyle;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -57,8 +59,12 @@ public class BackendManageController {
     private final SimpleDateFormat svf;
     private final SimpleDateFormat ssf;
     private final ObjectMapper objectMapper;
+    private final RestTemplate restTemplate;
+    private final FlexMessageUtil flexMessageUtil;
+    private final SimpleDateFormat picSuffix;
+    private final FileUtils fileUtils;
 
-    public BackendManageController(ConfigProperties configProperties, LeaderService leaderService, PostService postService, OpenAiService openAiService, CourtService courtService, TemplateSubjectService templateSubjectService, TemplateDetailService templateDetailService, FollowerService followerService, @Qualifier("sdf") SimpleDateFormat sdf, DateTimeFormatter ddf, @Qualifier("svf") SimpleDateFormat svf, @Qualifier("ssf") SimpleDateFormat ssf, ObjectMapper objectMapper) {
+    public BackendManageController(ConfigProperties configProperties, LeaderService leaderService, PostService postService, OpenAiService openAiService, CourtService courtService, TemplateSubjectService templateSubjectService, TemplateDetailService templateDetailService, FollowerService followerService, @Qualifier("sdf") SimpleDateFormat sdf, DateTimeFormatter ddf, @Qualifier("svf") SimpleDateFormat svf, @Qualifier("ssf") SimpleDateFormat ssf, ObjectMapper objectMapper, RestTemplate restTemplate, FlexMessageUtil flexMessageUtil, SimpleDateFormat picSuffix, FileUtils fileUtils) {
         this.configProperties = configProperties;
         this.leaderService = leaderService;
         this.postService = postService;
@@ -72,6 +78,10 @@ public class BackendManageController {
         this.svf = svf;
         this.ssf = ssf;
         this.objectMapper = objectMapper;
+        this.restTemplate = restTemplate;
+        this.flexMessageUtil = flexMessageUtil;
+        this.picSuffix = picSuffix;
+        this.fileUtils = fileUtils;
     }
 
     /**
@@ -1380,5 +1390,305 @@ public class BackendManageController {
         }
 
         return post;
+    }
+
+
+    /**
+     * 導頁到模板管理介面
+     *
+     * @param session
+     * @param model
+     * @return
+     */
+    @GetMapping("/forwardTemplateManagement")
+    public String forwardTemplateManagement(HttpSession session, Model model) {
+//        final String member = (String) session.getAttribute("admin");
+//        if (member != null) {
+//            logger.info("[forwardTemplateManagement]");
+//        } else {
+//            return "redirect:/backendLogin";
+//        }
+        List<TemplateDTO> templateDTOList = new ArrayList<>();
+        final List<TemplateSubject> subjectList = templateSubjectService.findAllAndOrderByCreationDate();
+        templateDTOList = subjectList.stream().map(this::constructTemplateDTO).toList();
+
+        model.addAttribute("templateDTOList", templateDTOList);
+
+        return "backend/templateManagement";
+    }
+
+    private TemplateDTO constructTemplateDTO(TemplateSubject s) {
+        TemplateDTO dto = new TemplateDTO();
+        dto.setSubjectId(s.getId());
+        dto.setSubjectTitle(s.getTitle());
+        dto.setSubjectAltText(s.getAltText());
+        dto.setCreationDate(s.getCreationDate());
+        dto.setTemplateType(s.getTemplateType().getLabel());
+
+        //組模板細節
+        List<TemplateDetail> detailList = templateDetailService.findByIdIn(s.getDetailIds());
+        List<TemplateDetailDTO> detailDTOList = detailList.stream().map(d -> {
+            TemplateDetailDTO detailDTO = new TemplateDetailDTO();
+            detailDTO.setId(d.getId());
+            detailDTO.setMainTitle(d.getMainTitle());
+            detailDTO.setSubTitle(d.getSubTitle());
+            detailDTO.setTextContent(d.getTextContent());
+            detailDTO.setCoverPath(d.getCover());
+            detailDTO.setCreationDate(d.getCreationDate());
+            detailDTO.setButtonName(d.getButtonName());
+            detailDTO.setButtonUrl(d.getButtonUrl());
+            return detailDTO;
+        }).toList();
+
+        dto.setDetailDTOList(detailDTOList);
+
+        if (s.getUserIds().size() > 0) {
+            dto.setUserIds(s.getUserIds());
+        }
+
+        return dto;
+    }
+
+
+    /**
+     * 列出全部追蹤者
+     *
+     * @param session
+     * @return
+     */
+    @GetMapping("/showFollowers")
+    public ResponseEntity<?> showFollowers(HttpSession session) {
+        final String member = (String) session.getAttribute("admin");
+        if (member != null) {
+            logger.info("[showFollowers]");
+        }
+        ResultStatus resultStatus = new ResultStatus();
+        List<Follower> followerList = followerService.findAll();
+        resultStatus.setCode("C000");
+        resultStatus.setMessage("成功");
+        resultStatus.setData(followerList);
+        return ResponseEntity.ok(resultStatus);
+    }
+
+
+
+    @PostMapping("/addTemplateSubject")
+    public ResponseEntity<?> addTemplateSubject(@RequestBody TemplateSubjectDTO dto, HttpSession session) {
+        final String member = (String) session.getAttribute("admin");
+        if (member != null) {
+            logger.info("[addTemplateSubject]");
+        }
+        ResultStatus resultStatus = new ResultStatus();
+
+        if (StringUtils.isBlank(dto.getId())) { //新增
+            TemplateSubject templateSubject = new TemplateSubject();
+            templateSubject.setTitle(dto.getTitle());
+            templateSubject.setAltText(dto.getAltText());
+            templateSubject.setCreationDate(sdf.format(new Date()));
+            templateSubject.setUserIds(dto.getUserIds());
+            templateSubject.setTemplateType(TemplateType.valueOf(dto.getTemplateType()));
+            final TemplateSubject savedTemplateSubject = templateSubjectService.save(templateSubject);
+            resultStatus.setCode("C000");
+            resultStatus.setMessage("成功");
+            resultStatus.setData(savedTemplateSubject);
+        }
+        return ResponseEntity.ok(resultStatus);
+    }
+
+
+    @PostMapping("/changeSendPeople")
+    public ResponseEntity<?> changeSendPeople (@RequestBody PushRequestDTO dto, HttpSession session){
+        final String member = (String) session.getAttribute("admin");
+        if (member != null) {
+            logger.info("[changeSendPeople]");
+        }
+        ResultStatus resultStatus = new ResultStatus();
+
+        final Optional<TemplateSubject> subjectOpt = templateSubjectService.findById(dto.getSubjectId());
+        if (subjectOpt.isEmpty()) {
+            resultStatus.setCode("C010");
+            resultStatus.setMessage("查無模板");
+        } else {
+            final TemplateSubject templateSubject = subjectOpt.get();
+            templateSubject.setUserIds(dto.getUserIdList());
+            templateSubjectService.save(templateSubject);
+            resultStatus.setCode("C000");
+            resultStatus.setMessage("成功");
+        }
+        return ResponseEntity.ok(resultStatus);
+    }
+
+
+    @PostMapping("/searchFollower")
+    public ResponseEntity<?> searchFollower (@RequestBody SearchDTO searchDTO, HttpSession session){
+        final String member = (String) session.getAttribute("admin");
+        if (member != null) {
+            logger.info("[searchFollower]");
+        }
+        ResultStatus resultStatus = new ResultStatus();
+
+        List<Follower> followerList = followerService.searchFollower(searchDTO.getKeyword().trim());
+        resultStatus.setCode("C000");
+        resultStatus.setMessage("成功");
+        resultStatus.setData(followerList);
+
+        return ResponseEntity.ok(resultStatus);
+    }
+
+
+    @PostMapping("/templateSearch")
+    public ResponseEntity<?> templateSearch (@RequestBody SearchDTO searchDTO, HttpSession session){
+        final String member = (String) session.getAttribute("admin");
+        if (member != null) {
+            logger.info("[templateSearch]");
+        }
+        ResultStatus resultStatus = new ResultStatus();
+
+        List<TemplateSubject> subjectList = templateSubjectService.templateSearch(searchDTO.getKeyword().trim());
+        List<TemplateDTO> templateDTOList = subjectList.stream().map(this::constructTemplateDTO).toList();
+
+        resultStatus.setCode("C000");
+        resultStatus.setMessage("成功");
+        resultStatus.setData(templateDTOList);
+
+        return ResponseEntity.ok(resultStatus);
+    }
+
+
+    @GetMapping("/findTemplateSubjectById/{id}")
+    public ResponseEntity<?> findTemplateSubjectById (@PathVariable String id, HttpSession session){
+        final String member = (String) session.getAttribute("admin");
+        if (member != null) {
+            logger.info("[findTemplateSubjectById]");
+        }
+        ResultStatus resultStatus = new ResultStatus();
+
+        final Optional<TemplateSubject> subjectOpt = templateSubjectService.findById(id);
+        if (subjectOpt.isEmpty()) {
+            resultStatus.setCode("C010");
+            resultStatus.setMessage("查無模板");
+        } else {
+            final TemplateSubject templateSubject = subjectOpt.get();
+            resultStatus.setCode("C000");
+            resultStatus.setMessage("成功");
+            resultStatus.setData(templateSubject.getUserIds()); //傳送userIds
+        }
+        return ResponseEntity.ok(resultStatus);
+    }
+
+    @PostMapping("/addTemplateDetail")
+    public String addTemplateDetail(@ModelAttribute TemplateDetailDTO dto, HttpSession session) throws IOException {
+        final String member = (String) session.getAttribute("admin");
+        if (member != null) {
+            logger.info("[addTemplateDetail]");
+        }
+        ResultStatus resultStatus = new ResultStatus();
+
+        if (StringUtils.isBlank(dto.getId())) { //新增
+            Path uploadPath = Path.of(configProperties.getPicSavePath());
+            if (!Files.exists(uploadPath)) {
+                Files.createDirectory(uploadPath);
+            }
+
+            TemplateDetail templateDetail = new TemplateDetail();
+
+            final MultipartFile nameFile = dto.getMultipartFile();
+
+            if (nameFile != null && !nameFile.isEmpty() && nameFile.getSize() != 0) {
+                final String extension = FilenameUtils.getExtension(nameFile.getOriginalFilename());
+                String fileName = picSuffix.format(new Date()) + "." + extension;
+                System.out.println("fileName: " + fileName);
+
+                try {
+                    System.out.println("上傳圖片");
+                    fileUtils.saveUploadedFile(nameFile, configProperties.getPicSavePath() + fileName);
+                } catch (IOException e) {
+                    System.out.println("圖片上傳失敗");
+                    logger.error(e.getMessage(), e);
+                    resultStatus.setCode("C009");
+                    resultStatus.setMessage("圖片上傳失敗");
+                    return "/error/50x";
+                }
+                templateDetail.setCover(configProperties.getPicShowPath() + fileName);
+            }
+
+            templateDetail.setMainTitle(dto.getMainTitle());
+            templateDetail.setSubTitle(dto.getSubTitle());
+            templateDetail.setTextContent(dto.getTextContent());
+            templateDetail.setButtonName(dto.getButtonName());
+            templateDetail.setButtonUrl(dto.getButtonUrl());
+            templateDetail.setCreationDate(sdf.format(new Date()));
+            TemplateDetail savedTemplateDetail = templateDetailService.save(templateDetail);
+
+            //模板細節的id存入模板主題內
+            Optional<TemplateSubject> opt = templateSubjectService.findById(dto.getSubjectId());
+            if (opt.isPresent()) {
+                TemplateSubject templateSubject = opt.get();
+                final List<String> detailIds = templateSubject.getDetailIds();
+                detailIds.add(savedTemplateDetail.getId());
+                templateSubject.setDetailIds(detailIds);
+                templateSubjectService.save(templateSubject);
+            }
+        }
+
+        return "redirect:/forwardTemplateManagement";
+    }
+
+
+    @PostMapping("/pushSelectedFollowers")
+    public ResponseEntity<?> pushSelectedFollowers(@RequestBody PushRequestDTO dto, HttpSession session) throws JsonProcessingException {
+        final String member = (String) session.getAttribute("admin");
+        if (member != null) {
+            logger.info("[pushSelectedFollowers]");
+        }
+        ResultStatus resultStatus = new ResultStatus();
+
+        try {
+
+            final Optional<TemplateSubject> subjectOpt = templateSubjectService.findById(dto.getSubjectId());
+            if (subjectOpt.isEmpty()) {
+                resultStatus.setCode("C010");
+                resultStatus.setMessage("查無模板");
+                return ResponseEntity.ok(resultStatus);
+            } else {
+                final TemplateSubject templateSubject = subjectOpt.get();
+                if (templateSubject.getUserIds().size() == 0){
+                    resultStatus.setCode("C012");
+                    resultStatus.setMessage("推播人數不得為0");
+                    return ResponseEntity.ok(resultStatus);
+                }
+                final Optional<TemplateDetail> detailOpt = templateDetailService.findById(templateSubject.getDetailIds().get(0));
+                if (detailOpt.isEmpty()) {
+                    resultStatus.setCode("C011");
+                    resultStatus.setMessage("查無模板細節");
+                    return ResponseEntity.ok(resultStatus);
+                } else {
+                    final TemplateDetail templateDetail = detailOpt.get();
+                    //組建傳給line的template
+                    Map<String, Object> textImageTemplate = flexMessageUtil.assembleTextImageTemplate(templateDetail);
+                    String url = "https://api.line.me/v2/bot/message/multicast";
+                    Map<String, Object> data = new HashMap<>();
+                    data.put("to", templateSubject.getUserIds());
+                    data.put("messages", List.of(textImageTemplate));
+                    HttpHeaders headers = new HttpHeaders();
+                    headers.setBearerAuth(configProperties.getChannelAccessToken());
+                    headers.setContentType(MediaType.APPLICATION_JSON);
+                    HttpEntity<Map<String, Object>> entity = new HttpEntity<>(data, headers);
+                    ResponseEntity<LineUserProfileResponseDTO> response = restTemplate.exchange(url, HttpMethod.POST, entity, LineUserProfileResponseDTO.class);
+
+                    if (response.getStatusCode().is2xxSuccessful()) {
+                        // 成功處理
+                        templateSubject.setSendDate(sdf.format(new Date()));
+                        resultStatus.setCode("C000");
+                        resultStatus.setMessage("成功");
+                        return ResponseEntity.ok(resultStatus);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
+
+        return ResponseEntity.ok(resultStatus);
     }
 }

@@ -21,6 +21,8 @@ public class ConfigProperties {
     private String fileSavePath;
     @Value("${config.picSavePath}")
     private String picSavePath;
+    @Value("${config.picShowPath}")
+    private String picShowPath;
     @Value("${config.gptBackupSavePath}")
     private String gptBackupSavePath;
     @Value("${config.crawlerDomain}")
@@ -124,5 +126,9 @@ public class ConfigProperties {
 
     public String getGoogleMapApiKey() {
         return googleMapApiKey;
+    }
+
+    public String getPicShowPath() {
+        return picShowPath;
     }
 }

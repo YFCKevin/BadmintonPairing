@@ -53,6 +53,12 @@ public class BadmintonPairingApplication {
 		isoSdf.setTimeZone(TimeZone.getTimeZone("Asia/Taipei"));
 		return isoSdf;
 	}
+	@Bean(name = "picSuffix")
+	public SimpleDateFormat picSuffix() {
+		SimpleDateFormat picSuffix = new SimpleDateFormat("yyyyMMddHHmmss");
+		picSuffix.setTimeZone(TimeZone.getTimeZone("Asia/Taipei"));
+		return picSuffix;
+	}
 	@Bean
 	public DateTimeFormatter dateTimeFormatter() {
 		return DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");

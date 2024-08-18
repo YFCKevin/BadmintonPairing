@@ -17,6 +17,7 @@
     <div class="header-links">
         <a th:href="@{forwardLeaderManagement}">團主管理</a>
         <a th:href="@{forwardFileManagement}">檔案管理</a>
+        <a th:href="@{forwardTemplateManagement}">模板管理</a>
         <a th:href="@{backendLogout}">登出</a>
     </div>
 </div>
@@ -389,7 +390,7 @@
     <div class="modal-dialog modal-dialog-centered modal-md">
         <div class="modal-content">
             <div class="modal-body py-3 px-3">
-                <div class="modal-title h4">是否要執行貼文和球館的自動配對？</div>
+                <div class="modal-title">是否要執行貼文和球館的自動配對？</div>
                 <div class="text-end mt-4">
                     <a type="button" class="btn btn-primary fs-15px me-2" title="確認" x-on:click="confirmAutoMate();">確認</a>
                     <button type="button" class="btn btn-outline-secondary fs-15px" title="取消" data-bs-dismiss="modal">取消</button>
