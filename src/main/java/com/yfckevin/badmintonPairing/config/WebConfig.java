@@ -21,8 +21,8 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
 
-        registry.addResourceHandler("/badminton_images/**").addResourceLocations("file:"+ configProperties.getFileSavePath());
-        registry.addResourceHandler("/badminton_files/**").addResourceLocations("file:"+ configProperties.getPicSavePath());
+        registry.addResourceHandler("/badminton_files/**").addResourceLocations("file:"+ configProperties.getFileSavePath());
+        registry.addResourceHandler("/badminton_images/**").addResourceLocations("file:"+ configProperties.getPicSavePath());
 //        super.addResourceHandlers(registry);
     }
 
