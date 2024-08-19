@@ -558,6 +558,11 @@ public class BackendManageController {
     }
 
 
+    /**
+     * 自動配對球館與貼文的功能
+     * @param session
+     * @return
+     */
     @PostMapping("/autoMate")
     public ResponseEntity<?> autoMate(HttpSession session) {
 
@@ -1114,6 +1119,12 @@ public class BackendManageController {
     }
 
 
+    /**
+     * 新增球館
+     * @param dto
+     * @param session
+     * @return
+     */
     @PostMapping("/saveCourt")
     public ResponseEntity<?> saveCourt(@RequestBody CourtDTO dto, HttpSession session) {
 
@@ -1150,25 +1161,12 @@ public class BackendManageController {
     }
 
 
-    @GetMapping("/deleteCourt/{id}")
-    public ResponseEntity<?> deleteCourt(@PathVariable String id, HttpSession session) {
-
-        final String member = (String) session.getAttribute("admin");
-        if (member != null) {
-            logger.info("[deleteCourt]");
-        }
-        ResultStatus resultStatus = new ResultStatus();
-
-        final Optional<Court> opt = courtService.findById(id);
-        if (opt.isPresent()) {
-            courtService.delete(opt.get());
-            resultStatus.setCode("C000");
-            resultStatus.setMessage("成功");
-        }
-        return ResponseEntity.ok(resultStatus);
-    }
-
-
+    /**
+     * 球館模糊查詢
+     * @param searchDTO
+     * @param session
+     * @return
+     */
     @PostMapping("/searchCourt")
     public ResponseEntity<?> searchCourt(@RequestBody SearchDTO searchDTO, HttpSession session) {
 
@@ -1188,6 +1186,12 @@ public class BackendManageController {
     }
 
 
+    /**
+     * 用id找球館
+     * @param id
+     * @param session
+     * @return
+     */
     @GetMapping("/findCourtById/{id}")
     public ResponseEntity<?> findCourtById(@PathVariable String id, HttpSession session) {
 
@@ -1402,12 +1406,12 @@ public class BackendManageController {
      */
     @GetMapping("/forwardTemplateManagement")
     public String forwardTemplateManagement(HttpSession session, Model model) {
-//        final String member = (String) session.getAttribute("admin");
-//        if (member != null) {
-//            logger.info("[forwardTemplateManagement]");
-//        } else {
-//            return "redirect:/backendLogin";
-//        }
+        final String member = (String) session.getAttribute("admin");
+        if (member != null) {
+            logger.info("[forwardTemplateManagement]");
+        } else {
+            return "redirect:/backendLogin";
+        }
         List<TemplateDTO> templateDTOList = new ArrayList<>();
         final List<TemplateSubject> subjectList = templateSubjectService.findAllAndOrderByCreationDate();
         templateDTOList = subjectList.stream().map(this::constructTemplateDTO).toList();
@@ -1471,7 +1475,12 @@ public class BackendManageController {
     }
 
 
-
+    /**
+     * 新增模板
+     * @param dto
+     * @param session
+     * @return
+     */
     @PostMapping("/addTemplateSubject")
     public ResponseEntity<?> addTemplateSubject(@RequestBody TemplateSubjectDTO dto, HttpSession session) {
         final String member = (String) session.getAttribute("admin");
@@ -1496,6 +1505,12 @@ public class BackendManageController {
     }
 
 
+    /**
+     * 更換發送的追蹤者
+     * @param dto
+     * @param session
+     * @return
+     */
     @PostMapping("/changeSendPeople")
     public ResponseEntity<?> changeSendPeople (@RequestBody PushRequestDTO dto, HttpSession session){
         final String member = (String) session.getAttribute("admin");
@@ -1519,6 +1534,12 @@ public class BackendManageController {
     }
 
 
+    /**
+     * 追蹤者模糊查詢
+     * @param searchDTO
+     * @param session
+     * @return
+     */
     @PostMapping("/searchFollower")
     public ResponseEntity<?> searchFollower (@RequestBody SearchDTO searchDTO, HttpSession session){
         final String member = (String) session.getAttribute("admin");
@@ -1536,6 +1557,12 @@ public class BackendManageController {
     }
 
 
+    /**
+     * 模板模糊查詢
+     * @param searchDTO
+     * @param session
+     * @return
+     */
     @PostMapping("/templateSearch")
     public ResponseEntity<?> templateSearch (@RequestBody SearchDTO searchDTO, HttpSession session){
         final String member = (String) session.getAttribute("admin");
@@ -1555,6 +1582,12 @@ public class BackendManageController {
     }
 
 
+    /**
+     * 用id查找模板的userIdList
+     * @param id
+     * @param session
+     * @return
+     */
     @GetMapping("/findTemplateSubjectById/{id}")
     public ResponseEntity<?> findTemplateSubjectById (@PathVariable String id, HttpSession session){
         final String member = (String) session.getAttribute("admin");
@@ -1576,6 +1609,14 @@ public class BackendManageController {
         return ResponseEntity.ok(resultStatus);
     }
 
+
+    /**
+     * 新增模板細節
+     * @param dto
+     * @param session
+     * @return
+     * @throws IOException
+     */
     @PostMapping("/addTemplateDetail")
     public String addTemplateDetail(@ModelAttribute TemplateDetailDTO dto, HttpSession session) throws IOException {
         final String member = (String) session.getAttribute("admin");
@@ -1635,6 +1676,13 @@ public class BackendManageController {
     }
 
 
+    /**
+     * 後台推播功能 (多人推播)
+     * @param dto
+     * @param session
+     * @return
+     * @throws JsonProcessingException
+     */
     @PostMapping("/pushSelectedFollowers")
     public ResponseEntity<?> pushSelectedFollowers(@RequestBody PushRequestDTO dto, HttpSession session) throws JsonProcessingException {
         final String member = (String) session.getAttribute("admin");
@@ -1679,6 +1727,7 @@ public class BackendManageController {
                     if (response.getStatusCode().is2xxSuccessful()) {
                         // 成功處理
                         templateSubject.setSendDate(sdf.format(new Date()));
+                        templateSubjectService.save(templateSubject);
                         resultStatus.setCode("C000");
                         resultStatus.setMessage("成功");
                         return ResponseEntity.ok(resultStatus);

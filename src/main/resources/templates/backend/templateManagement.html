@@ -89,7 +89,7 @@
                                     <td class="th-creationDate" x-text="item.creationDate"></td>
                                     <td class="th-action">
                                         <button style="padding: 5px; margin: 5px" class="btn btn-primary" :data-bs-toggle="'modal'" :data-bs-target="'#modal' + index">查看訊息</button> <!--  x-on:click="showTemplateDetail(item.id)" -->
-                                        <button style="padding: 5px; margin: 5px" class="btn btn-primary" x-on:click="addTemplateDetail(item.subjectId)">新增訊息</button>
+                                        <button style="padding: 5px; margin: 5px" class="btn btn-primary" x-on:click="addTemplateDetail(item.subjectId)" x-show="(item.templateType === '圖文訊息' && item.detailDTOList.length <= 0) || item.templateType === '輪詢訊息'">新增訊息</button>
                                         <button style="padding: 5px; margin: 5px" class="btn btn-primary" x-on:click="openFollowerModal(item.subjectId);">發送對象</button>
                                         <button style="padding: 5px; margin: 5px" class="btn btn-primary" x-on:click="pushTemplate(item.subjectId)">推播</button>
                                     </td>
