@@ -1,6 +1,7 @@
 package com.yfckevin.badmintonPairing.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yfckevin.badmintonPairing.ConfigProperties;
 import com.yfckevin.badmintonPairing.dto.*;
 import com.yfckevin.badmintonPairing.entity.Follower;
@@ -166,6 +167,16 @@ public class LineController {
                                 "    }\n" +
                                 "  }\n" +
                                 "}";
+                    } else if ("歐嗚Q_Q 當月免費額度用完了，何不來點打賞>口<".equals(event.getMessage().getText())) {
+                        int packageId = 446; //   貼圖包 ID
+                        int stickerId = 2027; // 貼圖 ID
+                        String type = "sticker";
+
+                        msg = "{"
+                                + "\"type\":\"" + type + "\","
+                                + "\"packageId\":" + packageId + ","
+                                + "\"stickerId\":" + stickerId
+                                + "}";
                     }
                 }
                 case follow -> {

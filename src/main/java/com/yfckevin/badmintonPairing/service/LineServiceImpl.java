@@ -15,6 +15,7 @@ import org.springframework.web.client.RestTemplate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class LineServiceImpl implements LineService{
@@ -32,9 +33,28 @@ public class LineServiceImpl implements LineService{
     @Override
     public ResponseEntity<?> autoReply(String msg, String replyToken) throws JsonProcessingException {
 
-        final HashMap msgMap = objectMapper.readValue(msg, HashMap.class);
-        List messages = new ArrayList();
-        messages.add(msgMap);
+        final Map<String, Object> msgMap = objectMapper.readValue(msg, HashMap.class);
+        List<Map<String, Object>> messages = new ArrayList<>();
+        String type = (String) msgMap.get("type");
+
+        if ("text".equalsIgnoreCase(type)) {
+            String textContent = (String) msgMap.get("text");
+            Map<String, Object> textMessage = new HashMap<>();
+            textMessage.put("type", "text");
+            textMessage.put("text", textContent);
+            messages.add(textMessage);
+        } else if ("sticker".equalsIgnoreCase(type)) {
+            int packageId = (Integer) msgMap.get("packageId");
+            int stickerId = (Integer) msgMap.get("stickerId");
+            Map<String, Object> stickerMessage = new HashMap<>();
+            stickerMessage.put("type", "sticker");
+            stickerMessage.put("packageId", packageId);
+            stickerMessage.put("stickerId", stickerId);
+            messages.add(stickerMessage);
+        } else {
+            // 处理未知类型的情况
+            return ResponseEntity.badRequest().body("Unknown message type");
+        }
 
         String url = "https://api.line.me/v2/bot/message/reply";
 
