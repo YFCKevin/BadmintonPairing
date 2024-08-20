@@ -172,27 +172,34 @@
                                                     <h4 class="text-primary" x-text="item.dayOfWeek"></h4>
                                                 </div>
                                                 <div class="d-flex align-items-center mb-0 flex-wrap">
-                                                    聯絡人：<p class="mb-0 ms-1">
+                                                    <span style="color: black;">聯絡人：</span>
+                                                    <p class="mb-0 ms-1">
                                                     <a :href="isMobile() ? item.shortLink : item.link" target="_blank" x-text="item.name"></a>
                                                 </p>
                                                 </div>
                                                 <div class="d-flex align-items-center mb-0 flex-wrap">
-                                                    打球日期：<p class="mb-0 ms-1" x-text="item.time"></p>
+                                                    <span style="color: black;">打球日期：</span>
+                                                    <p class="mb-0 ms-1" x-text="item.time"></p>
                                                 </div>
                                                 <div class="d-flex align-items-center mb-0 flex-wrap">
-                                                    費用：<p class="mb-0 ms-1" x-text="item.fee"></p>元
+                                                    <span style="color: black;">費用：</span>
+                                                    <p class="mb-0 ms-1" x-text="item.fee"></p>元
                                                 </div>
                                                 <div class="d-flex align-items-center mb-0 flex-wrap">
-                                                    程度：<p class="mb-0 ms-1" x-text="item.level"></p>
+                                                    <span style="color: black;">程度：</span>
+                                                    <p class="mb-0 ms-1" x-text="item.level"></p>
                                                 </div>
                                                 <div class="d-flex align-items-center mb-0 flex-wrap">
-                                                    用球：<p class="mb-0 ms-1" x-html="item.brand === '' ? '&lt;i class=&quot;fas fa-question-circle&quot; style=&quot;color: gray;&quot; data-toggle=&quot;tooltip&quot; title=&quot;發文者未提供資訊，可點擊聯絡人連結進一步詢問！&quot;&gt;&lt;/i&gt;' : item.brand"></p>
+                                                    <span style="color: black;">用球：</span>
+                                                    <p class="mb-0 ms-1" x-html="item.brand === '' ? '&lt;i class=&quot;fas fa-question-circle&quot; style=&quot;color: gray;&quot; data-toggle=&quot;tooltip&quot; title=&quot;發文者未提供資訊，可點擊聯絡人連結進一步詢問！&quot;&gt;&lt;/i&gt;' : item.brand"></p>
                                                 </div>
                                                 <div class="d-flex align-items-center mb-0 flex-wrap">
-                                                    冷氣：<p class="mb-0 ms-1" x-html="item.airConditioner == '未標示' ? '<i class=&quot;fas fa-question-circle&quot; style=&quot;color: gray;&quot; data-toggle=&quot;tooltip&quot; title=&quot;發文者未提供資訊，可點擊聯絡人連結近一步詢問！&quot;></i>' : (item.airConditioner == '有冷氣' ? '<i class=&quot;fas fa-wind&quot; style=&quot;color: blue;&quot;></i>' : '<i class=&quot;fas fa-times-circle red-icon&quot; style=&quot;color: red;&quot;></i>')"></p>
+                                                    <span style="color: black;">冷氣：</span>
+                                                    <p class="mb-0 ms-1" x-html="item.airConditioner == '未標示' ? '<i class=&quot;fas fa-question-circle&quot; style=&quot;color: gray;&quot; data-toggle=&quot;tooltip&quot; title=&quot;發文者未提供資訊，可點擊聯絡人連結近一步詢問！&quot;></i>' : (item.airConditioner == '有冷氣' ? '<i class=&quot;fas fa-wind&quot; style=&quot;color: blue;&quot;></i>' : '<i class=&quot;fas fa-times-circle red-icon&quot; style=&quot;color: red;&quot;></i>')"></p>
                                                 </div>
                                                 <div class="d-flex align-items-center mb-2 flex-wrap">
-                                                    停車資訊：<p class="mb-0 ms-1" x-html="item.parkInfo === '' ? '<i class=&quot;fas fa-question-circle&quot; style=&quot;color: gray;&quot; data-toggle=&quot;tooltip&quot; title=&quot;發文者未提供資訊，可點擊聯絡人連結近一步詢問！&quot;></i>' : item.parkInfo"></p>
+                                                    <span style="color: black;">停車資訊：</span>
+                                                    <p class="mb-0 ms-1" x-html="item.parkInfo === '' ? '<i class=&quot;fas fa-question-circle&quot; style=&quot;color: gray;&quot; data-toggle=&quot;tooltip&quot; title=&quot;發文者未提供資訊，可點擊聯絡人連結近一步詢問！&quot;></i>' : item.parkInfo"></p>
                                                 </div>
                                                 <div class="d-flex align-items-center mb-2">
                                                     <button class="btn btn-primary py-2 d-xl-inline-block rounded-pill me-2" type="button" x-on:click="importCalender(item.place, item.startTime, item.endTime, item.fee, item.parkInfo, item.name)">匯入行事曆</button>
