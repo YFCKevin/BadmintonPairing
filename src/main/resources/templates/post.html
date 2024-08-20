@@ -82,11 +82,25 @@
                         <button x-on:click="search()" style="height: 40px;" class="btn-search btn btn-primary btn-md-square rounded-end"><i class="fa fa-search"></i></button>
                     </div>
                 </div>
+                <div class="col-lg-4 col-md-6 d-flex align-items-center">
+                    <div class="input-group d-block d-md-none">
+                        <select id="dayOfWeek" x-on:change="selectDayOfWeek($event.target.value)" style="width: 100%" class="form-select border-primary p-2" aria-label="Default select example">
+                            <option value="">請選擇星期</option>
+                            <option value="Monday">星期一</option>
+                            <option value="Tuesday">星期二</option>
+                            <option value="Wednesday">星期三</option>
+                            <option value="Thursday">星期四</option>
+                            <option value="Friday">星期五</option>
+                            <option value="Saturday">星期六</option>
+                            <option value="Sunday">星期日</option>
+                        </select>
+                    </div>
+                </div>
             </div>
         </div>
 
         <!-- Post Start -->
-        <div class="container-fluid menu py-6">
+        <div class="container-fluid menu py-4">
             <div class="container">
                 <div class="tab-class text-center">
                     <ul class="nav nav-pills d-inline-flex justify-content-center mb-5 wow bounceInUp d-none d-md-inline-flex" data-wow-delay="0.1s"> <!-- d-none d-md-inline-flex 手機端會隱藏 -->
@@ -129,7 +143,7 @@
                     <div class="col-12 d-flex justify-content-end mb-3">
                         <span id="google_authorize_text"></span>
                     </div>
-                    <div class="d-flex justify-content-end mb-4">
+                    <div class="d-flex justify-content-end mb-4" style="font-size: 0.8rem">
                         <div class="d-flex align-items-center mr-3" style="margin-right: 1rem;">
                             <i class="fas fa-wind" style="color: blue;"></i>
                             <p class="mb-0 ml-2">：有冷氣</p>
@@ -437,6 +451,21 @@
               });
             },
             chooseDayOfWeek (day){
+              let _this = this;
+              $.ajax({
+                url: "chooseDayOfWeek/" + day,
+                type: "get",
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                success: function (response) {
+                  if (response.code == "C000"){
+                    _this.myForData = response.data;
+                    _this.pageNumber = 0;
+                  }
+                },
+              });
+            },
+            selectDayOfWeek (day){
               let _this = this;
               $.ajax({
                 url: "chooseDayOfWeek/" + day,
