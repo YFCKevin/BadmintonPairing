@@ -75,7 +75,7 @@
                                 <p class="text-white mb-0" th:text="${leaderDTO.groupName}"></p>
                             </div>
                             <div class="team-icon d-flex flex-column justify-content-center m-4">
-                                <a class="share btn btn-primary btn-md-square rounded-circle mb-2" href="#"><i class="fas fa-share-alt"></i></a>
+                                <a id="copyUrlBtn" class="share btn btn-primary btn-md-square rounded-circle mb-2" href="#"><i class="fas fa-share-alt"></i></a>
                                 <a class="share-link btn btn-primary btn-md-square rounded-circle mb-2"
                                    id="dynamicLink" target="_blank">
                                     <i class="fab fa-facebook-f"></i>
@@ -351,6 +351,19 @@
             </div>
         </div>
 
+        <div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModal" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-md">
+                <div class="modal-content">
+                    <div class="modal-body py-3 px-3">
+                        <div class="modal-title"><i class="far fa-thumbs-up me-2" style="color: mediumseagreen; font-size: 1.3rem"></i><span style="color: black; font-weight: bold;">您已成功複製連結，分享給朋友這一則零打資訊吧！</span></div>
+                        <div class="text-end mt-4">
+                            <button type="button" class="btn btn-outline-secondary fs-15px" title="關閉" data-bs-dismiss="modal">關閉</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
 
         <script th:src="@{/js/jquery.min.js}"></script>
         <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
@@ -402,5 +415,21 @@
             placeMarker(latitude, longitude);
             $("#mapModal").modal('show');
         }
+
+        $(document).ready(function() {
+            $('#copyUrlBtn').on('click', function(event) {
+                event.preventDefault();
+
+                let url = window.location.href;
+
+                var $temp = $('<input>');
+                $('body').append($temp);
+                $temp.val(url).select();
+                document.execCommand('copy');
+                $temp.remove();
+
+                $("#successModal").modal('show');
+            });
+        });
     </script>
 </html>
