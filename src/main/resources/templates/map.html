@@ -387,7 +387,6 @@
 
 
         function calculateAndDisplayDistance(court, infoWindow) {
-            console.log('calculateAndDisplayDistance')
             const service = new google.maps.DistanceMatrixService();
             service.getDistanceMatrix(
                 {
@@ -426,8 +425,6 @@
         }
 
         function updateCurrentLocation(clickedLocation) {
-            console.log('updateCurrentLocation');
-
             // 清掉舊的路徑
             directionsRenderer.setMap(null);
             hasRoute = false; // 更新路线规划状态
@@ -563,7 +560,6 @@
             myForData: [],
 
             initData() {
-                console.log('Initializing data with posts:', window.posts);
                 // 初始化數據，從全局變數 posts 中獲取
                 this.myForData = window.posts || [];
                 this.total = this.myForData.length;

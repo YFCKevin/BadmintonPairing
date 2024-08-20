@@ -1,8 +1,5 @@
 package com.yfckevin.badmintonPairing.controller;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.yfckevin.badmintonPairing.ConfigProperties;
 import com.yfckevin.badmintonPairing.dto.RequestPostDTO;
 import com.yfckevin.badmintonPairing.entity.Leader;
 import com.yfckevin.badmintonPairing.entity.Post;
@@ -13,14 +10,14 @@ import com.yfckevin.badmintonPairing.service.PostService;
 import com.yfckevin.badmintonPairing.utils.MailUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -31,11 +28,13 @@ public class DataProcessingController {
     private final LeaderService leaderService;
     private final PostService postService;
     private final CrawlerService crawlerService;
+    private final SimpleDateFormat ssf;
     Logger logger = LoggerFactory.getLogger(DataProcessingController.class);
-    public DataProcessingController(LeaderService leaderService, PostService postService, CrawlerService crawlerService) {
+    public DataProcessingController(LeaderService leaderService, PostService postService, CrawlerService crawlerService, @Qualifier("ssf") SimpleDateFormat ssf) {
         this.leaderService = leaderService;
         this.postService = postService;
         this.crawlerService = crawlerService;
+        this.ssf = ssf;
     }
 
 
@@ -60,7 +59,7 @@ public class DataProcessingController {
      * 每日固定匯出已過期貼文的所有links，給爬蟲用
      * @throws IOException
      */
-//    @Scheduled(cron = "0 0 7 * * ?")
+//    @Scheduled(cron = "0 0 6 * * ?")
     @GetMapping("/selectPastPosts")
     public void selectPastPosts() throws IOException, InterruptedException {
         // 取出該userId最新一則貼文的貼文是過期的貼文
@@ -70,7 +69,7 @@ public class DataProcessingController {
         // 蒐集links
         final List<String> linkList = leaderService.findAllByUserIdIn(userIds).stream().map(Leader::getLink).toList();
 
-        // 寄信通知每日需更新的link笔数
+        // 寄信通知每日需更新的link筆數
         MailUtils.sendMail("pigmonkey0921@gmail.com", "每日项目", "共" + linkList.size() + "筆");
 
         int batchSize = 50;
@@ -83,10 +82,10 @@ public class DataProcessingController {
         for (int i = 0; i < batches.size(); i++) {
             List<String> batch = batches.get(i);
             final int getNewPosts = crawlerService.callCrawlerAPIGetNewPosts(batch);
-            System.out.println("第幾次迴圈：" + i);
-            System.out.println("新貼文數: " + getNewPosts);
+            System.out.println("第幾次迴圈：" + i + "，當次的新貼文數: " + getNewPosts);
             Thread.sleep(120 * 1000);
         }
+        System.out.println(ssf.format(new Date()) + "完成貼文爬蟲");
     }
 
 }
