@@ -45,7 +45,7 @@
         <div class="container-fluid nav-bar">
             <div class="container">
                 <nav class="navbar navbar-light navbar-expand-lg py-4">
-                    <a th:href="@{index}" class="navbar-brand">
+                    <a th:href="@{/index}" class="navbar-brand">
                         <h1 class="text-primary fw-bold mb-0">Badminton<span class="text-dark">Pairing</span> </h1>
                     </a>
                     <button class="navbar-toggler py-2 px-3" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
@@ -177,14 +177,6 @@
                                             <i class="fas fa-question-circle" style="color: gray;" data-toggle="tooltip" title="發文者未提供資訊，可點擊聯絡人連結近一步詢問！"></i>
                                         </span>
                                         <span th:unless="${postDTO.parkInfo == ''}" th:text="${postDTO.parkInfo}"></span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="d-flex flex-column align-items-start">
-                                <div class="d-flex align-items-center">
-                                    <div class="me-4 fw-bold text-nowrap align-self-start" style="color: black;"><i class="fa fa-check text-primary me-2"></i>當日天氣預報</div>
-                                    <div class="text-body">
-                                        <div class="mb-0" th:text="${postDTO.level}"></div>
                                     </div>
                                 </div>
                             </div>
