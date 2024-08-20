@@ -1,82 +1,131 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/png" th:href="@{images/favicon.ico}" />
-    <title>Server Error</title>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: Arial, sans-serif;
-        }
-        .main-container {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            padding: 20px;
-            box-sizing: border-box;
-        }
-        .error-container {
-            display: flex;
-            align-items: center;
-            max-width: 1200px;
-            overflow: hidden;
-        }
-        .error-container img {
-            flex-shrink: 0;
-            width: 100%;
-            max-width: 600px;
-            height: auto;
-        }
-        .error-content {
-            padding: 20px;
-        }
-        .error-content h3 {
-            font-size: 20px;
-            color: #333;
-            font-weight: bold;
-            margin-bottom: 20px;
-        }
-        .btn-major {
-            display: inline-block;
-            padding: 10px 20px;
-            font-size: 16px;
-            color: #fff;
-            background-color: #007bff;
-            border: none;
-            border-radius: 5px;
-            text-decoration: none;
-            text-align: center;
-        }
-        .btn-major:hover {
-            background-color: #0056b3;
-        }
-        @media (max-width: 768px) {
-            .error-container {
-                flex-direction: column;
-                text-align: center;
-            }
-            .error-container img {
-                margin-bottom: 20px;
-            }
-            .error-content {
-                padding: 10px;
-            }
-        }
-    </style>
-</head>
-<body>
-<div class="main-container">
-    <div class="error-content">
-        <img src="images/500.jpg" alt="Error Image">
-        <div class="error-content">
-            <h3>請求無效或伺服器錯誤</h3>
-            <a href="posts" class="btn-major">返回首頁</a>
+
+    <head>
+        <meta charset="utf-8">
+        <title>CaterServ - Catering Services Website Template</title>
+        <meta content="width=device-width, initial-scale=1.0" name="viewport">
+        <meta content="" name="keywords">
+        <meta content="" name="description">
+
+        <!-- Google Web Fonts -->
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=Playball&display=swap" rel="stylesheet">
+
+        <!-- Icon Font Stylesheet -->
+        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css"/>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
+
+        <!--        <link href="lib/animate/animate.min.css" rel="stylesheet">-->
+        <link th:href="@{/css/lightbox.min.css}" rel="stylesheet">
+        <link th:href="@{/css/owl.carousel.min.css}" rel="stylesheet">
+        <link rel="icon" type="image/png" th:href="@{/images/favicon.ico}" />
+        <link rel="stylesheet" type="text/css" th:href="@{/css/bootstrap.min.css}" />
+
+        <link rel="stylesheet" type="text/css" th:href="@{/css/style.css}" />
+    </head>
+
+    <body>
+
+        <!-- Spinner Start -->
+        <div id="spinner" class="show w-100 vh-100 bg-white position-fixed translate-middle top-50 start-50  d-flex align-items-center justify-content-center">
+            <div class="spinner-grow text-primary" role="status"></div>
         </div>
-    </div>
-</div>
-</body>
+        <!-- Spinner End -->
+
+
+        <!-- Navbar start -->
+        <div class="container-fluid nav-bar">
+            <div class="container">
+                <nav class="navbar navbar-light navbar-expand-lg py-4">
+                    <a th:href="@{index}" class="navbar-brand">
+                        <h1 class="text-primary fw-bold mb-0">Badminton<span class="text-dark">Pairing</span> </h1>
+                    </a>
+                    <button class="navbar-toggler py-2 px-3" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
+                        <span class="fa fa-bars text-primary"></span>
+                    </button>
+                    <div class="collapse navbar-collapse" id="navbarCollapse">
+                        <div class="navbar-nav mx-auto">
+                            <a th:href="@{index}" class="nav-item nav-link active">首頁</a>
+                            <a th:href="@{posts}" class="nav-item nav-link">零打貼文</a>
+                            <a th:href="@{map}" class="nav-item nav-link">地圖搜搜</a>
+                        </div>
+                    </div>
+                </nav>
+            </div>
+        </div>
+        <!-- Navbar End -->
+
+
+        <!-- 404 Start -->
+        <div class="container-fluid py-6 wow fadeInUp" data-wow-delay="0.1s">
+            <div class="container text-center">
+                <div class="row justify-content-center">
+                    <div class="col-lg-6">
+                        <i class="bi bi-exclamation-triangle display-1 text-primary"></i>
+                        <h1 class="display-1">500</h1>
+                        <h1 class="mb-4">Bad Request or Internal Server Error</h1>
+                        <p class="mb-4">請求無效或伺服器錯誤</p>
+                        <a class="btn btn-primary rounded-pill py-3 px-5" th:href="@{/posts}">回到零打貼文</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- 404 End -->
+
+
+        <!-- Footer Start -->
+        <div class="container-fluid footer py-6 my-6 mb-0 bg-light wow bounceInUp" data-wow-delay="0.1s">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-3 col-md-6">
+                        <div class="footer-item">
+                            <h1 class="text-primary">Badminton<span class="text-dark">Pairing</span></h1>
+                            <p class="lh-lg mb-4">尋找羽球好團</p>
+                            <div class="footer-icon d-flex">
+                                <a class="btn btn-primary btn-sm-square me-2 rounded-circle" href="https://www.facebook.com/flykevins/"><i class="fab fa-facebook-f"></i></a>
+                                <a class="btn btn-primary btn-sm-square me-2 rounded-circle" href="https://line.me/ti/p/BDqPTyx4Im"><i class="fab fa-line"></i></a>
+                                <!--                                <a href="#" class="btn btn-primary btn-sm-square me-2 rounded-circle"><i class="fab fa-instagram"></i></a>-->
+                                <!--                                <a href="#" class="btn btn-primary btn-sm-square rounded-circle"><i class="fab fa-linkedin-in"></i></a>-->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Footer End -->
+
+
+        <!-- Copyright Start -->
+        <div class="container-fluid copyright bg-dark py-4">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-6 text-center text-md-start mb-3 mb-md-0">
+                        <span class="text-light"><a href="#"><i class="fas fa-copyright text-light me-2"></i>Badminton Pairing</a>, All right reserved.</span>
+                    </div>
+                    <div class="col-md-6 my-auto text-center text-md-end text-white">
+                        Designed By <a class="border-bottom" href="https://htmlcodex.com">HTML Codex</a> Distributed By <a class="border-bottom" href="https://themewagon.com">ThemeWagon</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Copyright End -->
+
+
+        <!-- Back to Top -->
+        <a href="#" class="btn btn-md-square btn-primary rounded-circle back-to-top"><i class="fa fa-arrow-up"></i></a>
+
+
+        <script th:src="@{/js/jquery.min.js}"></script>
+        <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+        <script th:src="@{/js/alpine.2.8.2.min.js}"></script>
+        <script th:src="@{/js/wow.min.js}"></script>
+        <script th:src="@{/js/easing.min.js}"></script>
+        <script th:src="@{/js/waypoints.min.js}"></script>
+        <script th:src="@{/js/counterup.min.js}"></script>
+        <script th:src="@{/js/lightbox.min.js}"></script>
+        <script th:src="@{/js/owl.carousel.min.js}"></script>
+        <script th:src="@{/js/main.js}"></script>
+    </body>
 </html>
