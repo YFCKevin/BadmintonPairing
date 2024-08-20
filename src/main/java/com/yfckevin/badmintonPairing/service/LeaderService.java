@@ -22,4 +22,6 @@ public interface LeaderService {
     List<Leader> findLeaderByConditions(String keyword, String startDate, String endDate);
 
     void deleteById(String id);
+
+    Optional<Leader> findByUserId(String userId);
 }

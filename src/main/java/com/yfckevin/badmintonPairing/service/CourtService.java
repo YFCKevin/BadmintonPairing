@@ -18,4 +18,6 @@ public interface CourtService {
     List<Court> findCourtByCondition(String keyword);
 
     void saveAll(List<Court> courtList);
+
+    Optional<Court> findByPostId(String id);
 }

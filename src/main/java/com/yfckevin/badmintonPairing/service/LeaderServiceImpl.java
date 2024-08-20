@@ -31,17 +31,14 @@ public class LeaderServiceImpl implements LeaderService {
     private final PostService postService;
     private final ObjectMapper objectMapper;
     private final MongoTemplate mongoTemplate;
-    private final PostRepository postRepository;
 
-    public LeaderServiceImpl(@Qualifier("sdf") SimpleDateFormat sdf, ConfigProperties configProperties, LeaderRepository leaderRepository, PostService postService, ObjectMapper objectMapper, MongoTemplate mongoTemplate,
-                             PostRepository postRepository) {
+    public LeaderServiceImpl(@Qualifier("sdf") SimpleDateFormat sdf, ConfigProperties configProperties, LeaderRepository leaderRepository, PostService postService, ObjectMapper objectMapper, MongoTemplate mongoTemplate){
         this.sdf = sdf;
         this.configProperties = configProperties;
         this.leaderRepository = leaderRepository;
         this.postService = postService;
         this.objectMapper = objectMapper;
         this.mongoTemplate = mongoTemplate;
-        this.postRepository = postRepository;
     }
 
     @Override
@@ -155,6 +152,11 @@ public class LeaderServiceImpl implements LeaderService {
     @Override
     public void deleteById(String id) {
         leaderRepository.deleteById(id);
+    }
+
+    @Override
+    public Optional<Leader> findByUserId(String userId) {
+        return leaderRepository.findByUserId(userId);
     }
 
     private static String extractUserId(String link) {

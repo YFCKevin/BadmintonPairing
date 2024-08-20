@@ -70,4 +70,9 @@ public class CourtServiceImpl implements CourtService{
     public void saveAll(List<Court> courtList) {
         courtRepository.saveAll(courtList);
     }
+
+    @Override
+    public Optional<Court> findByPostId(String id) {
+        return courtRepository.findByPostId(id);
+    }
 }

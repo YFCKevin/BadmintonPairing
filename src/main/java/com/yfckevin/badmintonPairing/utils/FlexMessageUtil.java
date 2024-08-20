@@ -100,8 +100,8 @@ public class FlexMessageUtil {
             // 查看詳情的action
             Map<String, Object> viewDetailAction = new HashMap<>();
             viewDetailAction.put("type", "uri");
-            viewDetailAction.put("label", "查看詳情");
-            viewDetailAction.put("uri", configProperties.getGlobalDomain() + "posts");
+            viewDetailAction.put("label", "更多資訊");
+            viewDetailAction.put("uri", configProperties.getGlobalDomain() + "card/" + postDTO.getId());
             actions.add(viewDetailAction);
 
             // 前往報名的action

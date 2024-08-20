@@ -172,16 +172,22 @@
                                             <div class="d-flex flex-column flex-md-row justify-content-between border-bottom border-primary mb-2">
                                                 <h5 class="mb-2 mb-md-0" x-text="item.time"></h5>
                                             </div>
-                                            <div class="d-flex align-items-center mb-0 flex-wrap">
+                                            <div class="d-flex align-items-center mb-1 flex-wrap">
                                                 聯絡人：<p class="mb-0 ms-1">
                                                 <a :href="isMobile() ? item.shortLink : item.link" target="_blank" x-text="item.name"></a>
                                             </p>
                                             </div>
-                                            <div class="d-flex align-items-center mb-0 flex-wrap">
+                                            <div class="d-flex align-items-center mb-1 flex-wrap">
                                                 費用：<p class="mb-0 ms-1" x-text="item.fee"></p>元
                                             </div>
-                                            <div class="d-flex align-items-center mb-0 flex-wrap">
+                                            <div class="d-flex align-items-center mb-1 flex-wrap">
                                                 程度：<p class="mb-0 ms-1" x-text="item.level"></p>
+                                            </div>
+                                            <div class="d-flex align-items-center mb-1 flex-wrap">
+                                                更多資訊：
+                                                <a :href="`card/${item.id}`" target="_blank" style="cursor: pointer;">
+                                                    <i class="far fa-address-card text-primary fa-lg"></i>
+                                                </a>
                                             </div>
                                         </div>
                                     </div>

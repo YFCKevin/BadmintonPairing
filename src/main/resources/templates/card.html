@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml" xmlns="http://www.w3.org/1999/html"
+      xmlns:x-on="http://www.w3.org/1999/xhtml">
+
+    <head>
+        <title>羽球配對</title>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta property="og:title" content="羽球配對">
+        <meta property="og:description" content="找到您的專屬羽球團">
+        <meta property="og:image" th:content="@{/images/badminton.jpg}">
+        <meta property="og:url" content="https://www.gurula.cc/badminton/index">
+        <meta property="og:type" content="website">
+
+        <!-- Google Web Fonts -->
+        <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=Playball&display=swap" rel="stylesheet">
+
+        <!-- Icon Font Stylesheet -->
+        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css"/>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
+
+        <!-- Libraries Stylesheet -->
+        <!--        <link th:href="@{css/animate.min.css}" rel="stylesheet">-->
+        <link th:href="@{/css/lightbox.min.css}" rel="stylesheet">
+        <link th:href="@{/css/owl.carousel.min.css}" rel="stylesheet">
+
+        <!-- Customized Bootstrap Stylesheet -->
+        <link rel="icon" type="image/png" th:href="@{/images/favicon.ico}" />
+        <link rel="stylesheet" type="text/css" th:href="@{/css/bootstrap.min.css}" />
+
+        <link rel="stylesheet" type="text/css" th:href="@{/css/style.css}" />
+        <script th:src="@{/js/deviceType.js}"></script>
+        <script src="https://maps.googleapis.com/maps/api/js?key=xxx&callback=initMap" async defer></script>
+    </head>
+
+    <body>
+
+        <!-- Spinner Start -->
+        <div id="spinner" class="show w-100 vh-100 bg-white position-fixed translate-middle top-50 start-50  d-flex align-items-center justify-content-center">
+            <div class="spinner-grow text-primary" role="status"></div>
+        </div>
+        <!-- Spinner End -->
+
+        <!-- Navbar start -->
+        <div class="container-fluid nav-bar">
+            <div class="container">
+                <nav class="navbar navbar-light navbar-expand-lg py-4">
+                    <a th:href="@{index}" class="navbar-brand">
+                        <h1 class="text-primary fw-bold mb-0">Badminton<span class="text-dark">Pairing</span> </h1>
+                    </a>
+                    <button class="navbar-toggler py-2 px-3" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
+                        <span class="fa fa-bars text-primary"></span>
+                    </button>
+                    <div class="collapse navbar-collapse" id="navbarCollapse">
+                        <div class="navbar-nav mx-auto">
+                            <a th:href="@{/index}" class="nav-item nav-link active">首頁</a>
+                            <a th:href="@{/posts}" class="nav-item nav-link">零打貼文</a>
+                            <a th:href="@{/map}" class="nav-item nav-link">地圖搜搜</a>
+                        </div>
+                    </div>
+                </nav>
+            </div>
+        </div>
+        <!-- Navbar End -->
+
+        <!-- card Start -->
+        <div class="container-fluid contact py-6 wow bounceInUp" data-wow-delay="0.1s" >
+            <div class="container border-bottom border-primary pb-4 contact-form">
+                <div class="row g-4">
+                    <div class="col-lg-3 col-md-6 wow bounceInUp" data-wow-delay="0.1s">
+                        <div class="team-item rounded">
+                            <img class="img-fluid rounded-top " th:src="@{/images/badminton.jpg}" alt="">
+                            <div class="team-content text-center py-3 bg-dark rounded-bottom">
+                                <h4 class="text-primary" th:text="${postDTO.name}"></h4>
+                                <p class="text-white mb-0" th:text="${leaderDTO.groupName}"></p>
+                            </div>
+                            <div class="team-icon d-flex flex-column justify-content-center m-4">
+                                <a class="share btn btn-primary btn-md-square rounded-circle mb-2" href="#"><i class="fas fa-share-alt"></i></a>
+                                <a class="share-link btn btn-primary btn-md-square rounded-circle mb-2"
+                                   id="dynamicLink" target="_blank">
+                                    <i class="fab fa-facebook-f"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-9 col-md-6 wow bounceInUp" data-wow-delay="0.1s">
+
+                        <div class="blog-content mx-4 d-flex rounded bg-light">
+                            <div class="text-dark bg-primary rounded-start">
+                                <div class="h-100 p-3 d-flex flex-column justify-content-center text-center">
+                                    <i class="fas fa-rocket"></i>
+                                </div>
+                            </div>
+                            <a href="#" class="h5 lh-base my-auto h-100 p-3">零打資訊</a>
+                        </div>
+
+
+                        <div class="mx-4 mt-4">
+                            <div class="d-flex flex-column align-items-start mb-2">
+                                <div class="d-flex align-items-center">
+                                    <div class="me-4 fw-bold text-nowrap align-self-start" style="color: black;"><i class="fa fa-check text-primary me-2"></i>日期</div>
+                                    <div class="text-body">
+                                        <div class="mb-0" th:text="${postDTO.time}"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="d-flex flex-column align-items-start mb-2">
+                                <div class="d-flex align-items-center">
+                                    <div class="me-2 fw-bold text-nowrap align-self-start" style="color: black;"><i class="fa fa-check text-primary me-2"></i>聯絡人</div>
+                                    <div class="text-body">
+                                        <div class="mb-0" th:text="${postDTO.name}"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="d-flex flex-column align-items-start mb-2">
+                                <div class="d-flex align-items-center">
+                                    <div class="me-4 fw-bold text-nowrap align-self-start" style="color: black;"><i class="fa fa-check text-primary me-2"></i>球館</div>
+                                    <div class="text-body d-flex align-items-center">
+                                        <div class="mb-0 me-2" th:text="${postDTO.place}"></div>
+                                        <div th:if="${postDTO.labelCourt == 'true'}">
+                                            <i class="fas fa-map-marked-alt text-primary" onclick="openMap()" style="cursor: pointer;"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="d-flex flex-column align-items-start mb-2">
+                                <div class="d-flex align-items-center">
+                                    <div class="me-4 fw-bold text-nowrap align-self-start" style="color: black;"><i class="fa fa-check text-primary me-2"></i>費用</div>
+                                    <div class="text-body">
+                                        <div class="mb-0" th:text="${postDTO.fee}"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="d-flex flex-column align-items-start mb-2">
+                                <div class="d-flex align-items-center">
+                                    <div class="me-4 fw-bold text-nowrap align-self-start" style="color: black;"><i class="fa fa-check text-primary me-2"></i>程度</div>
+                                    <div class="text-body">
+                                        <div class="mb-0" th:text="${postDTO.level}"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="d-flex flex-column align-items-start mb-2">
+                                <div class="d-flex align-items-center">
+                                    <div class="me-4 fw-bold text-nowrap align-self-start" style="color: black;"><i class="fa fa-check text-primary me-2"></i>用球</div>
+                                    <div class="text-body">
+                                        <div class="mb-0">
+                                            <span th:if="${postDTO.brand == ''}">
+                                                <i class="fas fa-question-circle" style="color: gray;" data-toggle="tooltip" title="發文者未提供資訊，可點擊聯絡人連結進一步詢問！"></i>
+                                            </span>
+                                            <span th:unless="${postDTO.brand == ''}" th:text="${postDTO.brand}"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="d-flex flex-column align-items-start mb-2">
+                                <div class="d-flex align-items-center">
+                                    <div class="me-4 fw-bold text-nowrap align-self-start" style="color: black;"><i class="fa fa-check text-primary me-2"></i>冷氣</div>
+                                    <div class="text-body">
+                                        <span th:if="${postDTO.airConditioner == '未標示'}">
+                                            <i class="fas fa-question-circle" style="color: gray;" data-toggle="tooltip" title="發文者未提供資訊，可點擊聯絡人連結近一步詢問！"></i>
+                                        </span>
+                                        <span th:if="${postDTO.airConditioner == '有冷氣'}">
+                                            <i class="fas fa-wind" style="color: blue;"></i>
+                                        </span>
+                                        <span th:if="${postDTO.airConditioner == '無冷氣'}">
+                                            <i class="fas fa-times-circle red-icon" style="color: red;"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="d-flex flex-column align-items-start mb-2">
+                                <div class="d-flex align-items-center">
+                                    <div class="me-4 fw-bold text-nowrap align-self-start" style="color: black;"><i class="fa fa-check text-primary me-2"></i>停車</div>
+                                    <div class="text-body">
+                                        <span th:if="${postDTO.parkInfo == ''}">
+                                            <i class="fas fa-question-circle" style="color: gray;" data-toggle="tooltip" title="發文者未提供資訊，可點擊聯絡人連結近一步詢問！"></i>
+                                        </span>
+                                        <span th:unless="${postDTO.parkInfo == ''}" th:text="${postDTO.parkInfo}"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="d-flex flex-column align-items-start">
+                                <div class="d-flex align-items-center">
+                                    <div class="me-4 fw-bold text-nowrap align-self-start" style="color: black;"><i class="fa fa-check text-primary me-2"></i>當日天氣預報</div>
+                                    <div class="text-body">
+                                        <div class="mb-0" th:text="${postDTO.level}"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end mt-4" style="font-size: 0.8rem">
+                            <div class="d-flex align-items-center mr-3" style="margin-right: 1rem;">
+                                <i class="fas fa-wind" style="color: blue;"></i>
+                                <p class="mb-0 ml-2">：有冷氣</p>
+                            </div>
+                            <div class="d-flex align-items-center mr-3" style="margin-right: 1rem;">
+                                <i class="fas fa-times-circle red-icon" style="color: red;"></i>
+                                <p class="mb-0 ml-2">：無冷氣</p>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-question-circle" style="color: gray;"></i>
+                                <p class="mb-0 ml-2">：發文者未標示</p>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- card End -->
+
+        <div class="container-fluid">
+            <div class="container">
+                <div class="owl-carousel owl-theme testimonial-carousel testimonial-carousel-1 mb-4 wow bounceInUp" data-wow-delay="0.1s">
+                    <div class="testimonial-item rounded bg-light">
+                        <div class="d-flex mb-3">
+                            <img th:src="@{/images/badminton02.jpg}" class="img-fluid rounded-circle flex-shrink-0" alt="">
+                            <div class="position-absolute" style="top: 15px; right: 20px;">
+                                <i class="fa fa-quote-right fa-2x"></i>
+                            </div>
+                            <div class="ps-3 my-auto">
+                                <h4 class="mb-0">中山王先生</h4>
+<!--                                <p class="m-0"></p>-->
+                            </div>
+                        </div>
+                        <div class="testimonial-content">
+                            <div class="d-flex">
+                                <i class="fas fa-star text-primary"></i>
+                                <i class="fas fa-star text-primary"></i>
+                                <i class="fas fa-star text-primary"></i>
+                                <i class="fas fa-star text-primary"></i>
+                                <i class="fas fa-star text-primary"></i>
+                            </div>
+                            <p class="fs-5 m-0 pt-3">團主人超nice~~，都有照顧到所有程度的球友，我在場下還會來問我有沒有運動到超感動，有機會下次一定會再來打球！！！</p>
+                        </div>
+                    </div>
+                    <div class="testimonial-item rounded bg-light">
+                        <div class="d-flex mb-3">
+                            <img th:src="@{/images/badminton03.jpg}" class="img-fluid rounded-circle flex-shrink-0" alt="">
+                            <div class="position-absolute" style="top: 15px; right: 20px;">
+                                <i class="fa fa-quote-right fa-2x"></i>
+                            </div>
+                            <div class="ps-3 my-auto">
+                                <h4 class="mb-0">北投施小姐</h4>
+                            </div>
+                        </div>
+                        <div class="testimonial-content">
+                            <div class="d-flex">
+                                <i class="fas fa-star text-primary"></i>
+                                <i class="fas fa-star text-primary"></i>
+                                <i class="fas fa-star text-primary"></i>
+                                <i class="fas fa-star text-primary"></i>
+                                <i class="fas fa-star text-primary"></i>
+                            </div>
+                            <p class="fs-5 m-0 pt-3">揮動羽拍，擊出的是速度羽激情，飛揚的是夢想羽汗水，打完回家洗漱做飯</p>
+                        </div>
+                    </div>
+                    <div class="testimonial-item rounded bg-light">
+                        <div class="d-flex mb-3">
+                            <img th:src="@{/images/badminton04.jpg}" class="img-fluid rounded-circle flex-shrink-0" alt="">
+                            <div class="position-absolute" style="top: 15px; right: 20px;">
+                                <i class="fa fa-quote-right fa-2x"></i>
+                            </div>
+                            <div class="ps-3 my-auto">
+                                <h4 class="mb-0">基隆Jenny</h4>
+                            </div>
+                        </div>
+                        <div class="testimonial-content">
+                            <div class="d-flex">
+                                <i class="fas fa-star text-primary"></i>
+                                <i class="fas fa-star text-primary"></i>
+                                <i class="fas fa-star text-primary"></i>
+                                <i class="fas fa-star text-primary"></i>
+                                <i class="fas fa-star text-primary"></i>
+                            </div>
+                            <p class="fs-5 m-0 pt-3">台北公開賽不到3分鐘欸！週末票全售完！沒搶到票回頭還被大雨突襲嗚嗚嗚嗚QQQQQQ</p>
+                        </div>
+                    </div>
+                    <div class="testimonial-item rounded bg-light">
+                        <div class="d-flex mb-3">
+                            <img th:src="@{/images/badminton05.jpg}" class="img-fluid rounded-circle flex-shrink-0" alt="">
+                            <div class="position-absolute" style="top: 15px; right: 20px;">
+                                <i class="fa fa-quote-right fa-2x"></i>
+                            </div>
+                            <div class="ps-3 my-auto">
+                                <h4 class="mb-0">淡水龍先生</h4>
+                            </div>
+                        </div>
+                        <div class="testimonial-content">
+                            <div class="d-flex">
+                                <i class="fas fa-star text-primary"></i>
+                                <i class="fas fa-star text-primary"></i>
+                                <i class="fas fa-star text-primary"></i>
+                                <i class="fas fa-star text-primary"></i>
+                                <i class="fas fa-star text-primary"></i>
+                            </div>
+                            <p class="fs-5 m-0 pt-3">最近買了一隻球拍 龍牙之刃，小心了各位卍解發動</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
+        <!-- Footer Start -->
+        <div class="container-fluid footer py-6 my-6 mb-0 bg-light wow bounceInUp" data-wow-delay="0.1s">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-3 col-md-6">
+                        <div class="footer-item">
+                            <h1 class="text-primary">Badminton<span class="text-dark">Pairing</span></h1>
+                            <p class="lh-lg mb-4">尋找羽球好團</p>
+                            <div class="footer-icon d-flex">
+                                <a class="btn btn-primary btn-sm-square me-2 rounded-circle" href="https://www.facebook.com/flykevins/"><i class="fab fa-facebook-f"></i></a>
+                                <a class="btn btn-primary btn-sm-square me-2 rounded-circle" href="https://line.me/ti/p/BDqPTyx4Im"><i class="fab fa-line"></i></a>
+<!--                                <a href="#" class="btn btn-primary btn-sm-square me-2 rounded-circle"><i class="fab fa-instagram"></i></a>-->
+<!--                                <a href="#" class="btn btn-primary btn-sm-square rounded-circle"><i class="fab fa-linkedin-in"></i></a>-->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Footer End -->
+
+
+        <!-- Copyright Start -->
+        <div class="container-fluid copyright bg-dark py-4">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-6 text-center text-md-start mb-3 mb-md-0">
+                        <span class="text-light"><a href="#"><i class="fas fa-copyright text-light me-2"></i>Badminton Pairing</a>, All right reserved.</span>
+                    </div>
+                    <div class="col-md-6 my-auto text-center text-md-end text-white">
+                        Designed By <a class="border-bottom" href="https://htmlcodex.com">HTML Codex</a> Distributed By <a class="border-bottom" href="https://themewagon.com">ThemeWagon</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Copyright End -->
+
+        <!-- Back to Top -->
+        <a href="#" class="btn btn-md-square btn-primary rounded-circle back-to-top"><i class="fa fa-arrow-up"></i></a>
+
+
+        <div class="modal fade" id="mapModal" tabindex="-1" aria-labelledby="mapModal" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-md">
+                <div class="modal-content">
+                    <div class="modal-body py-3 px-3">
+                        <div id="map" style="height: 350px; width: 100%;"></div>
+                        <div class="text-end mt-4">
+                            <button type="button" class="btn btn-outline-secondary fs-15px" title="關閉" data-bs-dismiss="modal">關閉</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <script th:src="@{/js/jquery.min.js}"></script>
+        <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+        <script th:src="@{/js/alpine.2.8.2.min.js}"></script>
+        <script th:src="@{/js/wow.min.js}"></script>
+        <script th:src="@{/js/easing.min.js}"></script>
+        <script th:src="@{/js/waypoints.min.js}"></script>
+        <script th:src="@{/js/counterup.min.js}"></script>
+        <script th:src="@{/js/lightbox.min.js}"></script>
+        <script th:src="@{/js/owl.carousel.min.js}"></script>
+        <script th:src="@{/js/main.js}"></script>
+    </body>
+    <script th:inline="javascript">
+        const postDTO = /*[[${postDTO}]]*/
+        const court = /*[[${court}]]*/
+        dynamicLink.href = isMobile() ? postDTO.shortLink : postDTO.link;
+
+        let map;
+        let currentMarker;  // 當前位置標記
+
+        function initMap() {
+            // 初始化地圖
+            map = new google.maps.Map(document.getElementById("map"), {
+                center: { lat: 0, lng: 0 },  // 初始中心點，可以根據需要調整
+                zoom: 14,
+                mapTypeControl: false,
+                streetViewControl: false
+            });
+        }
+
+        function placeMarker(latitude, longitude) {
+            if (currentMarker) {
+                currentMarker.setMap(null);
+            }
+
+            currentMarker = new google.maps.Marker({
+                position: { lat: latitude, lng: longitude },
+                map: map,
+                title: "球館地點",
+                icon: 'https://maps.google.com/mapfiles/ms/icons/red.png'
+            });
+
+            map.setCenter({ lat: latitude, lng: longitude });
+        }
+
+        function openMap (){
+            const latitude = court.latitude;
+            const longitude = court.longitude;
+            placeMarker(latitude, longitude);
+            $("#mapModal").modal('show');
+        }
+    </script>
+</html>
