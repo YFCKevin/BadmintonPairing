@@ -105,6 +105,7 @@
 
                 <div class="row mt-3" style="margin-top: 10px; margin-bottom: 10px;">
                     <div class="col d-flex">
+                        <button type="button" class="btn btn-danger btn-sm btn-rounded me-2" x-on:click="issueFee();">疑慮費用</button>
                         <button type="button" class="btn btn-warning btn-sm btn-rounded me-2" x-on:click="searchSamePosts();">相同貼文</button>
                         <button type="button" class="btn btn-success btn-sm btn-rounded me-2" x-on:click="autoMate();">一鍵配對 (配對用)</button>
                         <button type="button" class="btn btn-success btn-sm btn-rounded me-2" x-on:click="notMatchedPosts();">未完成配對貼文 (配對用)</button>
@@ -732,6 +733,20 @@
               let _this = this;
               $.ajax({
                 url: "notMatchedPosts",
+                type: "get",
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                success: function (response) {
+                  if (response.code == "C000"){
+                    _this.myForData = response.data;
+                  }
+                },
+              });
+            },
+            issueFee (){
+              let _this = this;
+              $.ajax({
+                url: "issueFee",
                 type: "get",
                 dataType: "json",
                 contentType: "application/json; charset=utf-8",

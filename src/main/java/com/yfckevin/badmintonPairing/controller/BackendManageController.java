@@ -39,6 +39,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.TextStyle;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -692,6 +693,48 @@ public class BackendManageController {
             resultStatus.setCode("C000");
             resultStatus.setMessage("成功");
         }
+        return ResponseEntity.ok(resultStatus);
+    }
+
+
+    /**
+     * 篩選出費用不符合標準的貼文
+     * @param session
+     * @return
+     */
+    @GetMapping("/issueFee")
+    public ResponseEntity<?> issueFee (HttpSession session){
+
+        final String member = (String) session.getAttribute("admin");
+        if (member != null) {
+            logger.info("[matePostAndCourt]");
+        }
+        ResultStatus resultStatus = new ResultStatus();
+
+        List<Post> todayPosts = postService.findTodayNewPosts(ssf.format(new Date()) + " 00:00:00", ssf.format(new Date()) + " 23:59:59");
+        final Set<String> userIdList = todayPosts.stream().map(Post::getUserId).collect(Collectors.toSet());
+        todayPosts = todayPosts.stream()
+                .filter(p -> (p.getFee() / p.getDuration()) < 1.25 || (p.getFee() / p.getDuration()) > 2.09)
+                .toList();
+        final Map<String, Leader> leaderMap = leaderService.findAllByUserIdIn(userIdList)
+                .stream()
+                .collect(Collectors.toMap(Leader::getUserId, Function.identity()));
+
+        final List<PostDTO> todayNewPostList = todayPosts
+                .stream()
+                .map(post -> {
+                    try {
+                        return constructPostDTO(leaderMap, post);
+                    } catch (ParseException e) {
+                        throw new RuntimeException(e);
+                    }
+                })
+                .sorted(Comparator.comparing(PostDTO::getStartTime))
+                .toList();
+
+        resultStatus.setCode("C000");
+        resultStatus.setMessage("成功");
+        resultStatus.setData(todayNewPostList);
         return ResponseEntity.ok(resultStatus);
     }
 
@@ -1739,5 +1782,50 @@ public class BackendManageController {
         }
 
         return ResponseEntity.ok(resultStatus);
+    }
+
+
+    private PostDTO constructPostDTO(Map<String, Leader> leaderMap, Post post) throws ParseException {
+        PostDTO postDTO = new PostDTO();
+        postDTO.setId(post.getId());
+        postDTO.setCreationDate(post.getCreationDate());
+        postDTO.setBrand(post.getBrand());
+        postDTO.setDuration(post.getDuration());
+        postDTO.setName(post.getName());
+        postDTO.setContact(post.getContact());
+        postDTO.setFee(post.getFee());
+        postDTO.setAirConditioner(post.getAirConditioner().getLabel());
+        postDTO.setType(post.getType());
+        postDTO.setEndTime(post.getEndTime());
+        postDTO.setStartTime(post.getStartTime());
+        postDTO.setLevel(post.getLevel());
+        postDTO.setParkInfo(post.getParkInfo());
+        postDTO.setPlace(post.getPlace());
+        postDTO.setUserId(post.getUserId());
+        postDTO.setLabelCourt(String.valueOf(post.isLabelCourt()));
+        Leader leader = leaderMap.get(post.getUserId());
+        if (leader != null) {
+            postDTO.setLink(leader.getLink());
+            postDTO.setShortLink("https://www.facebook.com/" + leader.getUserId());
+        }
+
+
+        if (post.getStartTime() != null && post.getEndTime() != null) {
+            LocalDateTime startDateTime = LocalDateTime.parse(post.getStartTime(), ddf);
+            LocalDateTime endDateTime = LocalDateTime.parse(post.getEndTime(), ddf);
+
+            // 取得星期
+            DayOfWeek dayOfWeek = startDateTime.getDayOfWeek();
+            // 格式化星期
+            String dayOfWeekFormatted = dayOfWeek.getDisplayName(TextStyle.FULL, Locale.TAIWAN);
+            postDTO.setDayOfWeek(dayOfWeekFormatted);
+            final String formattedStartDate = startDateTime.format(DateTimeFormatter.ofPattern("MM/dd"));
+            final String formattedStartTime = startDateTime.format(DateTimeFormatter.ofPattern("HH:mm"));
+            final String formattedEndTime = endDateTime.format(DateTimeFormatter.ofPattern("HH:mm"));
+
+            postDTO.setTime(formattedStartDate + "(" + dayOfWeekFormatted + ") " + formattedStartTime + " - " + formattedEndTime + " (" + formatDuration(post.getDuration()) + "h)");
+        }
+
+        return postDTO;
     }
 }
