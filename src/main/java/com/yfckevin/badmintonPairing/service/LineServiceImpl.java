@@ -32,7 +32,7 @@ public class LineServiceImpl implements LineService{
 
     @Override
     public ResponseEntity<?> autoReply(String msg, String replyToken) throws JsonProcessingException {
-
+        logger.info("msg: {}", msg);
         final Map<String, Object> msgMap = objectMapper.readValue(msg, HashMap.class);
         List<Map<String, Object>> messages = new ArrayList<>();
         String type = (String) msgMap.get("type");
@@ -51,8 +51,18 @@ public class LineServiceImpl implements LineService{
             stickerMessage.put("packageId", packageId);
             stickerMessage.put("stickerId", stickerId);
             messages.add(stickerMessage);
+        } else if ("flex".equalsIgnoreCase(type)) {
+            String altText = (String) msgMap.get("altText");
+            Map<String, Object> contents = (Map<String, Object>) msgMap.get("contents");
+
+            Map<String, Object> flexMessage = new HashMap<>();
+            flexMessage.put("type", "flex");
+            flexMessage.put("altText", altText);
+            flexMessage.put("contents", contents);
+
+            messages.add(flexMessage);
+
         } else {
-            // 处理未知类型的情况
             return ResponseEntity.badRequest().body("Unknown message type");
         }
 

@@ -9,6 +9,7 @@ import com.yfckevin.badmintonPairing.entity.TemplateDetail;
 import com.yfckevin.badmintonPairing.entity.TemplateSubject;
 import com.yfckevin.badmintonPairing.service.LeaderService;
 import com.yfckevin.badmintonPairing.service.PostService;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -43,7 +44,8 @@ public class FlexMessageUtil {
     // 組建圖文輪詢
     public Map<String, Object> assembleImageCarouselTemplate(String startDate, String endDate) throws ParseException, JsonProcessingException {
         final List<Post> postList = postService.findPostByConditions("", startDate, endDate)
-                .stream().limit(10).toList();
+                .stream().filter(p -> StringUtils.isNotBlank(p.getUserId()) && StringUtils.isNotBlank(p.getStartTime()) && StringUtils.isNotBlank(p.getEndTime()))
+                .limit(10).toList();
 
         if (postList.size() == 0) {
             Map<String, Object> result = new HashMap<>();
@@ -56,6 +58,7 @@ public class FlexMessageUtil {
         List<PostDTO> postDTOList = new ArrayList<>();
         final Map<String, Leader> leaderMap = leaderService.findAllByUserIdIn(userIdList)
                 .stream()
+                .filter(l -> StringUtils.isNotBlank(l.getLink()))
                 .collect(Collectors.toMap(Leader::getUserId, Function.identity()));
         postDTOList = postList.stream()
                 .map(post -> {
