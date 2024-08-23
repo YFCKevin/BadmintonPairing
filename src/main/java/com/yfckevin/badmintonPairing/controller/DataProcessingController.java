@@ -82,10 +82,10 @@ public class DataProcessingController {
         for (int i = 0; i < batches.size(); i++) {
             List<String> batch = batches.get(i);
             final int getNewPosts = crawlerService.callCrawlerAPIGetNewPosts(batch);
-            System.out.println("第幾次迴圈：" + i + "，當次的新貼文數: " + getNewPosts);
-            Thread.sleep(120 * 1000);
+            logger.info("第幾次迴圈：" + i + "，當次的新貼文數: " + getNewPosts);
+            Thread.sleep(60 * 1000);
         }
-        System.out.println(ssf.format(new Date()) + "完成貼文爬蟲");
+        logger.info(ssf.format(new Date()) + "完成貼文爬蟲");
     }
 
 }

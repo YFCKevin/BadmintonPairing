@@ -645,12 +645,26 @@ public class BackendManageController {
         }
         ResultStatus resultStatus = new ResultStatus();
 
-        final List<Post> todayPostsNotYetMatched = postService.findTodayNewPosts(ssf.format(new Date()) + " 00:00:00", ssf.format(new Date()) + " 23:59:59")
-                .stream().filter(p -> !p.isLabelCourt()).toList();
+        final List<Post> todayNewPosts = postService.findTodayNewPosts(ssf.format(new Date()) + " 00:00:00", ssf.format(new Date()) + " 23:59:59");
+        final Set<String> userIdList = todayNewPosts.stream().map(Post::getUserId).collect(Collectors.toSet());
+        final Map<String, Leader> leaderMap = leaderService.findAllByUserIdIn(userIdList)
+                .stream()
+                .collect(Collectors.toMap(Leader::getUserId, Function.identity()));
+
+        final List<PostDTO> todayPostDTOsNotYetMatched = todayNewPosts
+                .stream().filter(p -> !p.isLabelCourt())
+                .map(post -> {
+                    try {
+                        return constructPostDTO(leaderMap, post);
+                    } catch (ParseException e) {
+                        throw new RuntimeException(e);
+                    }
+                })
+                .toList();
 
         resultStatus.setCode("C000");
         resultStatus.setMessage("成功");
-        resultStatus.setData(todayPostsNotYetMatched);
+        resultStatus.setData(todayPostDTOsNotYetMatched);
 
         return ResponseEntity.ok(resultStatus);
     }
@@ -1005,7 +1019,7 @@ public class BackendManageController {
 
         date = svf.format(ssf.parse(date)); // 日期更換回yyyyMMdd
 
-        String keywords = "教練|已滿|已額滿|場地出租|場地釋出|釋出|場地分享|場地轉讓|轉讓|場地轉租|徵場地|單打";
+        String keywords = "教練|已滿|已額滿|場地出租|場地釋出|釋出|場地分享|場地轉讓|轉讓|場地轉租|徵場地|單打|售";
         Pattern issuePattern = Pattern.compile(keywords);
 
         List<RequestPostDTO> postDTOList = constructPostDTOFromDailyPostsFile(date);
