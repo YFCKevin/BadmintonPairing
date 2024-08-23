@@ -53,10 +53,7 @@ public class CardController {
             final PostDTO postDTO = constructDTO(leader, post);
             model.addAttribute("postDTO", postDTO);
 
-            final Court court = courtService.findByPostId(post.getId()).get();
-            model.addAttribute("court", court);
-
-
+            courtService.findByPostId(post.getId()).ifPresent(c -> model.addAttribute("court", c));
 
             return "card";
         }
