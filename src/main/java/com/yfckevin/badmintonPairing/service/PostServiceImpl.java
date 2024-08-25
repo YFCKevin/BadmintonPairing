@@ -65,7 +65,7 @@ public class PostServiceImpl implements PostService {
     @Override
     public int dataCleaning(String filePath) throws IOException {
         Pattern pattern = Pattern.compile("\\s+");
-        Pattern courtPattern = Pattern.compile("場地出租|場地釋出|釋出|場地分享|場地轉讓|轉讓|場地轉租");
+        Pattern courtPattern = Pattern.compile("場地出租|場地釋出|釋出|場地分享|場地轉讓|轉讓|場地轉租|出租");
 
         List<RequestPostDTO> posts = convertJsonToDto(filePath);
 
