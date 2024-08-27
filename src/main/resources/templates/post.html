@@ -354,7 +354,7 @@
             init() {
               const today = new Date();
               const threeDaysLater = new Date();
-              threeDaysLater.setDate(today.getDate() + 3);
+              threeDaysLater.setDate(today.getDate() + 14);
 
               this.startDate = today.toISOString().split("T")[0];
               this.endDate = threeDaysLater.toISOString().split("T")[0];

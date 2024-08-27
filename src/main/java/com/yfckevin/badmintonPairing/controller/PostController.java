@@ -58,7 +58,7 @@ public class PostController {
         logger.info("[posts]");
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime startOfToday = now.toLocalDate().atStartOfDay();
-        LocalDateTime threeDaysLater = now.plusDays(3);
+        LocalDateTime threeDaysLater = now.plusWeeks(2);
         LocalDateTime endOfThreeDaysLater = threeDaysLater.withHour(23).withMinute(59).withSecond(59).withNano(0);
         String startOfTodayFormatted = startOfToday.format(ddf);
         String endOfThreeDaysLaterFormatted = endOfThreeDaysLater.format(ddf);
