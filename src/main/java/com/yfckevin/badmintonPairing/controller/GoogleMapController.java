@@ -3,6 +3,7 @@ package com.yfckevin.badmintonPairing.controller;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yfckevin.badmintonPairing.ConfigProperties;
+import com.yfckevin.badmintonPairing.dto.CourtDTO;
 import com.yfckevin.badmintonPairing.dto.LocationResponseDTO;
 import com.yfckevin.badmintonPairing.dto.NearByRequestDTO;
 import com.yfckevin.badmintonPairing.dto.PostDTO;
@@ -135,6 +136,55 @@ public class GoogleMapController {
                 });
 
         return ResponseEntity.ok(resultStatus);
+    }
+
+    @CrossOrigin(origins = "https://geo-tw.zeabur.app")
+    @GetMapping("/allCourtAndPost")
+    public  ResponseEntity<?> allCourtAndPost(){
+        final List<Court> courtList = courtService.findAllByOrderByCreationDateAsc();
+        final Map<String, List<Post>> postMap = courtList.stream()
+                .collect(Collectors.toMap(
+                        Court::getId,
+                        court -> Arrays.stream(court.getPostId().split(","))
+                                .map(postId -> postService.findById(postId).orElse(null))
+                                .filter(Objects::nonNull)
+                                .collect(Collectors.toList())
+                ));
+        List<String> postIdList = courtList.stream().map(court -> court.getPostId().split(","))
+                .flatMap(Arrays::stream)
+                .collect(Collectors.toCollection(ArrayList::new));
+        LocalDateTime today = LocalDate.now().atStartOfDay();   //今日00:00:00
+        final List<Post> postList = postService.findByIdIn(postIdList).stream()
+                .filter(post -> LocalDateTime.parse(post.getStartTime(), ddf).isEqual(today) || LocalDateTime.parse(post.getStartTime(), ddf).isAfter(today))
+                .toList();
+        final Set<String> userIdList = postList.stream().map(Post::getUserId).collect(Collectors.toSet());
+        final Map<String, Leader> leaderMap = leaderService.findAllByUserIdIn(userIdList)
+                .stream()
+                .collect(Collectors.toMap(Leader::getUserId, Function.identity()));
+
+        final List<CourtDTO> courtDTOList = courtList
+                .stream()
+                .map(court -> {
+                    CourtDTO dto = new CourtDTO();
+                    final List<PostDTO> postDTOList = postMap.getOrDefault(court.getId(), new ArrayList<>())
+                            .stream()
+                            .map(p -> {
+                                try {
+                                    return constructPostDTO(leaderMap, p);
+                                } catch (ParseException e) {
+                                    throw new RuntimeException(e);
+                                }
+                            }).toList();
+                    dto.setPostDTOList(postDTOList);
+                    dto.setCreationDate(court.getCreationDate());
+                    dto.setName(court.getName());
+                    dto.setLatitude(court.getLatitude());
+                    dto.setLongitude(court.getLongitude());
+                    dto.setAddress(court.getAddress());
+                    dto.setId(court.getId());
+                    return dto;
+                }).toList();
+        return ResponseEntity.ok(courtDTOList);
     }
 
 
