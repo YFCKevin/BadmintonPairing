@@ -52,25 +52,50 @@ public class OpenAiServiceImpl implements OpenAiService {
             try {
 
                 //組final prompt
-                String pre_prompt = "要求：\n" +
-                        "1.資料格式是作者名稱 | userId::: 貼文內容 /// name::: 貼文內容\n" +
-                        "2.羽球社團找人打球的資訊，要從作者名稱和貼文內容整理出JSON檔，欄位包括：\n" +
-                        "name：作者名稱\n" +
-                        "userId：userId\n" +
-                        "place：活動地點\n" +
-                        "startTime：開始時間，格式為2024-MM-dd HH:mm:ss\n" +
-                        "endTime：結束時間，格式為2024-MM-dd HH:mm:ss\n" +
-                        "level：程度，用字串表示\n" +
-                        "fee：費用，僅取數字\n" +
-                        "duration：時長，以分鐘表示，且為數字型態\n" +
-                        "brand：使用的球種品牌，若無則留空\n" +
-                        "contact：聯絡方式，若無則留空\n" +
-                        "parkInfo：關於停車場的相關資訊，若無則留空\n" +
-                        "type：固定為\"disposable\"\n" +
-                        "airConditioner：冷氣資訊，以字串表示，present:有，absent:無，no_mention:未標示\n" +
+                String pre_prompt = "資料處理要求\n" +
                         "\n" +
-                        "3.每則貼文內容可能包含多個打球資訊，必須分開成獨立的JSON物件。\n" +
-                        "4.確保只匯出json格式";
+                        "1. 資料格式\n" +
+                        "   - 請將每則貼文格式化為 JSON。每則貼文應該包含以下欄位：\n" +
+                        "     - `name`: 作者名稱\n" +
+                        "     - `userId`: 用戶 ID\n" +
+                        "     - `place`: 活動地點\n" +
+                        "     - `startTime`: 開始時間，格式為 `2024-MM-dd HH:mm:ss`，且必須是 `2024` 年的日期\n" +
+                        "     - `endTime`: 結束時間，格式為 `2024-MM-dd HH:mm:ss`，且必須是 `2024` 年的日期\n" +
+                        "     - `level`: 程度（用字串表示）\n" +
+                        "     - `fee`: 費用（僅取數字）\n" +
+                        "     - `duration`: 時長（以分鐘表示，數字型態）\n" +
+                        "     - `brand`: 球種品牌（若無則留空）\n" +
+                        "     - `contact`: 聯絡方式（若無則留空）\n" +
+                        "     - `parkInfo`: 停車場資訊（若無則留空）\n" +
+                        "     - `type`: 固定為 \"disposable\"\n" +
+                        "     - `airConditioner`: 冷氣資訊（用字串表示，`present` 表示有，`absent` 表示無，`no_mention` 表示未標示）\n" +
+                        "\n" +
+                        "2. 資料整理\n" +
+                        "   - 每則貼文內容可能包含多個打球資訊，請將每個打球資訊獨立為單獨的 JSON 物件。\n" +
+                        "\n" +
+                        "3. 輸出要求\n" +
+                        "   - 確保最終結果為有效的 JSON 格式，且所有 `startTime` 和 `endTime` 欄位必須是 `2024` 年的日期。\n" +
+                        "\n" +
+                        "4. 範例格式\n" +
+                        "```json\n" +
+                        "[\n" +
+                        "  {\n" +
+                        "    \"name\": \"張三\",\n" +
+                        "    \"userId\": \"user123\",\n" +
+                        "    \"place\": \"某某羽球場\",\n" +
+                        "    \"startTime\": \"2024-09-16 18:00:00\",\n" +
+                        "    \"endTime\": \"2024-09-16 20:00:00\",\n" +
+                        "    \"level\": \"中級\",\n" +
+                        "    \"fee\": \"200\",\n" +
+                        "    \"duration\": 120,\n" +
+                        "    \"brand\": \"Yonex\",\n" +
+                        "    \"contact\": \"0912345678\",\n" +
+                        "    \"parkInfo\": \"場外停車場\",\n" +
+                        "    \"type\": \"disposable\",\n" +
+                        "    \"airConditioner\": \"present\"\n" +
+                        "  }\n" +
+                        "]\n" +
+                        "```";
 
                 return callOpenAI(prompt + "\n" + pre_prompt);
 

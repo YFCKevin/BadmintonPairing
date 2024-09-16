@@ -64,7 +64,7 @@ public class IndexController {
                         throw new RuntimeException(e);
                     }
                 })
-                .sorted(Comparator.comparing(PostDTO::getStartTime))
+                .sorted(Comparator.comparing(PostDTO::getStartTime).reversed())
                 .toList();
 
         model.addAttribute("todayNewPostList", todayNewPostList);
