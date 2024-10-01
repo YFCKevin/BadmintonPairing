@@ -28,6 +28,8 @@
   - **前端：** Alpine.js
   - **語言：** Java 17, JavaScript, Python
   - **資料庫：** MongoDB, Redis
+  - **雲端部署：** Google Cloud
+  - **第三方 API：** Google Maps API, Google Calendar API, openAI (gpt-4o-mini), Line Flex Message API, MapChart API
 <p align="center">
   <img src="https://github.com/YFCKevin/badmintonPairing/blob/new-ui/architecture-diagram.png" width="100%" alt="架構圖">
 </p>
