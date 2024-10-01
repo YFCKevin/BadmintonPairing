@@ -10,6 +10,9 @@
 </p>
 
 [羽球配對首頁](https://www.gurula.cc/badminton/index)<br><br>
+<p align="left">
+  <img src="https://github.com/YFCKevin/badmintonPairing/blob/new-ui/line-screen-shot-1.jpg" alt="Line截圖1" width="330" height="700">  <img src="https://github.com/YFCKevin/badmintonPairing/blob/new-ui/line-screen-shot-2.jpg" alt="Line截圖2" width="330" height="700">
+</p>
 [Line官方帳號](https://lin.ee/BN4d917)
 
 ## 功能：
