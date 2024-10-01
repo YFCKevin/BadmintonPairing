@@ -1,4 +1,4 @@
-<h1 align=center>badmintonPairing 羽球配對</h1>
+<h1 align=center>BadmintonPairing 羽球配對</h1>
 <p align=center>提供北北基桃的羽毛球愛好者，找到適合的羽球團！
 
 <p align="center">
