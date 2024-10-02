@@ -1,6 +1,12 @@
 <h1 align=center>BadmintonPairing 羽球配對</h1>
 <p align=center>提供北北基桃的羽毛球愛好者，找到適合的羽球團！
 
+## Contents
+ - [功能](#功能) 
+ - [技術](#技術)
+ - [致謝](#致謝)
+
+
 <p align="center">
   <img src="https://img.shields.io/badge/Language-Java-orange.svg" alt="">  <img src="https://img.shields.io/badge/Language-Javascript-yellow.svg" alt="">  <img src="https://img.shields.io/badge/Language-python-blue.svg" alt="">
 </p>
