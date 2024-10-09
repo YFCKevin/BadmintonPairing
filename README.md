@@ -12,7 +12,7 @@
 </p>
 
 <p align="center">
-  <img src="https://github.com/YFCKevin/badmintonPairing/blob/new-ui/badminton-pairing.gif" width="100%" alt="描述">
+  <img src="https://github.com/YFCKevin/badmintonPairing/blob/master/badminton-pairing.gif" width="100%" alt="描述">
 </p>
 
 [羽球配對首頁](https://www.gurula.cc/badminton/index)<br><br>
