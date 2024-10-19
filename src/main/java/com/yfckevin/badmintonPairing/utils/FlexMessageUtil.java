@@ -85,7 +85,7 @@ public class FlexMessageUtil {
 
         for (PostDTO postDTO : postDTOList) { // 產生零打資訊column
             Map<String, Object> column = new HashMap<>();
-            column.put("thumbnailImageUrl", "https://www.gurula.cc/badminton/images/column.jpg");
+            column.put("thumbnailImageUrl", "https://gurula.cc/badminton/images/column.jpg");
             column.put("imageBackgroundColor", "#FFFFFF");
             column.put("title", postDTO.getPlace()); // 打球地點
             column.put("text", postDTO.getTime()); // 零打日期時間
@@ -94,7 +94,7 @@ public class FlexMessageUtil {
             Map<String, String> defaultAction = new HashMap<>();
             defaultAction.put("type", "uri");
             defaultAction.put("label", "前往首頁");
-            defaultAction.put("uri", "https://www.gurula.cc/badminton/index");
+            defaultAction.put("uri", "https://gurula.cc/badminton/index");
             column.put("defaultAction", defaultAction);
 
             // Actions
@@ -196,7 +196,7 @@ public class FlexMessageUtil {
 
         Map<String, Object> heroAction = new HashMap<>();
         heroAction.put("type", "uri");
-        heroAction.put("uri", "https://www.gurula.cc/badminton/index");
+        heroAction.put("uri", "https://gurula.cc/badminton/index");
         hero.put("action", heroAction);
 
         // Body section

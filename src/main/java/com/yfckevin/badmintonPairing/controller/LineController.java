@@ -112,7 +112,7 @@ public class LineController {
                                 "  \"type\": \"text\",\n" +
                                 "  \"text\": \"很開心能為您服務！提供您今日零打資訊～～～\\n\\n" +
                                 "LINE系統最多提供10則零打資訊\\n" +
-                                "要查看更多零打資訊歡迎前往：https://www.gurula.cc/badminton/posts\"" +
+                                "要查看更多零打資訊歡迎前往：https://gurula.cc/badminton/posts\"" +
                                 "}";
 
 
@@ -126,7 +126,7 @@ public class LineController {
                                     "  \"type\": \"text\",\n" +
                                     "  \"text\": \"很抱歉！目前今日沒有零打團Q_Q\\n\\n" +
                                     "可以點擊「選擇零打日期」功能查詢其他日期的零打資訊\\n" +
-                                    "若要查看更多資訊歡迎前往：https://www.gurula.cc/badminton/posts\"" +
+                                    "若要查看更多資訊歡迎前往：https://gurula.cc/badminton/posts\"" +
                                     "}";
 
                         } else {
@@ -226,7 +226,7 @@ public class LineController {
                                     "  \"type\": \"text\",\n" +
                                     "  \"text\": \"很抱歉！" + event.getPostback().getParams().get("date") + " 目前沒有零打團Q_Q\\n\\n" +
                                     "可以再一次選擇其他日期查詢唷～\\n" +
-                                    "若要查看更多資訊歡迎前往：https://www.gurula.cc/badminton/posts\"" +
+                                    "若要查看更多資訊歡迎前往：https://gurula.cc/badminton/posts\"" +
                                     "}";
 
                         } else {
@@ -245,7 +245,7 @@ public class LineController {
                                     "  \"type\": \"text\",\n" +
                                     "  \"text\": \"很開心能為您服務！提供您 " + event.getPostback().getParams().get("date") + " 的零打資訊～～～\\n\\n" +
                                     "LINE系統最多提供10則零打資訊\\n" +
-                                    "要查看更多資訊歡迎前往：https://www.gurula.cc/badminton/posts\"" +
+                                    "要查看更多資訊歡迎前往：https://gurula.cc/badminton/posts\"" +
                                     "}";
                         }
                     }
