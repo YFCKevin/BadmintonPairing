@@ -182,6 +182,8 @@ public class GoogleMapController {
                     dto.setLongitude(court.getLongitude());
                     dto.setAddress(court.getAddress());
                     dto.setId(court.getId());
+                    dto.setDistrict(court.getDistrict());
+                    dto.setCity(court.getCity());
                     return dto;
                 }).toList();
         return ResponseEntity.ok(courtDTOList);

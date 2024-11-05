@@ -9,6 +9,8 @@ public class Court {
     private String id;
     private String name;    //球館名稱
     private String address; //地理位置地址
+    private String city;      // 城市
+    private String district;  // 區域
     private double latitude;    //緯度
     private double longitude;   //經度
     private String postId;  //貼文編號，用逗號連接
@@ -68,5 +70,21 @@ public class Court {
 
     public void setPostId(String postId) {
         this.postId = postId;
+    }
+
+    public String getCity() {
+        return city;
+    }
+
+    public void setCity(String city) {
+        this.city = city;
+    }
+
+    public String getDistrict() {
+        return district;
+    }
+
+    public void setDistrict(String district) {
+        this.district = district;
     }
 }

@@ -1199,6 +1199,8 @@ public class BackendManageController {
             court.setLongitude(dto.getLongitude());
             court.setCreationDate(sdf.format(new Date()));
             court.setPostId(dto.getPostId());
+            court.setCity(dto.getCity());
+            court.setDistrict(dto.getDistrict());
             courtService.save(court);
         } else {    //更新
             final Optional<Court> opt = courtService.findById(dto.getId());
@@ -1209,6 +1211,8 @@ public class BackendManageController {
                 court.setAddress(dto.getAddress());
                 court.setLatitude(dto.getLatitude());
                 court.setPostId(dto.getPostId());
+                court.setDistrict(dto.getDistrict());
+                court.setCity(dto.getCity());
                 courtService.save(court);
             }
         }

@@ -371,6 +371,14 @@
                     <input type="text" class="form-control" id="courtAddress" >
                 </div>
                 <div class="form-group">
+                    <label for="courtCity">城市</label>
+                    <input type="text" class="form-control" id="courtCity" >
+                </div>
+                <div class="form-group">
+                    <label for="courtDistrict">地區</label>
+                    <input type="text" class="form-control" id="courtDistrict" >
+                </div>
+                <div class="form-group">
                     <label for="courtLongitude">經度</label>
                     <input type="text" class="form-control" id="courtLongitude">
                 </div>
@@ -574,6 +582,8 @@
             closeCourtModal (){
               $("#courtName").val('');
               $("#courtAddress").val('');
+              $("#courtCity").val('');
+              $("#courtDistrict").val('');
               $("#courtLongitude").val('');
               $("#courtLatitude").val('');
             },
@@ -696,6 +706,8 @@
               let data = {};
               data.name = $("#courtName").val();
               data.address = $("#courtAddress").val();
+              data.city = $("#courtCity").val();
+              data.district = $("#courtDistrict").val();
               data.latitude = $("#courtLatitude").val();
               data.longitude = $("#courtLongitude").val();
               data.postId = "";
