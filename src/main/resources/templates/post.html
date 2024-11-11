@@ -29,6 +29,31 @@
 
         <link rel="stylesheet" type="text/css" th:href="@{css/style.css}" />
         <script th:src="@{js/deviceType.js}"></script>
+
+        <style>
+            .loading-dots::after {
+                content: ' ';
+                display: inline-block;
+                width: 1em;
+                text-align: left;
+                animation: dots 1s steps(5, end) infinite;
+            }
+
+            @keyframes dots {
+                0%, 20% {
+                    content: '';
+                }
+                40% {
+                    content: '.';
+                }
+                60% {
+                    content: '..';
+                }
+                80%, 100% {
+                    content: '...';
+                }
+            }
+        </style>
     </head>
 
     <body x-data="loadData(posts)" x-init="init()">
@@ -307,6 +332,46 @@
         </div>
         <!-- Copyright End -->
 
+        <div x-data="loadData_chatroom()" x-init="init_chatroom()">
+            <div class="position-fixed bottom-0 end-0" style="transform: translateY(-90px); margin-right: 1.8rem; z-index: 999">
+                <button x-on:click="connect($event)" id="open-chat" class="btn btn-primary rounded-circle d-flex align-items-center justify-content-center p-3" style="width: 44px; height: 44px">
+                    <i class="fas fa-comments text-black fs-5"></i>
+                </button>
+            </div>
+            <div id="chat-container" class="d-none position-fixed bottom-0 end-0 me-4" style="margin-bottom:10rem; z-index: 999">
+                <div class="card shadow-lg">
+                    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                        <h6 class="mb-2 mt-2">羽球小幫手</h6>
+                        <button x-on:click="disconnect()" id="close-chat" class="btn-close btn-close-white" aria-label="Close"></button>
+                    </div>
+                    <template x-if="memberId != undefined">
+                        <div id="chatbox" class="card-body overflow-auto" style="height: 20rem;">
+                            <!-- Chat messages will be displayed here -->
+                            <template x-for="(chat, index) in chatData" :key="index">
+                                <div :class="index % 2 === 0 ? 'text-end' : 'text-start'" class="mb-2">
+                                    <p x-html="chat.text"
+                                       :class="index % 2 === 0 ? 'bg-primary text-white' : 'text-black'"
+                                       class="rounded-3 py-2 px-3 d-inline-block"
+                                       :style="index % 2 !== 0 ? 'background-color: #e0e0e0 !important; margin-bottom: 0rem; color: black !important;' : 'margin-bottom: 0rem;'">
+                                    </p>
+                                </div>
+                            </template>
+
+                            <template x-if="isLoading">
+                                <div class="text-start mb-2">
+                                    <p class="loading-dots bg-light text-secondary rounded-3 py-2 px-3 d-inline-block"></p>
+                                </div>
+                            </template>
+                        </div>
+                        <div class="card-footer d-flex">
+                            <textarea id="userText" x-model="userText" placeholder="請輸入訊息" class="form-control me-2"></textarea>
+                            <button id="sendBtn" x-on:click="sendMessage($event)" class="btn btn-primary"><i class="far fa-paper-plane"></i></button>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </div>
+
 
         <!-- Back to Top -->
         <a href="#" class="btn btn-md-square btn-primary rounded-circle back-to-top"><i class="fa fa-arrow-up"></i></a>
@@ -337,6 +402,10 @@
     <script th:src="@{js/lightbox.min.js}"></script>
     <script th:src="@{js/owl.carousel.min.js}"></script>
     <script th:src="@{js/main.js}"></script>
+    <script th:src="@{/js/sockjs.min.js}"></script>
+    <script th:src="@{/js/marked.min.js}"></script>
+    <script th:src="@{/js/stomp.min.js}"></script>
+    <script th:src="@{/js/chatroom.js}"></script>
 
     <script th:inline="javascript">
       const posts = /*[[${posts}]]*/
