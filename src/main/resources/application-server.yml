@@ -1,5 +1,6 @@
 server:
-  port: 8099
+  port: 8080
+  address: 0.0.0.0
   servlet:
     contextPath: /badminton
   error:
@@ -14,12 +15,12 @@ spring:
       max-file-size: 100MB
       max-request-size: 100MB
   resources:
-    static-locations: file:/Users/chenyifan/Documents/workspace-fan/badmintonPairing/src/main/resources/static/
+    static-locations: file:/opt/badmintonPairing/static/
   thymeleaf:
     mode: HTML
     encoding: UTF-8
     cache: true
-    prefix: file:/Users/chenyifan/Documents/workspace-fan/badmintonPairing/src/main/resources/templates/
+    prefix: file:/opt/badmintonPairing/templates/
   mail:
     host: smtp.gmail.com
     port: 587
@@ -35,19 +36,19 @@ spring:
             enable: true
   security:
     user:
-      name: ${db-username}
-      password: ${db-password}
+      name: yifan
+      password: password
   crawler:
     email: ${crawler-username}
     password: ${crawler-password}
   redis:
-    host: ${vm-port}           # Redis 服務器的主機名或 IP 地址
+    host: 127.0.0.1            # Redis 服務器的主機名或 IP 地址
     port: 6379                 # Redis 服務器的端口號
     password: ${db-password}   # Redis 的密碼（如果有設定）
     ssl: false                 # 是否啟用 SSL（預設為 false）
   data:
     mongodb:
-      uri: mongodb://${db-username}:${db-password}@${vm-port}:27017
+      uri: mongodb://${db-username}:${db-password}@localhost:27017
 
 logging:
   level:
@@ -63,7 +64,7 @@ google:
     id: ${google-client-id}
     secret: ${google-client-secret}
   redirect:
-    uri: http://localhost:8099/badminton/oauth2/callback
+    uri: https://gurula.cc/badminton/oauth2/callback
 
 line:
   bot:
@@ -73,14 +74,14 @@ line:
       secret: ${channel-access-secret}
 
 config:
-  jsonPath: /Users/chenyifan/Documents/workspace-fan/badmintonPairing/src/main/resources/static/js/
-  picture_path: /Users/chenyifan/Documents/workspace-fan/picture/badminton_images/
-  globalDomain: http://localhost:8099/badminton/
+  jsonPath: /opt/badmintonPairing/static/js/
+  picture_path: /opt/badmintonPairing/badminton_images/
+  globalDomain: https://gurula.cc/badminton/
   crawlerDomain: http://localhost:5000/badminton/
-  picSavePath: /Users/chenyifan/Documents/workspace-fan/badmintonPairing/badminton_images/
-  picShowPath: http://localhost:8099/badminton/badminton_images/
-  fileSavePath: /Users/chenyifan/Documents/workspace-fan/badmintonPairing/badminton_files/
-  fileShowPath: http://localhost:8099/badminton/badminton_files/
-  gptBackupSavePath: /Users/chenyifan/Documents/workspace-fan/badmintonPairing/badminton_files/backup/
+  picSavePath: /opt/badmintonPairing/badminton_images/
+  picShowPath: https://gurula.cc/badminton/badminton_images/
+  fileSavePath: /opt/badmintonPairing/badminton_files/
+  fileShowPath: https://gurula.cc/badminton/badminton_files/
+  gptBackupSavePath: /opt/badmintonPairing/badminton_files/backup/
   apiKey: ${openai-api-key}
   channelAccessToken: ${channel-access-token}
