@@ -177,7 +177,7 @@
                         <h6 class="mb-2 mt-2">羽球小幫手</h6>
                         <button x-on:click="disconnect()" id="close-chat" class="btn-close btn-close-white" aria-label="Close"></button>
                     </div>
-                    <template x-if="memberId != ''">
+                    <template x-if="memberId != '' && memberId != undefined">
                         <div id="chatbox" class="card-body overflow-auto" style="height: 20rem;">
                             <!-- Chat messages will be displayed here -->
                             <template x-for="(chat, index) in chatData" :key="index">
@@ -201,7 +201,7 @@
                             <button id="sendBtn" x-on:click="sendMessage($event)" class="btn btn-primary"><i class="far fa-paper-plane"></i></button>
                         </div>
                     </template>
-                    <template x-if="memberId == ''">
+                    <template x-if="memberId == '' || memberId == undefined">
                         <div id="chatbox" class="d-flex justify-content-center align-items-center card-body bg-light">
                             <a href="/chatbot/login?type=google&project=badminton&page=map" class="btn btn-dark me-2">
                                 Google登入
