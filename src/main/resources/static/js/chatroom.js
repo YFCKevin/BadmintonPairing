@@ -2,15 +2,18 @@
       return {
         chatData: [],
         channel: "badminton",
-        memberId: "guest",
+        memberId: "",
         connectedMemberId: "",
         chatChannel: "",
         userText: "",
         isLoading: false,
-        contextPath: "https://gurula.cc/chatbot/",  //https://gurula.cc/chatbot/
+        contextPath: "https://gurula.cc/chatbot/",  //http://localhost:8999/chatbot/
 
         init_chatroom() {
           let _this = this;
+
+          this.memberId = this.getCookie("MEMBER_ID");
+          console.log(this.memberId);
 
           let isChatboxOpen = false; // 預設關閉
           $("#chat-container").addClass("d-none");
