@@ -49,6 +49,11 @@ spring:
   data:
     mongodb:
       uri: mongodb://${db-username}:${db-password}@localhost:27017
+  elasticsearch:
+    uri: http://localhost:9200
+    connection-timeout: 3000
+    username: ${db-username}
+    password: ${db-password}
 
 logging:
   level:
@@ -77,7 +82,7 @@ config:
   jsonPath: /opt/badmintonPairing/static/js/
   picture_path: /opt/badmintonPairing/badminton_images/
   globalDomain: https://gurula.cc/badminton/
-  crawlerDomain: http://localhost:5000/badminton/
+  crawlerDomain: http://${crawler-port}:5000/badminton/
   picSavePath: /opt/badmintonPairing/badminton_images/
   picShowPath: https://gurula.cc/badminton/badminton_images/
   fileSavePath: /opt/badmintonPairing/badminton_files/

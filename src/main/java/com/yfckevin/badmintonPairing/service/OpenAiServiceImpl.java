@@ -7,22 +7,24 @@ import com.yfckevin.badmintonPairing.ConfigProperties;
 import com.yfckevin.badmintonPairing.dto.BadmintonPostDTO;
 import com.yfckevin.badmintonPairing.dto.ChatCompletionResponse;
 import com.yfckevin.badmintonPairing.entity.Post;
+import com.yfckevin.badmintonPairing.entity.PostDoc;
+import com.yfckevin.badmintonPairing.repository.PostDocRepository;
 import com.yfckevin.badmintonPairing.repository.PostRepository;
-import com.yfckevin.badmintonPairing.utils.ConfigurationUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.*;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 @Service
 public class OpenAiServiceImpl implements OpenAiService {
@@ -33,14 +35,15 @@ public class OpenAiServiceImpl implements OpenAiService {
     private final PostRepository postRepository;
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
-
-    public OpenAiServiceImpl(@Qualifier("sdf") SimpleDateFormat sdf, @Qualifier("svf") SimpleDateFormat svf, ConfigProperties configProperties, PostRepository postRepository, RestTemplate restTemplate, ObjectMapper objectMapper) {
+    private final PostDocRepository postDocRepository;
+    public OpenAiServiceImpl(@Qualifier("sdf") SimpleDateFormat sdf, @Qualifier("svf") SimpleDateFormat svf, ConfigProperties configProperties, PostRepository postRepository, RestTemplate restTemplate, ObjectMapper objectMapper, PostDocRepository postDocRepository) {
         this.sdf = sdf;
         this.svf = svf;
         this.configProperties = configProperties;
         this.postRepository = postRepository;
         this.restTemplate = restTemplate;
         this.objectMapper = objectMapper;
+        this.postDocRepository = postDocRepository;
     }
 
 
@@ -59,8 +62,8 @@ public class OpenAiServiceImpl implements OpenAiService {
                         "     - `name`: 作者名稱\n" +
                         "     - `userId`: 用戶 ID\n" +
                         "     - `place`: 活動地點\n" +
-                        "     - `startTime`: 開始時間，格式為 `2024-MM-dd HH:mm:ss`，且必須是 `2024` 年的日期\n" +
-                        "     - `endTime`: 結束時間，格式為 `2024-MM-dd HH:mm:ss`，且必須是 `2024` 年的日期\n" +
+                        "     - `startTime`: 開始時間，格式為 `2025-MM-dd HH:mm:ss`，且必須是 `2025` 年的日期\n" +
+                        "     - `endTime`: 結束時間，格式為 `2025-MM-dd HH:mm:ss`，且必須是 `2025` 年的日期\n" +
                         "     - `level`: 程度（用字串表示）\n" +
                         "     - `fee`: 費用（僅取數字）\n" +
                         "     - `duration`: 時長（以分鐘表示，數字型態）\n" +
@@ -105,6 +108,7 @@ public class OpenAiServiceImpl implements OpenAiService {
         });
     }
 
+    @Transactional
     private List<Post> callOpenAI(String prompt) throws Exception {
         String url = "https://api.openai.com/v1/chat/completions";
 
@@ -137,16 +141,48 @@ public class OpenAiServiceImpl implements OpenAiService {
             objectMapper.writeValue(file, response);
 
             List<Post> postList = constructToEntity(content);
-            return postRepository.saveAll(postList);
+            final List<Post> savePostList = postRepository.saveAll(postList);
+            List<PostDoc> postDocList = constructToPostDoc(savePostList);
+            postDocRepository.saveAll(postDocList);
+            return savePostList;
         } else {
             throw new Exception("GPT回傳的錯誤碼: " + response.getStatusCodeValue());
         }
     }
 
+    private List<PostDoc> constructToPostDoc(List<Post> postList) {
+        List<PostDoc> postDocList = new ArrayList<>();
+        postList.forEach(post -> {
+            PostDoc postDoc = new PostDoc();
+            postDoc.setId(post.getId());
+            postDoc.setName(post.getName());
+            postDoc.setAirConditioner(post.getAirConditioner());
+            postDoc.setBrand(post.getBrand());
+            postDoc.setContact(post.getContact());
+            postDoc.setDuration(post.getDuration());
+            postDoc.setFee(post.getFee());
+            postDoc.setLevel(post.getLevel());
+            postDoc.setStartTime(post.getStartTime());
+            postDoc.setEndTime(post.getEndTime());
+            postDoc.setDayOfWeek(post.getDayOfWeek());
+            postDoc.setParkInfo(post.getParkInfo());
+            postDoc.setPlace(post.getPlace());
+            postDoc.setUserId(post.getUserId());
+            postDocList.add(postDoc);
+        });
+        return postDocList;
+    }
+
     private List<Post> constructToEntity(String content) throws JsonProcessingException {
 
-        List<BadmintonPostDTO> postDTOs = objectMapper.readValue(content, new TypeReference<List<BadmintonPostDTO>>() {
+        List<BadmintonPostDTO> postDTOs = objectMapper.readValue(content, new TypeReference<>() {
         });
+
+        postDTOs = postDTOs.stream().peek(p -> {
+            logger.info("當前檢查startTime及emdTime的貼文者: {}，startTime: {}, endTime: {}", p.getName(), p.getStartTime(), p.getEndTime());
+            p.setStartTime(validateAndAdjustTime(p.getStartTime()));
+            p.setEndTime(validateAndAdjustTime(p.getEndTime()));
+        }).collect(Collectors.toList());
 
         List<Post> postList = new ArrayList<>();
         for (BadmintonPostDTO postDTO : postDTOs) {
@@ -204,6 +240,30 @@ public class OpenAiServiceImpl implements OpenAiService {
         } catch (JsonProcessingException e) {
             e.printStackTrace();
             return null;
+        }
+    }
+
+
+    public static String validateAndAdjustTime(String time) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        sdf.setLenient(false);
+
+        try {
+            Date date = sdf.parse(time);
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(date);
+
+            int hour = calendar.get(Calendar.HOUR_OF_DAY);
+            if (hour == 24) {
+                calendar.add(Calendar.DAY_OF_MONTH, 1);
+                calendar.set(Calendar.HOUR_OF_DAY, 0);
+            }
+
+            return sdf.format(calendar.getTime());
+
+        } catch (ParseException e) {
+            e.printStackTrace();
+            return "日期時間格式有誤";
         }
     }
 }

@@ -48,6 +48,12 @@ spring:
   data:
     mongodb:
       uri: mongodb://${db-username}:${db-password}@${vm-port}:27017
+  elasticsearch:
+    hostname: localhost
+    port: 9200
+    connection-timeout: 3000
+    username: ${db-username}
+    password: ${db-password}
 
 logging:
   level:
