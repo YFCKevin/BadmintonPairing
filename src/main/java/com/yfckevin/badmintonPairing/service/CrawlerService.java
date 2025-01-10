@@ -58,7 +58,10 @@ public class CrawlerService {
         RequestCrawlerDTO dto = new RequestCrawlerDTO();
         dto.setEmail(configProperties.getCrawlerEmail());
         dto.setPassword(configProperties.getCrawlerPassword());
-        dto.setUrl("https://www.facebook.com/groups/392553431115145/?sorting_setting=CHRONOLOGICAL");
+        dto.setUrl("https://www.facebook.com/groups/392553431115145/?sorting_setting=CHRONOLOGICAL");   //大台北
+//        dto.setUrl("https://www.facebook.com/groups/1882953728686436/?sorting_setting=CHRONOLOGICAL");  //新北
+//        dto.setUrl("https://www.facebook.com/groups/NorTaiwanBMT/?sorting_setting=CHRONOLOGICAL");  //台北基隆 北北基羽球同好交流區
+//        dto.setUrl("https://www.facebook.com/groups/178656202316659/?sorting_setting=CHRONOLOGICAL"); //桃園同好
 
         HttpEntity<RequestCrawlerDTO> entity = new HttpEntity<>(dto, headers);
         ResponseEntity<ResultStatus<List<RequestPostDTO>>> response = restTemplate.exchange(

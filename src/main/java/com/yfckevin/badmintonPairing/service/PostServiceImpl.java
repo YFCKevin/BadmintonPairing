@@ -183,6 +183,8 @@ public class PostServiceImpl implements PostService {
     @Override
     public List<Post> getPassPostsByLeadersAndTodayBefore() {
         String today = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        // 4個禮拜前的日期
+        String fourWeeksAgo = LocalDate.now().minusWeeks(8).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
 
         LookupOperation lookupOperation = LookupOperation.newLookup()
                 .from("leader")
@@ -197,8 +199,11 @@ public class PostServiceImpl implements PostService {
         GroupOperation groupOperation = Aggregation.group("userId")
                 .first(Aggregation.ROOT).as("lastPost");
 
-        MatchOperation matchEndTime = Aggregation.match(Criteria.where("lastPost.endTime").lt(today + " 23:59:59"));
-
+        // 添加條件過濾：endTime 必須小於今天的結束時間，且不能早於一個月前
+        MatchOperation matchEndTime = Aggregation.match(Criteria.where("lastPost.endTime")
+                .lt(today + " 23:59:59")    // 小於今天
+                .gte(fourWeeksAgo + " 00:00:00") // 大於等於4個禮拜前
+        );
         ReplaceRootOperation replaceRootOperation = Aggregation.replaceRoot("lastPost");
 
         Aggregation aggregation = Aggregation.newAggregation(

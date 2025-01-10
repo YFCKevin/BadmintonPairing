@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -38,7 +39,7 @@ public class DataProcessingController {
     }
 
 
-//    @Scheduled(cron = "0 0 8 * * ?")
+//    @Scheduled(cron = "0 0 10 ? * MON,THU,SAT")
     @GetMapping("/searchNewLeader")
     public ResponseEntity<?> searchNewLeader() throws IOException {
         logger.info("[searchNewLeader]");
@@ -50,6 +51,9 @@ public class DataProcessingController {
             resultStatus.setCode("C000");
             resultStatus.setMessage("成功");
             resultStatus.setData(savedLeaders);
+            MailUtils.sendMail("pigmonkey0921@gmail.com", "尋找searchNewLeader完成", "完成");
+        } else {
+            MailUtils.sendMail("pigmonkey0921@gmail.com", "尋找searchNewLeader失敗", "失敗");
         }
         return ResponseEntity.ok(resultStatus);
     }
@@ -59,7 +63,7 @@ public class DataProcessingController {
      * 每日固定匯出已過期貼文的所有links，給爬蟲用
      * @throws IOException
      */
-//    @Scheduled(cron = "0 0 6 * * ?")
+//    @Scheduled(cron = "0 0 8 ? * MON,THU,SAT")
     @GetMapping("/selectPastPosts")
     public void selectPastPosts() throws IOException, InterruptedException {
         // 取出該userId最新一則貼文的貼文是過期的貼文
@@ -79,13 +83,13 @@ public class DataProcessingController {
                 .mapToObj(i -> linkList.subList(i * batchSize, Math.min(totalLinks, (i + 1) * batchSize)))
                 .toList();
 
-        for (int i = 0; i < batches.size(); i++) {
+        for (int i = 5; i < batches.size(); i++) {
             List<String> batch = batches.get(i);
             final int getNewPosts = crawlerService.callCrawlerAPIGetNewPosts(batch);
-            logger.info("第幾次迴圈：" + i + "，當次的新貼文數: " + getNewPosts);
+            logger.info("(迴圈) 當次/總數：" + i + " / " + batches.size() + "，該次新貼文數: " + getNewPosts);
             Thread.sleep(60 * 1000);
         }
         logger.info(ssf.format(new Date()) + "完成貼文爬蟲");
+        MailUtils.sendMail("pigmonkey0921@gmail.com", "尋找selectPastPosts完成", "完成");
     }
-
 }
